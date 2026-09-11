@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ Công khai | EduNext Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; }
+        .aurora-text {
+            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .mesh-gradient {
+            background-color: #ffffff;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .label-platform {
+            background: #f59e0b;
+            color: black;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-white overflow-x-hidden">
+
+    <!-- Thanh định hướng cho Người chưa đăng nhập -->
+    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/20 backdrop-blur-md border-b border-white/10">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+                <i class="ph-fill ph-graduation-cap text-xl"></i>
+            </div>
+            <span class="text-xl font-black tracking-tighter">EduNext <span class="aurora-text">Platform</span></span>
+        </div>
+        <div class="flex items-center gap-8 font-bold text-xs uppercase tracking-widest text-gray-400">
+            <a href="#" class="hover:text-white">Khám phá</a>
+            <a href="#" class="hover:text-white">Thư viện mở</a>
+            <a href="#" class="hover:text-white">Về chúng tôi</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/login" class="text-xs font-bold uppercase tracking-widest border border-white/20 px-6 py-2 rounded-full hover:bg-white/10 transition-all">Đăng nhập</a>
+            <a href="/login" class="text-xs font-bold uppercase tracking-widest bg-indigo-600 px-6 py-2 rounded-full shadow-lg hover:bg-indigo-700 transition-all">Tham gia ngay</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION: Quảng bá Nền tảng -->
+    <section class="min-h-screen pt-32 pb-20 px-6 mesh-gradient relative flex flex-col items-center justify-center text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8">
+            <span class="label-platform">Nền tảng số</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Tiêu chuẩn chuyển đổi số giáo dục 2026</span>
+        </div>
+        <h1 class="text-6xl md:text-8xl font-black mb-6 leading-tight italic">
+            Kết nối tri thức <br> <span class="aurora-text">Kiến tạo tương lai</span>
+        </h1>
+        <p class="max-w-2xl text-gray-400 text-lg mb-12 italic leading-relaxed">
+            Nền tảng duy nhất kết nối Nhà trường, Phụ huynh và Học sinh trong một hệ sinh thái dữ liệu liên thông. Nơi tri thức được chia sẻ và tiềm năng được đánh thức.
+        </p>
+        
+        <!-- Các con số "Săn người dùng" (Dòng 251 docs_content) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl w-full">
+            <div class="glass-card p-6 rounded-3xl">
+                <p class="text-4xl font-black aurora-text">1.500+</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-2">Học sinh được "săn" đón</p>
+            </div>
+            <div class="glass-card p-6 rounded-3xl">
+                <p class="text-4xl font-black aurora-text">85+</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-2">Trường học liên kết</p>
+            </div>
+            <div class="glass-card p-6 rounded-3xl">
+                <p class="text-4xl font-black aurora-text">250+</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-2">Học liệu mở chuẩn API</p>
+            </div>
+            <div class="glass-card p-6 rounded-3xl">
+                <p class="text-4xl font-black aurora-text">24/7</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-2">AI Trợ lý học tập</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: Trưng bày giá trị Nền tảng (Bảng tin công khai) -->
+    <section class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div class="text-left">
+                <h2 class="text-4xl font-black italic mb-4">Hoạt động nổi bật <span class="aurora-text">trên Nền tảng</span></h2>
+                <p class="text-gray-500 font-bold uppercase tracking-widest text-xs italic">Đây là những gì cộng đồng đang chia sẻ mỗi ngày</p>
+            </div>
+            <div class="label-platform !bg-indigo-500 !text-white !py-1 !px-4 !text-[12px]">Dữ liệu liên thông real-time</div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="public-highlights-container">
+            <!-- Bài đăng mẫu 1 (Sẽ bị thay thế bởi JS nếu có dữ liệu thật) -->
+            <div class="glass-card rounded-[40px] p-8 hover:bg-white/10 transition-all border-l-4 border-indigo-500">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="https://i.pravatar.cc/100?u=teacher1" class="w-10 h-10 rounded-full border border-white/20">
+                    <div>
+                        <p class="font-bold text-sm">Cô Trần Thị Hạnh</p>
+                        <p class="text-[10px] text-gray-500">Môn Toán · THCS Chu Văn An</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold mb-4 italic">"Trọn bộ bài giảng Hình học 6"</h4>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">Vừa được chia sẻ lên Kho học liệu mở. Đã có 42 giáo viên khác tải về sử dụng ngay trong tuần qua.</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex gap-2 text-indigo-400 font-bold text-[10px] uppercase tracking-widest items-center">
+                        <i class="ph-fill ph-download-simple"></i> 450 Lượt tải
+                    </div>
+                    <div class="flex text-amber-500 text-xs"><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i></div>
+                </div>
+            </div>
+
+            <!-- Bài đăng mẫu 2 -->
+            <div class="glass-card rounded-[40px] p-8 hover:bg-white/10 transition-all border-l-4 border-pink-500">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center text-xl font-black">AI</div>
+                    <div>
+                        <p class="font-bold text-sm">Trợ lý EduNext AI</p>
+                        <p class="text-[10px] text-gray-500">Vừa xử lý xong câu hỏi...</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold mb-4 italic">"Phản hồi từ phụ huynh"</h4>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">"Nhờ hệ thống theo dõi real-time, tôi đã kịp thời khích lệ con khi biết con vừa đạt giải Nhất cuộc thi Sáng tạo trẻ."</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase italic">Kết nối Gia đình - Nhà trường</span>
+                    <i class="ph-fill ph-chat-circle-dots text-pink-500 text-2xl"></i>
+                </div>
+            </div>
+
+            <!-- Bài đăng mẫu 3 -->
+            <div class="glass-card rounded-[40px] p-8 hover:bg-white/10 transition-all border-l-4 border-amber-500">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white"><i class="ph-fill ph-crown text-2xl"></i></div>
+                    <div>
+                        <p class="font-bold text-sm">Bảng vàng Danh dự</p>
+                        <p class="text-[10px] text-gray-500">Cập nhật mỗi tuần</p>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold mb-4 italic">"Học sinh được săn đón"</h4>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">Em **Nguyễn Minh Anh** vừa được 3 trường THPT chuyên gán nhãn "Tiềm năng" dựa trên dữ liệu học tập liên thông.</p>
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px]"><i class="ph-fill ph-heart"></i></div>
+                    <span class="text-xs font-bold">120 trường quan tâm</span>
+                </div>
+            </div>
+        </div>
+    <script>
+        async function loadPublicHighlights() {
+            const container = document.getElementById('public-highlights-container');
+            if(!container) return;
+            
+            try {
+                // API này sẽ tự động trả về chỉ những bài TrangThai = 2 khi không có session
+                const response = await fetch('/api/resources');
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map((r, idx) => {
+                        const borderColors = ['border-indigo-500', 'border-pink-500', 'border-amber-500'];
+                        const borderColor = borderColors[idx % 3];
+                        
+                        return `
+                            <div class="glass-card rounded-[40px] p-8 hover:bg-white/10 transition-all border-l-4 ${borderColor}">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+                                        <i class="ph-fill ph-user text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm">Giáo viên EduNext</p>
+                                        <p class="text-[10px] text-gray-500">${r.subject} · Tài liệu số</p>
+                                    </div>
+                                </div>
+                                <h4 class="text-xl font-bold mb-4 italic">"${r.title}"</h4>
+                                <p class="text-gray-400 text-sm mb-6 leading-relaxed line-clamp-3">${r.description || 'Học liệu mở chuẩn API vừa được chia sẻ lên Nền tảng.'}</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-2 text-indigo-400 font-bold text-[10px] uppercase tracking-widest items-center">
+                                        <i class="ph-fill ph-star"></i> ${r.stars} (${r.star_count} đánh giá)
+                                    </div>
+                                    <a href="${r.url}" target="_blank" class="px-4 py-2 bg-white/10 rounded-full text-[10px] font-black uppercase hover:bg-white/20 transition-all">Tải về</a>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Lỗi load highlights:", err);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadPublicHighlights);
+    </script>
+</body>
+</html>

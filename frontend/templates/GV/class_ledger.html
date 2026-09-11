@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ cái & Nề nếp</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            background: #f1f5f9;
+            font-family: sans-serif;
+        }
+
+        .ai-gradient {
+            background: linear-gradient(135deg, #4F46E5, #E11D48);
+        }
+    </style>
+</head>
+
+<body class="flex h-screen">
+
+    <!-- MAIN -->
+    <main class="flex-1 p-8 overflow-auto">
+
+        <h1 class="text-3xl font-bold mb-6">Nề nếp học sinh</h1>
+
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-100 text-sm">
+                    <tr>
+                        <th class="p-4 text-left">Học sinh</th>
+                        <th class="p-4 text-center">Toán</th>
+                        <th class="p-4 text-center">XP</th>
+                        <th class="p-4 text-center">Vắng</th>
+                        <th class="p-4 text-center"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for s in students %}
+                    <tr class="border-t">
+                        <td class="p-4">
+                            <div class="font-bold">{{ s.HoTen }}</div>
+                            <div class="text-xs text-gray-400">{{ s.Email }}</div>
+                        </td>
+
+                        <td class="p-4 text-center text-red-500 font-bold">
+                            {{ s.DiemToan or '-' }}
+                        </td>
+
+                        <td class="p-4 text-center">
+                            <span class="px-2 py-1 bg-yellow-100 rounded">
+                                ⭐ {{ s.TongXP }}
+                            </span>
+                        </td>
+
+                        <td class="p-4 text-center text-red-500">
+                            {{ s.SoBuoiVang }}
+                        </td>
+
+                        <td class="p-4 text-center">
+                            <button
+                                class="open-modal-btn w-10 h-10 bg-gray-100 rounded hover:bg-red-500 hover:text-white"
+                                data-id="{{ s.MaNguoiDung }}" data-name="{{ s.HoTen }}">
+                                <i class="ph-bold ph-plus"></i>
+                            </button>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- MODAL -->
+    <div id="modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
+
+        <div class="bg-white p-6 rounded-xl w-[400px]">
+
+            <h2 class="font-bold text-xl mb-4">
+                Cập nhật: <span id="student-name"></span>
+            </h2>
+
+            <div class="flex gap-2 mb-4">
+                <button class="xp-btn flex-1 bg-green-100 p-2 rounded" data-xp="10">+10</button>
+                <button class="xp-btn flex-1 bg-red-100 p-2 rounded" data-xp="-10">-10</button>
+            </div>
+
+            <input id="reason" class="w-full border p-2 rounded mb-4" placeholder="Lý do">
+
+            <button id="submit" class="w-full ai-gradient text-white p-2 rounded">
+                Xác nhận
+            </button>
+
+            <button id="close" class="mt-3 text-gray-400 text-sm">Đóng</button>
+
+        </div>
+    </div>
+
+    <script>
+        let studentId = null;
+        let selectedXp = 0;
+
+        // mở modal
+        document.querySelectorAll('.open-modal-btn').forEach(btn => {
+            btn.onclick = () => {
+                studentId = btn.dataset.id;
+                document.getElementById('student-name').innerText = btn.dataset.name;
+                document.getElementById('modal').classList.remove('hidden');
+            };
+        });
+
+        // đóng
+        document.getElementById('close').onclick = () => {
+            document.getElementById('modal').classList.add('hidden');
+            selectedXp = 0;
+            document.getElementById('reason').value = "";
+        };
+
+        // chọn XP
+        document.querySelectorAll('.xp-btn').forEach(btn => {
+            btn.onclick = () => {
+                selectedXp = parseInt(btn.dataset.xp);
+
+                // reset UI
+                document.querySelectorAll('.xp-btn').forEach(b => b.classList.remove('ring-2'));
+
+                // active
+                btn.classList.add('ring-2');
+            };
+        });
+
+        // submit
+        document.getElementById('submit').onclick = async () => {
+            const reason = document.getElementById('reason').value.trim();
+
+            if (!selectedXp || !reason) {
+                alert("Nhập đủ!");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/teacher/conduct/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        xp: selectedXp,
+                        reason: reason
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert("OK");
+                    location.reload();
+                }
+            } catch {
+                alert("Lỗi");
+            }
+        };
+    </script>
+
+</body>
+
+</html>

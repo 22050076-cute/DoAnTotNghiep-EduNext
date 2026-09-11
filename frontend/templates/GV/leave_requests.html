@@ -1,0 +1,136 @@
+{% extends "GV/layout.html" %}
+
+{% set active_page = 'leave' %}
+
+{% block title %}Duyệt đơn xin nghỉ | EduNext Pro{% endblock %}
+
+{% block header_breadcrumb %}Nghiệp vụ / <span class="text-brand-dark">Duyệt đơn xin nghỉ</span>{% endblock %}
+
+{% block header_right %}
+<div class="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+    Đã duyệt hôm nay: <span id="approved-count-header">0</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter italic">Danh sách Đơn xin nghỉ</h1>
+            <p class="text-slate-500 font-medium mt-2 italic text-sm">Duyệt các yêu cầu nghỉ học từ phụ huynh.</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left min-w-[700px]">
+                <thead class="bg-slate-50/50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học sinh</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Thời gian</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Lý do</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="request-body" class="divide-y divide-slate-50">
+                    <tr><td colspan="4" class="p-20 text-center animate-pulse"><i class="ph ph-circle-notch animate-spin text-4xl text-brand-primary"></i></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Phản hồi -->
+<div id="feedback-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 md:p-10 relative animate-in fade-in zoom-in duration-300">
+        <h3 id="modal-title" class="text-2xl font-black text-slate-800 tracking-tighter italic mb-6">Xác nhận duyệt đơn</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Ghi chú / Phản hồi cho Phụ huynh</label>
+                <textarea id="modal-comment" placeholder="Nhập lời nhắn..." 
+                          class="w-full mt-2 px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary h-32"></textarea>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button id="modal-confirm-btn" class="flex-1 py-4 ai-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">Gửi</button>
+                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-all">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentRequestId = null;
+    let currentStatus = null;
+
+    async function loadRequests() {
+        const body = document.getElementById('request-body');
+        try {
+            const res = await fetch('/api/teacher/leave-requests');
+            const result = await res.json();
+            if (result.success) {
+                if (result.data.length === 0) {
+                    body.innerHTML = '<tr><td colspan="4" class="p-20 text-center text-slate-400 italic uppercase font-bold tracking-widest">Không có đơn nào cần duyệt ✨</td></tr>';
+                    return;
+                }
+                body.innerHTML = result.data.map(r => {
+                    const statusColors = { 'ChoDuyet': 'bg-amber-50 text-amber-600', 'DaDuyet': 'bg-emerald-50 text-emerald-600', 'TuChoi': 'bg-rose-50 text-brand-primary' };
+                    const statusLabels = { 'ChoDuyet': 'ĐANG CHỜ', 'DaDuyet': 'ĐÃ DUYỆT', 'TuChoi': 'TỪ CHỐI' };
+                    const isPending = r.TrangThai === 'ChoDuyet';
+                    
+                    return `
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-8 py-5">
+                            <p class="font-bold text-slate-800 text-sm italic">${r.HoTen}</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase">${r.MaHocSinh}</p>
+                        </td>
+                        <td class="px-8 py-5"><p class="text-xs font-bold text-slate-700">${r.NgayNghi}</p></td>
+                        <td class="px-8 py-5">
+                            <div class="space-y-1">
+                                <p class="text-xs font-medium text-slate-500 italic">"${r.LyDo}"</p>
+                                <span class="inline-block px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${statusColors[r.TrangThai] || 'bg-slate-50 text-slate-400'}">${statusLabels[r.TrangThai]}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            ${isPending ? `
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="openFeedbackModal(${r.MaDon}, 'DaDuyet')" class="px-4 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase shadow-lg hover:scale-105 transition-all">Duyệt</button>
+                                    <button onclick="openFeedbackModal(${r.MaDon}, 'TuChoi')" class="px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-[10px] font-black uppercase hover:bg-rose-50 transition-all">Từ chối</button>
+                                </div>
+                            ` : `<span class="text-[9px] font-bold text-slate-300 uppercase italic">Đã xử lý</span>`}
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    function openFeedbackModal(id, status) {
+        currentRequestId = id;
+        currentStatus = status;
+        const titleEl = document.getElementById('modal-title');
+        titleEl.innerText = status === 'DaDuyet' ? "Xác nhận Duyệt đơn" : "Xác nhận Từ chối đơn";
+        titleEl.className = `text-2xl font-black ${status === 'DaDuyet' ? 'text-emerald-600' : 'text-brand-primary'} tracking-tighter italic mb-6`;
+        document.getElementById('feedback-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('feedback-modal').classList.add('hidden'); }
+
+    async function submitFeedback() {
+        const comment = document.getElementById('modal-comment').value.trim();
+        if (currentStatus === 'TuChoi' && !comment) { alert("Phải nhập lý do từ chối!"); return; }
+        try {
+            const res = await fetch('/api/teacher/leave-requests/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentRequestId, status: currentStatus, comment })
+            });
+            if ((await res.json()).success) { alert("✨ Đã cập nhật thành công!"); closeModal(); loadRequests(); }
+        } catch (err) { alert("Lỗi kết nối!"); }
+    }
+
+    document.getElementById('modal-confirm-btn').onclick = submitFeedback;
+    document.addEventListener('DOMContentLoaded', loadRequests);
+</script>
+{% endblock %}

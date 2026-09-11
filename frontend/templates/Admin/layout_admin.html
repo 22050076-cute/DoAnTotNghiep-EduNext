@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduNext Admin{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { 
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        edunext: {
+                            primary: '#ee0033',
+                            dark: '#0f172a',
+                            bg: '#f1f5f9',
+                            surface: '#ffffff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #ee0033; border-radius: 10px; }
+        .sidebar-link:hover { background: rgba(238, 0, 51, 0.08); color: #ee0033; }
+        .sidebar-active { background: #ee0033 !important; color: white !important; box-shadow: 0 10px 20px -5px rgba(238, 0, 51, 0.3); }
+        .admin-card { transition: all 0.3s ease; border: 1px solid #e2e8f0; }
+        .admin-card:hover { border-color: #ee0033; transform: translateY(-2px); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-edunext-bg font-sans text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-edunext-dark text-slate-400 flex flex-col hidden lg:flex z-20 relative">
+        <div class="p-8 flex items-center gap-3">
+            <div class="w-10 h-10 bg-edunext-primary rounded-xl flex items-center justify-center text-white">
+                <i class="ph-fill ph-shield-checkered text-2xl"></i>
+            </div>
+            <span class="font-extrabold text-xl text-white tracking-tight">Edu<span class="text-edunext-primary">Admin</span></span>
+        </div>
+
+        <nav class="flex-1 px-6 py-2 space-y-1 overflow-y-auto">
+            <p class="px-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-[2px]">Hệ thống</p>
+            <a href="{{ url_for('admin_tong_quan') }}" class="sidebar-link {% if active_page == 'tong_quan' %}sidebar-active{% endif %} flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all">
+                <i class="ph-fill ph-chart-pie-slice text-xl"></i> Tổng quan trường
+            </a>
+            <a href="{{ url_for('admin_quan_ly_lop') }}" class="sidebar-link {% if active_page == 'quan_ly_lop' %}sidebar-active{% endif %} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group">
+                <i class="ph-fill ph-buildings text-xl opacity-70 group-hover:text-edunext-primary"></i> Quản lý Khối & Lớp
+            </a>
+
+            <p class="px-4 pt-6 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-[2px]">Tài khoản & Logs</p>
+            <a href="{{ url_for('admin_quan_ly_tai_khoan') }}" class="sidebar-link {% if active_page == 'quan_ly_tai_khoan' %}sidebar-active{% endif %} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group">
+                <i class="ph-fill ph-user-gear text-xl opacity-70 group-hover:text-edunext-primary"></i> Quản lý Tài khoản
+            </a>
+            <a href="{{ url_for('admin_nhat_ky_he_thong') }}" class="sidebar-link {% if active_page == 'nhat_ky_he_thong' %}sidebar-active{% endif %} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group">
+                <i class="ph-fill ph-list-dashes text-xl opacity-70 group-hover:text-edunext-primary"></i> Nhật ký Hệ thống
+            </a>
+
+            <p class="px-4 pt-6 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-[2px]">Cài đặt</p>
+            <a href="{{ url_for('admin_cau_hinh') }}" class="sidebar-link {% if active_page == 'cau_hinh' %}sidebar-active{% endif %} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group">
+                <i class="ph-fill ph-gear-six text-xl opacity-70 group-hover:text-edunext-primary"></i> Cấu hình EduNext
+            </a>
+        </nav>
+
+        <div class="p-6">
+            <div class="bg-white/5 p-4 rounded-2xl flex items-center gap-3 border border-white/10">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Admin" class="w-10 h-10 rounded-full bg-edunext-primary p-1">
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-sm text-white truncate">Super Admin</p>
+                    <p class="text-[10px] text-emerald-400 font-bold uppercase">Hệ thống Online</p>
+                </div>
+                <i class="ph-bold ph-power text-slate-500 hover:text-red-500 cursor-pointer"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <button class="lg:hidden text-2xl"><i class="ph-bold ph-list"></i></button>
+                <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">{% block header_title %}Hệ thống Quản trị Toàn trường{% endblock %}</h2>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex flex-col text-right">
+                    <span class="text-xs font-bold text-slate-400">Trạng thái Server</span>
+                    <span class="text-[10px] text-emerald-500 font-black flex items-center justify-end gap-1">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 99.9% Uptime
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

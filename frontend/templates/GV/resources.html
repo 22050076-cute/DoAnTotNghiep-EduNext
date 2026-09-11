@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho học liệu | EduNext Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            primary: '#E11D48',
+                            dark: '#0F172A',
+                            surface: '#F1F5F9',
+                            accent: '#FB7185'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f1f5f9; letter-spacing: -0.01em; font-family: 'Inter', sans-serif; }
+        .ai-gradient { background: linear-gradient(135deg, #4F46E5 0%, #E11D48 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        .resource-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .resource-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); }
+        .resource-cover { position: relative; aspect-ratio: 16/9; overflow: hidden; border-radius: 1.5rem; background: #f8fafc; }
+        .resource-cover img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
+        .resource-badge { backdrop-filter: blur(8px); background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .cover-ppt { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .cover-word { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .cover-pdf { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .cover-video { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+        .cover-generic { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+        * { font-style: normal !important; }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden text-slate-900 bg-brand-surface">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex relative z-30 shadow-sm">
+        <div class="p-8 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+                    <i class="ph-fill ph-circles-four text-2xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-2xl tracking-tighter text-brand-dark uppercase leading-none">Edu<span class="text-brand-primary">Next</span></span>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-8 overflow-y-auto py-8">
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hệ thống</p>
+                <div class="space-y-1">
+                    <a href="/dashboard_teacher" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-house-line text-xl"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-brand-primary/60 uppercase tracking-widest">Nghiệp vụ Chủ nhiệm</p>
+                <div class="space-y-1">
+                    <a href="/teacher/attendance" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Điểm danh lớp
+                    </a>
+                    <a href="/teacher/leave-requests" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative group">
+                        <i class="ph-bold ph-envelope-open text-xl"></i> Duyệt đơn xin nghỉ
+                        <span id="badge-leave" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden">0</span>
+                    </a>
+                    <a href="/teacher/announcements" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative">
+                        <i class="ph-bold ph-megaphone text-xl"></i> Thông báo lớp
+                        <span id="badge-announcements" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-400 text-white text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
+                    </a>
+                    <a href="/teacher/messages" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative group">
+                        <i class="ph-bold ph-chat-circle-dots text-xl"></i> Tin nhắn
+                        <span id="badge-messages" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học tập & Tài nguyên</p>
+                <div class="space-y-1">
+                    <a href="/teacher/schedule" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Thời khóa biểu
+                    </a>
+                    <a href="/teacher/gradebook" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-notebook text-xl"></i> Sổ điểm & Nề nếp
+                    </a>
+                    <a href="/teacher/resources" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-brand-primary text-white shadow-lg shadow-rose-200 font-bold text-sm">
+                        <i class="ph-fill ph-folder-notched-plus text-xl"></i> Kho học liệu
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <div class="p-6 border-t border-slate-50 space-y-4">
+            <button onclick="window.location.href='/logout'"
+                class="w-full flex items-center gap-3 p-3.5 text-slate-400 hover:text-brand-primary hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm">
+                <i class="ph-bold ph-sign-out text-xl"></i> Đăng xuất
+            </button>
+
+            <!-- PROFILE CARD -->
+            <div class="p-4 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=teacher" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-800 truncate leading-tight">{{ session.get('ho_ten', 'Giáo viên') }}</p>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mt-0.5">Giáo viên CN</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 bg-brand-surface relative overflow-hidden">
+        <header class="h-20 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 px-10 flex items-center justify-between sticky top-0 z-20">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Học tập & Tài nguyên / <span class="text-brand-dark">Kho học liệu</span></h2>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='/logout'"
+                    class="h-11 w-11 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100 hover:bg-rose-50 transition-all shadow-sm group" title="Đăng xuất">
+                    <i class="ph-bold ph-sign-out text-xl group-hover:scale-110 transition-transform"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+            <div id="section-resources" class="space-y-10">
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm col-span-1 h-fit">
+                        <h3 class="text-lg font-black text-slate-800 mb-6 uppercase italic">Đăng học liệu mới</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tiêu đề học liệu</label>
+                                <input type="text" id="resource-title" placeholder="Ví dụ: Đề cương Toán học Kỳ 2" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-brand-primary outline-none text-slate-900">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Môn học</label>
+                                    <select id="resource-mon" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-brand-primary outline-none">
+                                        <option value="1">Toán học</option>
+                                        <option value="2">Ngữ văn</option>
+                                        <option value="3">Vật lý</option>
+                                        <option value="4">Tiếng Anh</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Khối</label>
+                                    <select id="resource-khoi" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-brand-primary outline-none">
+                                        <option value="1">Khối 6</option>
+                                        <option value="2">Khối 7</option>
+                                        <option value="3">Khối 8</option>
+                                        <option value="4">Khối 9</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 italic">Chế độ chia sẻ</label>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-rose-50 transition-colors border-2 border-transparent has-[:checked]:border-brand-primary">
+                                        <input type="radio" name="resource-tt" value="2" class="hidden" checked>
+                                        <i class="ph-fill ph-globe text-emerald-500 text-lg"></i>
+                                        <div>
+                                            <p class="text-[10px] font-black uppercase leading-none">Công khai mẫu</p>
+                                            <p class="text-[9px] text-slate-400 font-medium italic">Mọi người đều thấy trên trang chủ</p>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-rose-50 transition-colors border-2 border-transparent has-[:checked]:border-brand-primary">
+                                        <input type="radio" name="resource-tt" value="1" class="hidden">
+                                        <i class="ph-fill ph-users-three text-indigo-500 text-lg"></i>
+                                        <div>
+                                            <p class="text-[10px] font-black uppercase leading-none">Nội bộ trường</p>
+                                            <p class="text-[9px] text-slate-400 font-medium italic">Chủ bộ phân môn xem được</p>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-rose-50 transition-colors border-2 border-transparent has-[:checked]:border-brand-primary">
+                                        <input type="radio" name="resource-tt" value="0" class="hidden">
+                                        <i class="ph-fill ph-door-open text-amber-500 text-lg"></i>
+                                        <div>
+                                            <p class="text-[10px] font-black uppercase leading-none">Chia sẻ lớp</p>
+                                            <p class="text-[9px] text-slate-400 font-medium italic">Chỉ HS lớp mình thấy</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 italic">Đính kèm tài liệu (PDF/Video)</label>
+                                <div class="relative group">
+                                    <input type="file" id="resource-file" class="hidden" onchange="updateFileName(this)">
+                                    <label for="resource-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50 hover:bg-rose-50 hover:border-brand-primary transition-all cursor-pointer">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6" id="file-placeholder">
+                                            <i class="ph-bold ph-cloud-arrow-up text-3xl text-slate-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-tight">Nhấn để chọn tệp</p>
+                                            <p class="text-[9px] text-slate-400 italic mt-1">Hỗ trợ PDF, MP4, PPTX...</p>
+                                        </div>
+                                        <div class="hidden flex-col items-center justify-center" id="file-info">
+                                            <i class="ph-fill ph-check-circle text-3xl text-emerald-500 mb-2"></i>
+                                            <p class="text-[10px] font-black text-slate-700 uppercase" id="file-name-display"></p>
+                                            <p class="text-[9px] text-emerald-500 font-bold mt-1 uppercase">Đã sẵn sàng để đăng!</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <button onclick="submitTeacherMaterial()" class="w-full py-4 ai-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-[1.02] transition-all mt-4">Đăng học liệu</button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-slate-200">
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest italic">Học liệu của tôi</h3>
+                            <button onclick="loadTeacherMaterials()" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-primary transition-all shadow-sm">
+                                <i class="ph-bold ph-arrows-clockwise text-xl"></i>
+                            </button>
+                        </div>
+                        <div id="teacher-materials-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Dữ liệu từ API -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Đánh giá (Đồng bộ với HS) -->
+    <div id="rate-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+            <div class="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
+                <div>
+                    <h3 class="font-black text-xl text-slate-800">Cộng đồng thảo luận</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Phản hồi từ người dùng</p>
+                </div>
+                <button onclick="toggleRateModal()" class="w-10 h-10 bg-slate-50 rounded-xl text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="p-8 py-6">
+                <!-- DANH SÁCH BÌNH LUẬN LÊN TRƯỚC -->
+                <div id="comment-list" class="space-y-4 max-h-80 overflow-y-auto pr-2 no-scrollbar mb-8 text-left">
+                    <p class="text-[10px] text-slate-400 italic">Đang tải bình luận...</p>
+                </div>
+
+                <!-- PHẦN NHẬP ĐÁNH GIÁ (Ở DƯỚI) -->
+                <div class="pt-6 border-t border-slate-100 text-center">
+                    <h4 class="text-[11px] font-black text-slate-800 uppercase mb-4 flex items-center gap-2 text-left">
+                        <i class="ph-fill ph-pencil-line text-rose-500"></i> Viết phản hồi của bạn
+                    </h4>
+                    <div class="flex justify-center gap-2 mb-4" id="star-rating">
+                        <button onclick="setRateStars(1)" class="text-3xl text-slate-200 hover:scale-110 transition-transform"><i class="ph-fill ph-star"></i></button>
+                        <button onclick="setRateStars(2)" class="text-3xl text-slate-200 hover:scale-110 transition-transform"><i class="ph-fill ph-star"></i></button>
+                        <button onclick="setRateStars(3)" class="text-3xl text-slate-200 hover:scale-110 transition-transform"><i class="ph-fill ph-star"></i></button>
+                        <button onclick="setRateStars(4)" class="text-3xl text-slate-200 hover:scale-110 transition-transform"><i class="ph-fill ph-star"></i></button>
+                        <button onclick="setRateStars(5)" class="text-3xl text-slate-200 hover:scale-110 transition-transform"><i class="ph-fill ph-star"></i></button>
+                    </div>
+                    <div class="mb-4 text-left">
+                        <textarea id="unique-gv-resource-comment-input" placeholder="Nhập nhận xét hoặc giải đáp thắc mắc cho học sinh..." 
+                                  class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-brand-primary outline-none min-h-[80px] resize-none"></textarea>
+                    </div>
+                    <button id="btn-submit-rate" onclick="submitRating()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all">Gửi phản hồi ngay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let teacherId = null;
+        let teacherClassId = null;
+
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/api/user/profile');
+                const result = await response.json();
+                if (result.success) {
+                    teacherId = result.data.id;
+                    teacherClassId = result.data.class_id;
+                    
+                    // [AUTO-PLATFORM] Khóa cứng Khối lớp theo hồ sơ giáo viên
+                    if (result.data.MaKhoi) {
+                        const khoiSelect = document.getElementById('resource-khoi');
+                        if (khoiSelect) {
+                            khoiSelect.value = result.data.MaKhoi;
+                            khoiSelect.disabled = true; // KHÓA CỨNG
+                            khoiSelect.classList.add('bg-slate-100', 'cursor-not-allowed', 'opacity-70');
+                        }
+                    }
+
+                    loadTeacherMaterials();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function getYouTubeID(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        async function loadTeacherMaterials() {
+            const grid = document.getElementById('teacher-materials-grid');
+            if (!grid) return;
+            grid.innerHTML = '<div class="col-span-1 md:col-span-2 text-center py-20 text-slate-400 font-bold uppercase tracking-widest animate-pulse">Đang tải kho học liệu...</div>';
+
+            try {
+                const response = await fetch(`/api/teacher/materials?user_id=${teacherId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.materials.length === 0) {
+                        grid.innerHTML = '<div class="col-span-1 md:col-span-2 text-center py-20 text-slate-400 italic font-medium">Bạn chưa đăng tải học liệu nào.</div>';
+                        return;
+                    }
+
+                    grid.innerHTML = data.materials.map(m => {
+                        let badgeColor = "text-slate-500 bg-slate-100";
+                        let modeText = "Riêng tư";
+                        let modeIcon = "ph-lock-key";
+                        if (m.TrangThai === 2) { badgeColor = "text-emerald-600 bg-emerald-50"; modeText = "Công khai"; modeIcon = "ph-globe"; }
+                        else if (m.TrangThai === 1) { badgeColor = "text-indigo-600 bg-indigo-50"; modeText = "Nội bộ"; modeIcon = "ph-users-three"; }
+                        else if (m.TrangThai === 0) { badgeColor = "text-amber-600 bg-amber-50"; modeText = "Lớp"; modeIcon = "ph-door-open"; }
+
+                        const ytId = getYouTubeID(m.DuongDan);
+                        let coverHtml = '';
+                        let typeIcon = "ph-file-pdf";
+                        let typeColor = "cover-pdf";
+
+                        if (ytId) {
+                            coverHtml = `<img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">`;
+                            typeIcon = "ph-youtube-logo";
+                            typeColor = "cover-video";
+                        } else {
+                            const ext = (m.TenTaiLieu || '').split('.').pop().toLowerCase();
+                            if (ext === 'ppt' || ext === 'pptx') { typeIcon = "ph-presentation-chart"; typeColor = "cover-ppt"; }
+                            else if (ext === 'doc' || ext === 'docx') { typeIcon = "ph-file-doc"; typeColor = "cover-word"; }
+                            coverHtml = `<div class="w-full h-full ${typeColor} flex flex-col items-center justify-center text-white"><i class="ph-fill ${typeIcon} text-5xl"></i></div>`;
+                        }
+
+                        return `
+                            <div class="resource-card bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col group h-full">
+                                <div class="resource-cover relative cursor-pointer" onclick="window.open('${m.DuongDan}', '_blank')">
+                                    ${coverHtml}
+                                    <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                                        <span class="px-3 py-1.5 resource-badge rounded-xl text-[9px] font-black uppercase flex items-center gap-1.5 ${badgeColor} shadow-sm border border-white/50">
+                                            <i class="ph-fill ${modeIcon}"></i> ${modeText}
+                                        </span>
+                                        <div class="flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl border border-white/20 shadow-lg">
+                                            <i class="ph-fill ph-star text-amber-400 text-xs"></i>
+                                            <span class="text-[10px] font-black">${Math.round(m.AvgStars * 10) / 10}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="absolute bottom-4 left-4 z-10 flex gap-2">
+                                        <div class="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 shadow-lg">
+                                            <i class="ph-fill ph-download-simple text-blue-500 text-xs"></i>
+                                            <span class="text-[10px] font-black text-slate-800">${m.SoLuotTai || 0}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 shadow-lg">
+                                            <i class="ph-fill ph-heart text-rose-500 text-xs"></i>
+                                            <span class="text-[10px] font-black text-slate-800">${m.LikeCount || 0}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button onclick="event.stopPropagation(); deleteTeacherMaterial(${m.MaTaiLieu})" class="w-10 h-10 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-rose-500 shadow-xl hover:bg-rose-500 hover:text-white transition-all transform hover:rotate-12">
+                                            <i class="ph-bold ph-trash text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-6 flex-1 flex flex-col">
+                                    <div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="window.open('${m.DuongDan}', '_blank')">
+                                        <h4 class="font-black text-slate-800 text-sm line-clamp-2 leading-snug group-hover:text-brand-primary transition-colors flex-1 uppercase tracking-tight">${m.TenTaiLieu}</h4>
+                                        <span class="px-2 py-0.5 ${m.MaKhoi == 3 ? 'bg-rose-50 text-rose-500 border-rose-100' : 'bg-blue-50 text-blue-500 border-blue-100'} border rounded text-[9px] font-black uppercase tracking-tighter">Khối ${m.MaKhoi == 1 ? '6' : (m.MaKhoi == 2 ? '7' : (m.MaKhoi == 3 ? '8' : '9'))}</span>
+                                    </div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1 italic">${m.TenMonHoc || 'TÀI LIỆU CHUNG'}</p>
+                                    <div class="mt-auto pt-5 border-t border-slate-50 flex items-center justify-between gap-3">
+                                        <div class="flex flex-col">
+                                            <span class="text-[8px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">Ngày đăng</span>
+                                            <span class="text-[10px] text-slate-600 font-bold">${new Date(m.NgayDang).toLocaleDateString('vi-VN')}</span>
+                                        </div>
+                                        <button onclick="rateResourcePrompt(${m.MaTaiLieu})" class="flex-1 px-4 py-3 bg-brand-primary text-white rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-rose-100 hover:scale-[1.05] active:scale-95 transition-all flex items-center justify-center gap-2">
+                                            <i class="ph-fill ph-chat-circle-dots text-base"></i>
+                                            <span>${m.StarCount || 0}</span> Phản hồi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function updateFileName(input) {
+            const placeholder = document.getElementById('file-placeholder');
+            const info = document.getElementById('file-info');
+            const nameDisplay = document.getElementById('file-name-display');
+            
+            if (input.files && input.files[0]) {
+                placeholder.classList.add('hidden');
+                info.classList.remove('hidden');
+                info.classList.add('flex');
+                nameDisplay.innerText = input.files[0].name;
+            } else {
+                placeholder.classList.remove('hidden');
+                info.classList.add('hidden');
+                info.classList.remove('flex');
+            }
+        }
+
+        async function submitTeacherMaterial() {
+            const ten_el = document.getElementById('resource-title');
+            const file_el = document.getElementById('resource-file');
+            
+            if (!ten_el || !ten_el.value) { alert("Vui lòng nhập tiêu đề!"); return; }
+            if (!file_el || !file_el.files || file_el.files.length === 0) { 
+                alert("❗ Bạn phải chọn tệp học liệu (PDF/Video/PPTX) trước khi đăng tải!"); 
+                return; 
+            }
+            
+            const tt_input = document.querySelector('input[name="resource-tt"]:checked');
+            
+            // Sử dụng FormData để gửi tệp
+            const formData = new FormData();
+            formData.append('file', file_el.files[0]);
+            formData.append('ten', ten_el.value);
+            formData.append('mon', document.getElementById('resource-mon').value);
+            formData.append('khoi', document.getElementById('resource-khoi').value);
+            formData.append('trang_thai', tt_input ? tt_input.value : 1);
+            formData.append('user_id', teacherId);
+            formData.append('ma_lop', teacherClassId);
+            formData.append('mota', 'Học liệu chuyên môn từ Giáo viên.');
+
+            try {
+                const response = await fetch('/api/teacher/materials/upload', {
+                    method: 'POST',
+                    body: formData // Gửi FormData thay vì JSON
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert("✨ Đăng học liệu thành công!");
+                    ten_el.value = '';
+                    file_el.value = '';
+                    updateFileName(file_el);
+                    loadTeacherMaterials();
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (err) { alert("Lỗi kết nối máy chủ!"); }
+        }
+
+        async function likeResource(id) {
+            try {
+                const response = await fetch(`/api/resources/like/${id}`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    loadTeacherMaterials(); // Tải lại để cập nhật số lượng
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function shareResource(id) {
+            if (!confirm("Bạn muốn chia sẻ tài liệu này vào nhóm tin nhắn của lớp?")) return;
+            try {
+                const response = await fetch(`/api/resources/share/${id}`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    alert("🚀 Tài liệu đã được gửi vào nhóm chat lớp thành công!");
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (err) { alert("Lỗi kết nối!"); }
+        }
+
+        async function deleteTeacherMaterial(id) {
+            if (!confirm("Xóa học liệu này?")) return;
+            try {
+                const response = await fetch(`/api/teacher/materials/${id}`, { method: 'DELETE' });
+                if ((await response.json()).success) loadTeacherMaterials();
+            } catch (err) { alert("Lỗi!"); }
+        }
+
+        let selectedResourceId = null;
+        let selectedStars = 0;
+
+        function rateResourcePrompt(id) {
+            selectedResourceId = id;
+            selectedStars = 0;
+            document.getElementById('unique-gv-resource-comment-input').value = '';
+            setRateStars(0);
+            toggleRateModal();
+            fetchComments(id);
+        }
+
+        async function fetchComments(id) {
+            const list = document.getElementById('comment-list');
+            list.innerHTML = '<p class="text-[10px] text-slate-400 italic">Đang tải...</p>';
+            try {
+                const res = await fetch(`/api/resources/comments/${id}`);
+                const result = await res.json();
+                if (result.success) {
+                    if (result.data.length === 0) {
+                        list.innerHTML = '<p class="text-[10px] text-slate-400 italic">Chưa có bình luận nào cho tài liệu này.</p>';
+                    } else {
+                        list.innerHTML = result.data.map(c => {
+                        const binhLuan = c.BinhLuan || c.binhluan || '';
+                        const soSao = c.SoSao || c.sosao || 0;
+                        const hoTen = c.HoTen || c.hoten || 'Người dùng';
+                        const ngay = c.NgayDanhGia || c.ngaydanhgia || new Date();
+
+                        return `
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-black text-slate-800">${hoTen}</span>
+                                    <div class="flex text-amber-400 text-[8px]">
+                                        ${Array(soSao).fill('<i class="ph-fill ph-star"></i>').join('')}
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-600 font-medium">${binhLuan || 'Chỉ đánh giá sao'}</p>
+                                <span class="text-[8px] text-slate-400 font-bold uppercase mt-1 block">${new Date(ngay).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                        `;
+                    }).join('');
+                    }
+                }
+            } catch (e) { list.innerHTML = 'Lỗi tải bình luận'; }
+        }
+
+        function toggleRateModal() {
+            const modal = document.getElementById('rate-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function setRateStars(count) {
+            selectedStars = count;
+            const stars = document.querySelectorAll('#star-rating button');
+            stars.forEach((btn, i) => {
+                if (i < count) {
+                    btn.classList.add('text-amber-400');
+                    btn.classList.remove('text-slate-200');
+                } else {
+                    btn.classList.remove('text-amber-400');
+                    btn.classList.add('text-slate-200');
+                }
+            });
+        }
+
+        async function submitRating() {
+            if (!selectedStars) return alert("Vui lòng chọn số sao đánh giá!");
+            const commentArea = document.getElementById('unique-gv-resource-comment-input');
+            const comment = commentArea.value.trim();
+
+            try {
+                const res = await fetch(`/api/v2/resource/comment/${selectedResourceId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stars: selectedStars, comment: comment })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert("✨ Cảm ơn thầy cô! Phản hồi đã được gửi thành công.");
+                    commentArea.value = '';
+                    fetchComments(selectedResourceId);
+                    loadTeacherMaterials();
+                }
+            } catch (e) { alert("Lỗi kết nối gửi phản hồi!"); }
+        }
+
+        async function updateSidebarBadges() {
+            try {
+                // 1. Đếm đơn xin nghỉ
+                const resL = await fetch('/api/teacher/pending-leaves-count');
+                const resultL = await resL.json();
+                const badgeL = document.getElementById('badge-leave');
+                if (badgeL) {
+                    if (resultL.success && resultL.count > 0) {
+                        badgeL.innerText = resultL.count;
+                        badgeL.classList.remove('hidden');
+                    } else { badgeL.classList.add('hidden'); }
+                }
+
+                // 2. Đếm tin nhắn chưa đọc
+                const resM = await fetch('/api/messages/unread-count');
+                const resultM = await resM.json();
+                const badgeM = document.getElementById('badge-messages');
+                if (badgeM) {
+                    if (resultM.success && resultM.count > 0) {
+                        badgeM.innerText = resultM.count;
+                        badgeM.classList.remove('hidden');
+                    } else { badgeM.classList.add('hidden'); }
+                }
+
+                // 3. Đếm thông báo mới
+                const resAnn = await fetch('/api/teacher/announcements');
+                const resEv = await fetch('/api/events/list');
+                const [ann, ev] = await Promise.all([resAnn.json(), resEv.json()]);
+                
+                let totalNew = 0;
+                if (ann.success) {
+                    const lastAnnId = localStorage.getItem('last_seen_ann_id') || 0;
+                    totalNew += ann.data.filter(a => a.MaThongBao > lastAnnId).length;
+                }
+                if (ev.success) {
+                    const lastEvId = localStorage.getItem('last_seen_event_id') || 0;
+                    totalNew += ev.data.filter(e => e.MaSuKien > lastEvId).length;
+                }
+
+                const badgeA = document.getElementById('badge-announcements');
+                if (badgeA) {
+                    if (totalNew > 0) {
+                        badgeA.innerText = totalNew;
+                        badgeA.classList.remove('hidden');
+                    } else { badgeA.classList.add('hidden'); }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserProfile();
+            updateSidebarBadges();
+            setInterval(updateSidebarBadges, 30000);
+        });
+    </script>
+</body>
+</html>

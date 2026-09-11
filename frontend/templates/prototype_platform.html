@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bản mẫu Nền tảng số | Facebook cho Giáo dục</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .platform-note { 
+            position: absolute; 
+            top: -10px; 
+            left: -10px; 
+            background: #ef4444; 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-size: 10px; 
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header (Giống Thanh Nav Facebook) -->
+    <header class="fixed top-0 w-full bg-white shadow-sm h-14 z-[100] border-b">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-full">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white">
+                    <i class="ph-fill ph-graduation-cap text-2xl"></i>
+                </div>
+                <div class="relative">
+                    <input type="text" placeholder="Tìm kiếm tài liệu, giáo viên..." class="bg-gray-100 rounded-full py-1.5 px-4 pl-10 outline-none w-64 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-2 text-gray-400"></i>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 text-gray-500">
+                <div class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 cursor-pointer"><i class="ph-fill ph-house text-xl"></i></div>
+                <div class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 cursor-pointer"><i class="ph-fill ph-users-three text-xl"></i></div>
+                <div class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 cursor-pointer"><i class="ph-fill ph-chat-circle-dots text-xl"></i></div>
+                <div class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 cursor-pointer text-indigo-600 relative">
+                    <i class="ph-fill ph-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <img src="https://i.pravatar.cc/100?u=teacher" class="w-8 h-8 rounded-full border">
+                <span class="font-bold text-sm">Thầy Nguyễn Văn A</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-20 flex gap-6">
+        
+        <!-- CỘT TRÁI: DANH MỤC MODULE -->
+        <aside class="w-[280px] space-y-4 hidden lg:block sticky top-20 h-fit">
+            <div class="relative p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <div class="platform-note">LÕI NỀN TẢNG</div>
+                <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white"><i class="ph-fill ph-user-circle"></i></div>
+                <span class="font-bold text-sm">Trang cá nhân Chuyên môn</span>
+            </div>
+            <div class="p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-users-four"></i></div>
+                <span class="font-bold text-sm">Lớp 6A1 (Lớp chủ nhiệm)</span>
+            </div>
+            <div class="p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center text-white"><i class="ph-fill ph-books"></i></div>
+                <span class="font-bold text-sm">Thư viện Học liệu Mở</span>
+            </div>
+            <div class="p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white"><i class="ph-fill ph-lightning"></i></div>
+                <span class="font-bold text-sm">Trung tâm AI Trợ giúp</span>
+            </div>
+            <div class="p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center text-white"><i class="ph-fill ph-chart-bar"></i></div>
+                <span class="font-bold text-sm">Báo cáo Thống kê Platform</span>
+            </div>
+            <hr class="my-4">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest pl-2">Lối tắt của bạn</p>
+            <div class="p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=40" class="w-8 h-8 rounded-lg">
+                <span class="font-medium text-xs">Phòng Giáo viên THCS</span>
+            </div>
+            <div class="p-2 rounded-xl hover:bg-gray-200 cursor-pointer flex items-center gap-3 transition-colors">
+                <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=40" class="w-8 h-8 rounded-lg">
+                <span class="font-medium text-xs">Cộng đồng Microsoft Educator</span>
+            </div>
+        </aside>
+
+        <!-- CỘT GIỮA: DÒNG THỜI GIAN (NEWSFEED) -->
+        <section class="flex-1 space-y-6 max-w-[680px]">
+            
+            <!-- Ô ĐĂNG BÀI -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border relative">
+                <div class="platform-note">TƯƠNG TÁC ĐA CHIỀU</div>
+                <div class="flex gap-3 mb-4">
+                    <img src="https://i.pravatar.cc/100?u=teacher" class="w-10 h-10 rounded-full">
+                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-500 flex-1 rounded-full text-left px-4 text-sm">Thầy A ơi, thầy đang nghĩ gì?</button>
+                </div>
+                <hr class="mb-4">
+                <div class="flex justify-around">
+                    <div class="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg cursor-pointer flex-1 justify-center"><i class="ph-fill ph-video text-red-500 text-xl"></i> <span class="text-xs font-bold text-gray-600">Bài giảng trực tiếp</span></div>
+                    <div class="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg cursor-pointer flex-1 justify-center"><i class="ph-fill ph-image text-green-500 text-xl"></i> <span class="text-xs font-bold text-gray-600">Đính kèm Tài liệu</span></div>
+                    <div class="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-xl cursor-pointer flex-1 justify-center"><i class="ph-fill ph-smiley text-amber-500 text-xl"></i> <span class="text-xs font-bold text-gray-600">Cảm xúc tiết học</span></div>
+                </div>
+            </div>
+
+            <!-- BÀI ĐĂNG 1: GIÁO VIÊN CHIA SẺ BÀI GIẢNG -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden relative">
+                <div class="platform-note">DỮ LIỆU DÙNG CHUNG</div>
+                <div class="p-4 flex justify-between">
+                    <div class="flex gap-3">
+                        <img src="https://i.pravatar.cc/100?u=math" class="w-10 h-10 rounded-full border">
+                        <div>
+                            <h5 class="font-bold text-sm">Cô Trần Thị B (Môn Toán)</h5>
+                            <p class="text-[10px] text-gray-400">14 phút trước · <i class="ph-bold ph-globe"></i> Công khai cho toàn khối 6</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 pb-3">
+                    <p class="text-sm">Vừa hoàn thành bộ Slide bài giảng chương "Số học 6". Thầy cô nào cần tải về dùng cho lớp mình thì click vào link bên dưới nhé! Có sẵn file PDF và PowerPoint.</p>
+                </div>
+                <div class="bg-indigo-50 p-6 border-y border-indigo-100 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 text-2xl shadow-sm italic font-black">PPT</div>
+                        <div>
+                            <p class="font-bold text-indigo-900 text-sm">SoHoc6_Chuong1_V1.pptx</p>
+                            <p class="text-[10px] text-indigo-400 uppercase font-bold tracking-widest">Tài nguyên được xác thực bởi Hệ thống</p>
+                        </div>
+                    </div>
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md">TẢI VỀ (Miễn phí)</button>
+                </div>
+                <div class="p-3 flex justify-between border-t border-gray-50 bg-gray-50/50">
+                    <div class="flex gap-1 items-center">
+                        <span class="flex -space-x-1">
+                            <span class="w-4 h-4 rounded-full bg-blue-500 border border-white flex items-center justify-center text-[8px] text-white"><i class="ph-fill ph-thumbs-up"></i></span>
+                            <span class="w-4 h-4 rounded-full bg-red-500 border border-white flex items-center justify-center text-[8px] text-white"><i class="ph-fill ph-heart"></i></span>
+                        </span>
+                        <span class="text-[11px] text-gray-500 ml-2">Bạn và 42 giáo viên khác</span>
+                    </div>
+                    <div class="text-[11px] text-gray-500">15 lượt tải · 8 bình luận</div>
+                </div>
+                <div class="px-4 py-2 flex justify-around border-t">
+                    <button class="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg text-gray-500 font-bold transition-colors w-full justify-center text-xs"><i class="ph-bold ph-thumbs-up"></i> Thích</button>
+                    <button class="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg text-gray-500 font-bold transition-colors w-full justify-center text-xs"><i class="ph-bold ph-chat-circle"></i> Bình luận</button>
+                    <button class="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg text-gray-500 font-bold transition-colors w-full justify-center text-xs"><i class="ph-bold ph-share-network"></i> Chia sẻ về Lớp</button>
+                </div>
+            </div>
+
+            <!-- BÀI ĐĂNG 2: TUYÊN DƯƠNG HỌC SINH -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden relative">
+                <div class="platform-note">HỆ SINH THÁI KHEN THƯỞNG</div>
+                <div class="p-4 flex gap-3">
+                    <img src="https://i.pravatar.cc/100?u=school" class="w-10 h-10 rounded-full border">
+                    <div>
+                        <h5 class="font-bold text-sm">Ban Giám Hiệu - EduNext Platform</h5>
+                        <p class="text-[10px] text-gray-400">1 giờ trước · <i class="ph-bold ph-megaphone"></i> Tin hệ thống</p>
+                    </div>
+                </div>
+                <div class="px-4 pb-4">
+                    <div class="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white text-center shadow-lg transform rotate-[-1deg]">
+                        <i class="ph-fill ph-crown text-4xl mb-2 text-amber-300"></i>
+                        <h4 class="text-xl font-black italic">BẢNG VÀNG HỌC TẬP TUẦN 2</h4>
+                        <p class="text-xs opacity-80 mb-4 tracking-widest uppercase">Chúc mừng các học sinh xuất sắc nhất Platform</p>
+                        <div class="flex justify-center -space-x-3 mb-4">
+                            <img src="https://i.pravatar.cc/100?u=1" class="w-12 h-12 rounded-full border-2 border-white">
+                            <img src="https://i.pravatar.cc/100?u=2" class="w-12 h-12 rounded-full border-2 border-white">
+                            <img src="https://i.pravatar.cc/100?u=3" class="w-12 h-12 rounded-full border-2 border-white">
+                        </div>
+                        <p class="font-bold text-sm italic">Học sinh MI TUYẾT NHI (Lớp 6A1) đạt Rating 5.0 tuyệt đối!</p>
+                    </div>
+                </div>
+                <div class="p-3 border-t flex justify-around">
+                    <div class="flex items-center gap-2 text-xs font-bold text-indigo-600 animate-pulse"><i class="ph-fill ph-sparkle"></i> PHỤ HUYNH VỪA CHÚC MỪNG</div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- CỘT PHẢI: BẠN BÈ & HOẠT ĐỘNG AI -->
+        <aside class="w-[300px] space-y-6 hidden xl:block sticky top-20 h-fit">
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm border relative">
+                <div class="platform-note">TRỢ LÝ AI</div>
+                <h5 class="font-bold text-xs uppercase text-gray-400 tracking-widest mb-4">Hoạt động của Trợ lý AI</h5>
+                <div class="space-y-4">
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center text-white text-lg"><i class="ph-fill ph-magic-wand"></i></div>
+                        <div>
+                            <p class="text-xs font-bold">AI vừa giúp 20 học sinh</p>
+                            <p class="text-[10px] text-gray-400 line-clamp-1">Giải thích hằng đẳng thức đáng nhớ...</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white text-lg"><i class="ph-fill ph-lightning"></i></div>
+                        <div>
+                            <p class="text-xs font-bold">AI vừa gợi ý 5 học liệu</p>
+                            <p class="text-[10px] text-gray-400 line-clamp-1">Phù hợp cho khối 6 tuần này.</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="w-full mt-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-50">Xem chi tiết hoạt động AI</button>
+            </div>
+
+            <div>
+                <h5 class="font-bold text-xs uppercase text-gray-400 tracking-widest mb-4 px-2">Liên hệ (Giáo viên Online)</h5>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                        <div class="relative">
+                            <img src="https://i.pravatar.cc/100?u=gv1" class="w-8 h-8 rounded-full">
+                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <span class="text-sm font-medium">Cô Lê Thị Hoa</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                        <div class="relative">
+                            <img src="https://i.pravatar.cc/100?u=gv2" class="w-8 h-8 rounded-full">
+                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <span class="text-sm font-medium">Thầy Trần Minh Hoàng</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                        <img src="https://i.pravatar.cc/100?u=gv3" class="w-8 h-8 rounded-full grayscale">
+                        <span class="text-sm font-medium text-gray-400">Cô Mai Thu Trang (Offline)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-indigo-600 rounded-2xl text-white shadow-lg overflow-hidden relative">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
+                <h5 class="text-sm font-bold italic mb-2">Bạn có muốn mở rộng Nền tảng?</h5>
+                <p class="text-[10px] opacity-80 leading-relaxed mb-4">Tích hợp thêm module Xe đưa đón, Suất ăn bán trú hoặc Thanh toán học phí chỉ qua 1 cổng API duy nhất.</p>
+                <button class="px-4 py-1.5 bg-white text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">Tìm hiểu API</button>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- Overlay Chú thích dành cho người dùng -->
+    <div class="fixed bottom-6 left-6 bg-slate-900/90 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/20 z-[200] max-w-sm animate-bounce">
+        <h6 class="font-black text-xs uppercase mb-2 text-indigo-400">👋 Đọc kỹ nhé bạn!</h6>
+        <p class="text-xs leading-relaxed italic">Giao diện này mô phỏng cách một <b>Nền tảng số</b> vận hành (giống Facebook). Bạn thấy không? Thay vì chỉ là các con số khô khan, mọi người được <b>KẾT NỐI</b> và <b>CHIA SẺ</b> dữ liệu liên tục theo thời gian thực.</p>
+    </div>
+
+</body>
+</html>

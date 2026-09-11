@@ -1,0 +1,605 @@
+{% extends "GV/layout.html" %}
+
+{% set active_page = 'assignments' %}
+
+{% block title %}EduNext Pro | Quản Lý & Giao Bài Tập{% endblock %}
+
+{% block extra_css %}
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+{% endblock %}
+
+{% block header_breadcrumb %}Teacher Space / <span class="text-brand-dark">Quản lý bài tập</span>{% endblock %}
+
+{% block header_right %}
+<button onclick="openCreateModal()" class="px-5 py-2.5 rounded-2xl ai-gradient text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-rose-200 hover:scale-105 transition-all flex items-center gap-2">
+    <i class="ph-bold ph-plus text-base"></i> Giao Bài Tập Mới
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-in fade-in duration-500">
+    
+    <!-- HEADER HERO BANNER -->
+    <section class="w-full">
+        <div class="ai-gradient rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl min-h-[160px] flex items-center justify-between">
+            <div class="relative z-10 space-y-2 max-w-xl">
+                <span class="px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Phân hệ Quản Lý Bài Tập THCS</span>
+                <h1 class="text-3xl font-black tracking-tighter italic">Nhiệm Vụ & Bài Tập Lớp Học</h1>
+                <p class="text-white/80 text-xs font-medium italic">Theo dõi tiến độ làm bài, giao bài kiểm tra và tự động đồng bộ kết quả vào Sổ Điểm điện tử.</p>
+            </div>
+            <i class="ph-fill ph-notebook absolute -right-6 -bottom-10 text-[180px] text-white/10 -rotate-12"></i>
+        </div>
+    </section>
+
+    <!-- BỘ LỌC TÌM KIẾM & THỐNG KÊ NHANH -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-brand-primary flex items-center justify-center text-2xl font-bold shadow-sm">
+                <i class="ph-bold ph-books"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng bài đã giao</p>
+                <h3 id="stat-total-assignments" class="text-2xl font-black text-slate-800">0</h3>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl font-bold shadow-sm">
+                <i class="ph-bold ph-chalkboard"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lớp phụ trách</p>
+                <h3 id="stat-total-classes" class="text-2xl font-black text-slate-800">0</h3>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-white p-4 rounded-[2rem] border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center gap-4 justify-between">
+            <div class="w-full sm:w-auto flex-1">
+                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 mb-1 block">Lọc theo Lớp Học</label>
+                <select id="filter-class-id" onchange="filterAssignments()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-brand-primary">
+                    <option value="ALL">--- Tất cả các lớp ---</option>
+                </select>
+            </div>
+            <div class="w-full sm:w-auto flex-1">
+                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 mb-1 block">Tìm kiếm bài tập</label>
+                <div class="relative">
+                    <input type="text" id="search-keyword" oninput="filterAssignments()" placeholder="Nhập tên bài tập..." class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-brand-primary">
+                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH BÀI TẬP ĐÃ GIAO -->
+    <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <h3 class="text-lg font-black text-slate-800 uppercase italic flex items-center gap-2">
+                <i class="ph-fill ph-list-checks text-brand-primary"></i> Danh Sách Bài Tập Đã Giao
+            </h3>
+            <span id="assignment-count-badge" class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-full uppercase">0 Bài tập</span>
+        </div>
+
+        <div id="assignments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-12 text-slate-400 italic text-sm">
+                <i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i>
+                <p>Đang tải danh sách bài tập...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 1: GIAO BÀI TẬP MỚI -->
+<div id="create-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[120] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
+        <div class="ai-gradient p-6 text-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                    <i class="ph-bold ph-plus text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black italic">Giao Bài Tập Mới</h3>
+                    <p class="text-[9px] font-bold text-white/70 uppercase">Tạo bài tập và phân loại cột điểm vào Sổ điểm</p>
+                </div>
+            </div>
+            <button onclick="closeCreateModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+                <i class="ph-bold ph-x"></i>
+            </button>
+        </div>
+
+        <div class="p-6 md:p-8 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Chọn Lớp Nhận Bài <span class="text-rose-500">*</span></label>
+                    <select id="modal-class-id" onchange="onSelectClassChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                        <option value="">--- Chọn lớp nhận bài tập ---</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Môn Học Giảng Dạy</label>
+                    <input id="modal-subject-display" type="text" readonly value="Đang nhận diện môn..." class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold text-brand-primary outline-none cursor-not-allowed">
+                    <input type="hidden" id="modal-subject-id" value="">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Hình Thức Đánh Giá / Cột Sổ Điểm <span class="text-rose-500">*</span></label>
+                <select id="modal-ma-loai" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                    <option value="0">📝 Bài tập tự luyện / Về nhà (Không ghi sổ điểm)</option>
+                    <option value="1">🗣️ Kiểm tra Miệng 1 (Cột M1 - Hệ số 1)</option>
+                    <option value="2">🗣️ Kiểm tra Miệng 2 (Cột M2 - Hệ số 1)</option>
+                    <option value="3">🗣️ Kiểm tra Miệng 3 (Cột M3 - Hệ số 1)</option>
+                    <option value="4">⏱️ Thường xuyên 15P (Cột TX1 - Hệ số 1)</option>
+                    <option value="5">⏱️ Thường xuyên 15P (Cột TX2 - Hệ số 1)</option>
+                    <option value="6">📑 Kiểm tra Giữa Kỳ (Cột GK - Hệ số 2)</option>
+                    <option value="7">🏆 Kiểm tra Cuối Kỳ (Cột CK - Hệ số 3)</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Bài Tập / Tiêu Đề <span class="text-rose-500">*</span></label>
+                <input id="modal-title" type="text" placeholder="Ví dụ: Kiểm tra 15 phút - Cấu trúc điều khiển Tin học 8" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Hạn Nộp Bài Tập <span class="text-rose-500">*</span></label>
+                <input id="modal-deadline" type="datetime-local" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Nội Dung / Lời Dặn <span class="text-rose-500">*</span></label>
+                <textarea id="modal-content" placeholder="Mô tả chi tiết yêu cầu bài làm hoặc lưu ý cho học sinh..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary h-20 custom-scrollbar"></textarea>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Đính kèm File/Ảnh Đề Bài</label>
+                <input id="modal-file" type="file" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none">
+            </div>
+
+            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button onclick="closeCreateModal()" class="px-5 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold text-xs uppercase hover:bg-slate-200 transition-all">Hủy Bỏ</button>
+                <button onclick="submitNewAssignment()" id="btn-submit-assignment" class="px-6 py-3 rounded-2xl ai-gradient text-white font-black text-xs uppercase shadow-lg shadow-rose-200 hover:scale-[1.02] transition-all">Xác Nhận Giao Bài</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 2: XEM DANH SÁCH BÀI NỘP CỦA HỌC SINH (GIAO DIỆN TỐI ƯU NHIỀU BÀI) -->
+<div id="submissions-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
+        
+        <!-- MODAL HEADER -->
+        <div class="ai-gradient p-6 text-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md text-xl">
+                    <i class="ph-bold ph-files"></i>
+                </div>
+                <div>
+                    <h3 id="view-assignment-title" class="text-lg font-black italic">Tên bài tập</h3>
+                    <p id="view-assignment-class" class="text-[10px] font-bold text-white/80 uppercase">Lớp học • Danh sách bài nộp</p>
+                </div>
+            </div>
+            <button onclick="closeSubmissionsModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
+
+        <!-- THANH CÔNG CỤ TÌM KIẾM & BỘ LỌC BÀI NỘP -->
+        <div class="p-4 bg-slate-50 border-b border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button onclick="filterSubmissionSubList('all')" id="sub-filter-all" class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white font-black text-xs uppercase shadow-sm transition-all">
+                    Tất cả (<span id="sub-count-total">0</span>)
+                </button>
+                <button onclick="filterSubmissionSubList('pending')" id="sub-filter-pending" class="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-black text-xs uppercase transition-all">
+                    Chưa chấm (<span id="sub-count-pending">0</span>)
+                </button>
+                <button onclick="filterSubmissionSubList('graded')" id="sub-filter-graded" class="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-black text-xs uppercase transition-all">
+                    Đã chấm (<span id="sub-count-graded">0</span>)
+                </button>
+            </div>
+
+            <div class="relative w-full sm:w-64">
+                <input type="text" id="search-student-sub" oninput="searchStudentSubmissions()" placeholder="Tìm học sinh..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-brand-primary">
+                <i class="ph-bold ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            </div>
+        </div>
+
+        <!-- DANH SÁCH BÀI NỘP (CÓ THANH CUỘN DỌC) -->
+        <div class="p-6 flex-1 overflow-y-auto custom-scrollbar space-y-4 bg-slate-100/40">
+            <div id="submissions-modal-list" class="space-y-4">
+                <div class="text-center py-10 text-slate-400 italic text-sm">Đang nạp danh sách bài nộp...</div>
+            </div>
+        </div>
+
+        <!-- MODAL FOOTER -->
+        <div class="p-4 bg-white border-t border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] font-bold text-emerald-600 italic flex items-center gap-1">
+                <i class="ph-bold ph-check-circle"></i> Điểm chấm sẽ tự động cập nhật vào Sổ Điểm.
+            </span>
+            <button onclick="closeSubmissionsModal()" class="px-6 py-2 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs uppercase hover:bg-slate-300 transition-all">Đóng</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let rawAssignmentsList = [];
+    let teacherClassesData = [];
+    let currentSubmissionsList = [];
+    let currentSubFilter = 'all';
+
+    async function fetchClasses() {
+        try {
+            const res = await fetch('/api/teacher/assignments/classes');
+            const result = await res.json();
+            if (result.success) {
+                teacherClassesData = result.data || [];
+                document.getElementById('stat-total-classes').innerText = teacherClassesData.length;
+
+                const filterSelect = document.getElementById('filter-class-id');
+                const modalSelect = document.getElementById('modal-class-id');
+                const optionsHtml = teacherClassesData.map(c => `<option value="${c.id}">${c.name || c.TenLop || 'Lớp học'}</option>`).join('');
+                
+                filterSelect.innerHTML = '<option value="ALL">--- Tất cả các lớp ---</option>' + optionsHtml;
+                modalSelect.innerHTML = '<option value="">--- Chọn lớp nhận bài tập ---</option>' + optionsHtml;
+
+                if (teacherClassesData.length > 0) {
+                    const defaultSubName = teacherClassesData[0].subject_name || "Tin học";
+                    const defaultSubId = teacherClassesData[0].subject_id || 6;
+                    const subDisplay = document.getElementById('modal-subject-display');
+                    const subIdInput = document.getElementById('modal-subject-id');
+                    if (subDisplay) subDisplay.value = defaultSubName;
+                    if (subIdInput) subIdInput.value = defaultSubId;
+                }
+            }
+        } catch (e) { console.error("Lỗi tải lớp:", e); }
+    }
+
+    function onSelectClassChange() {
+        const selectedClassId = document.getElementById('modal-class-id').value;
+        const found = teacherClassesData.find(c => String(c.id) === String(selectedClassId));
+        if (found) {
+            const subDisplay = document.getElementById('modal-subject-display');
+            const subIdInput = document.getElementById('modal-subject-id');
+            if (subDisplay) subDisplay.value = found.subject_name || "Tin học";
+            if (subIdInput) subIdInput.value = found.subject_id || 6;
+        }
+    }
+
+    async function fetchAssignments() {
+        const grid = document.getElementById('assignments-grid');
+        try {
+            const res = await fetch('/api/teacher/assignments/list');
+            const result = await res.json();
+            
+            if (result.success) {
+                rawAssignmentsList = result.data || [];
+                document.getElementById('stat-total-assignments').innerText = rawAssignmentsList.length;
+                renderAssignments(rawAssignmentsList);
+            } else {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-rose-500 font-bold text-sm">Lỗi: ${result.message}</div>`;
+            }
+        } catch (e) {
+            grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 italic text-sm">Không thể kết nối máy chủ</div>`;
+        }
+    }
+
+    function formatDeadline(isoString) {
+        if (!isoString) return 'Chưa đặt hạn';
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return isoString;
+        return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderAssignments(list) {
+        const grid = document.getElementById('assignments-grid');
+        const badge = document.getElementById('assignment-count-badge');
+        badge.innerText = `${list.length} Bài tập`;
+
+        if (list.length === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                    <i class="ph-bold ph-notebook text-4xl text-slate-300 mb-2"></i>
+                    <p class="text-slate-500 font-bold text-sm">Chưa tìm thấy bài tập nào</p>
+                    <p class="text-slate-400 text-xs italic mt-1">Bấm nút "Giao Bài Tập Mới" để tạo bài tập cho học sinh</p>
+                </div>`;
+            return;
+        }
+
+        grid.innerHTML = list.map(item => `
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-brand-primary/30 transition-all flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-3 py-1 bg-rose-50 text-brand-primary text-[10px] font-black rounded-full uppercase">
+                                ${item.TenLop || 'Lớp học'}
+                            </span>
+                            <span class="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black rounded-lg">
+                                ${item.TenLoaiDiem || 'Bài tập'}
+                            </span>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-400 italic">
+                            ${item.TenMonHoc || 'Môn học'}
+                        </span>
+                    </div>
+
+                    <h4 class="text-sm font-black text-slate-800 line-clamp-2 leading-snug">
+                        ${item.TieuDe}
+                    </h4>
+
+                    <p class="text-xs text-slate-500 font-medium line-clamp-2 italic bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        "${item.NoiDung || 'Không có mô tả nội dung'}"
+                    </p>
+
+                    <div class="p-2.5 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1">
+                        <p class="text-[9px] font-bold text-rose-500 flex items-center gap-1">
+                            <i class="ph-bold ph-clock"></i> Hạn nộp: ${formatDeadline(item.HanNop)}
+                        </p>
+                        ${item.FileDinhKem ? `
+                            <p class="text-[9px] font-bold text-blue-600">
+                                <a href="${item.FileDinhKem}" target="_blank" class="hover:underline flex items-center gap-1">
+                                    <i class="ph-bold ph-file-arrow-down"></i> Tải file đề bài đã đính kèm
+                                </a>
+                            </p>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-slate-400">
+                        <i class="ph-bold ph-calendar"></i> ${item.NgayTao || 'Mới giao'}
+                    </span>
+                    <button onclick="openSubmissionsModal('${item.MaBaiTap}', '${item.TieuDe.replace(/'/g, "\\'")}', '${item.TenLop || ''}')" class="px-3 py-1.5 bg-slate-900 hover:bg-brand-primary text-white text-[10px] font-black uppercase rounded-xl transition-all flex items-center gap-1">
+                        Xem Bài Nộp <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterAssignments() {
+        const classFilter = document.getElementById('filter-class-id').value;
+        const searchKeyword = document.getElementById('search-keyword').value.toLowerCase().trim();
+
+        const filtered = rawAssignmentsList.filter(item => {
+            const matchClass = (classFilter === 'ALL') || (String(item.MaLop) === String(classFilter));
+            const matchSearch = item.TieuDe.toLowerCase().includes(searchKeyword) || 
+                                (item.NoiDung && item.NoiDung.toLowerCase().includes(searchKeyword));
+            return matchClass && matchSearch;
+        });
+
+        renderAssignments(filtered);
+    }
+
+    function openCreateModal() { document.getElementById('create-modal').classList.remove('hidden'); }
+    function closeCreateModal() {
+        document.getElementById('create-modal').classList.add('hidden');
+        document.getElementById('modal-title').value = '';
+        document.getElementById('modal-content').value = '';
+        document.getElementById('modal-class-id').value = '';
+        document.getElementById('modal-file').value = '';
+        document.getElementById('modal-deadline').value = '';
+        document.getElementById('modal-ma-loai').value = '0';
+    }
+
+    async function openSubmissionsModal(assignmentId, title, className) {
+        document.getElementById('view-assignment-title').innerText = title;
+        document.getElementById('view-assignment-class').innerText = `Lớp: ${className} • Danh sách bài nộp`;
+        const listContainer = document.getElementById('submissions-modal-list');
+        listContainer.innerHTML = `<div class="text-center py-10 text-slate-400 italic text-sm"><i class="ph-bold ph-spinner animate-spin text-xl mb-1"></i><p>Đang tải bài nộp...</p></div>`;
+        document.getElementById('submissions-modal').classList.remove('hidden');
+
+        try {
+            const res = await fetch(`/api/teacher/assignments/${assignmentId}/submissions`);
+            const result = await res.json();
+
+            if (result.success) {
+                currentSubmissionsList = result.data || [];
+                updateSubmissionsStats(currentSubmissionsList);
+                renderSubmissionsList(currentSubmissionsList);
+            } else {
+                listContainer.innerHTML = `<div class="text-center py-8 text-rose-500 font-bold text-xs">Lỗi: ${result.message}</div>`;
+            }
+        } catch (e) {
+            listContainer.innerHTML = `<div class="text-center py-8 text-slate-400 italic text-xs">Không thể kết nối máy chủ.</div>`;
+        }
+    }
+
+    function updateSubmissionsStats(list) {
+        const total = list.length;
+        const graded = list.filter(s => s.DiemSo !== null && s.DiemSo !== undefined).length;
+        const pending = total - graded;
+
+        document.getElementById('sub-count-total').innerText = total;
+        document.getElementById('sub-count-graded').innerText = graded;
+        document.getElementById('sub-count-pending').innerText = pending;
+    }
+
+    function renderSubmissionsList(list) {
+        const listContainer = document.getElementById('submissions-modal-list');
+        
+        if (!list || list.length === 0) {
+            listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200 text-slate-400 italic text-xs">Không tìm thấy bài nộp nào phù hợp.</div>`;
+            return;
+        }
+
+        listContainer.innerHTML = list.map(sub => `
+            <div class="p-5 bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-rose-400 to-rose-600 text-white font-black rounded-2xl flex items-center justify-center text-sm shadow-md">
+                            ${sub.HoTen ? sub.HoTen.charAt(0) : 'H'}
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-black text-slate-800">${sub.HoTen}</h5>
+                            <p class="text-[9px] font-bold text-slate-400 flex items-center gap-1">
+                                <i class="ph-bold ph-clock"></i> Nộp lúc: ${sub.NgayNop || 'Vừa nộp'}
+                            </p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 ${sub.DiemSo !== null ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200'} text-[9px] font-black uppercase rounded-full">
+                        ${sub.DiemSo !== null ? 'Đã chấm: ' + sub.DiemSo + 'đ' : 'Chưa chấm'}
+                    </span>
+                </div>
+
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Lời nhắn / Bài làm của học sinh:</p>
+                    <p class="text-xs text-slate-700 italic font-medium">${sub.NoiDungNop || 'Học sinh nộp bài (Không kèm lời nhắn)'}</p>
+                    
+                    <div class="flex flex-wrap gap-3 pt-2.5">
+                        ${sub.HinhAnh ? `
+                            <div>
+                                <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Hình ảnh đính kèm:</p>
+                                <img src="${sub.HinhAnh}" class="w-28 h-20 object-cover rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:scale-105 transition-all" onclick="window.open('${sub.HinhAnh}')">
+                            </div>
+                        ` : ''}
+
+                        ${sub.FileDinhKem ? `
+                            <div class="flex items-end">
+                                <a href="${sub.FileDinhKem}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-blue-600 hover:bg-blue-50 transition-all shadow-sm">
+                                    <i class="ph-bold ph-file-arrow-down text-base"></i> Tải bài về xem
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-1 items-center">
+                    <div>
+                        <input type="number" id="score-input-${sub.MaBaiLam}" min="0" max="10" step="0.1" value="${sub.DiemSo !== null ? sub.DiemSo : ''}" placeholder="Điểm (0-10)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <input type="text" id="comment-input-${sub.MaBaiLam}" value="${sub.NhanXet || ''}" placeholder="Lời phê / Nhận xét của giáo viên..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                    </div>
+                    <button onclick="saveSingleGrade('${sub.MaBaiLam}')" class="py-2.5 ai-gradient text-white rounded-xl font-black text-xs uppercase shadow-md hover:scale-105 transition-all">
+                        Lưu Điểm
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterSubmissionSubList(type) {
+        currentSubFilter = type;
+        const allBtn = document.getElementById('sub-filter-all');
+        const pendingBtn = document.getElementById('sub-filter-pending');
+        const gradedBtn = document.getElementById('sub-filter-graded');
+
+        [allBtn, pendingBtn, gradedBtn].forEach(b => {
+            b.className = "px-3.5 py-1.5 rounded-xl font-black text-xs uppercase transition-all bg-slate-100 text-slate-600";
+        });
+
+        let filtered = currentSubmissionsList;
+        if (type === 'all') {
+            allBtn.className = "px-3.5 py-1.5 rounded-xl bg-slate-900 text-white font-black text-xs uppercase shadow-sm transition-all";
+        } else if (type === 'pending') {
+            pendingBtn.className = "px-3.5 py-1.5 rounded-xl bg-amber-500 text-white font-black text-xs uppercase shadow-sm transition-all";
+            filtered = currentSubmissionsList.filter(s => s.DiemSo === null || s.DiemSo === undefined);
+        } else if (type === 'graded') {
+            gradedBtn.className = "px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-black text-xs uppercase shadow-sm transition-all";
+            filtered = currentSubmissionsList.filter(s => s.DiemSo !== null && s.DiemSo !== undefined);
+        }
+
+        renderSubmissionsList(filtered);
+    }
+
+    function searchStudentSubmissions() {
+        const kw = document.getElementById('search-student-sub').value.toLowerCase().trim();
+        const filtered = currentSubmissionsList.filter(s => s.HoTen.toLowerCase().includes(kw));
+        renderSubmissionsList(filtered);
+    }
+
+    function closeSubmissionsModal() { document.getElementById('submissions-modal').classList.add('hidden'); }
+
+    async function saveSingleGrade(submissionId) {
+        const scoreInput = document.getElementById(`score-input-${submissionId}`);
+        const commentInput = document.getElementById(`comment-input-${submissionId}`);
+        if (!scoreInput) return;
+
+        const scoreVal = scoreInput.value;
+        const commentVal = commentInput ? commentInput.value.trim() : '';
+
+        if (scoreVal === '' || isNaN(scoreVal) || parseFloat(scoreVal) < 0 || parseFloat(scoreVal) > 10) { 
+            alert("Vui lòng nhập điểm hợp lệ từ 0 đến 10!"); 
+            return; 
+        }
+
+        try {
+            const res = await fetch('/api/teacher/submissions/grade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    submission_id: parseInt(submissionId), 
+                    score: parseFloat(scoreVal), 
+                    comment: commentVal 
+                })
+            });
+
+            const result = await res.json();
+            if (result.success) { 
+                alert("✨ Đã chấm điểm bài làm và TỰ ĐỘNG ĐỒNG BỘ VÀO SỔ ĐIỂM thành công!"); 
+                const currentAssignmentTitle = document.getElementById('view-assignment-title').innerText;
+                const matchAssignment = rawAssignmentsList.find(a => a.TieuDe === currentAssignmentTitle);
+                if (matchAssignment) {
+                    openSubmissionsModal(matchAssignment.MaBaiTap, matchAssignment.TieuDe, matchAssignment.TenLop || '');
+                }
+            } else { 
+                alert("Lỗi: " + result.message); 
+            }
+        } catch (e) { 
+            alert("Lỗi kết nối máy chủ!"); 
+        }
+    }
+
+    async function submitNewAssignment() {
+        const classId = document.getElementById('modal-class-id').value;
+        const maLoai = document.getElementById('modal-ma-loai').value;
+        const title = document.getElementById('modal-title').value.trim();
+        const content = document.getElementById('modal-content').value.trim();
+        const deadline = document.getElementById('modal-deadline').value;
+        const fileInput = document.getElementById('modal-file');
+        const btn = document.getElementById('btn-submit-assignment');
+
+        if (!classId || !title || !content) { 
+            alert("Vui lòng nhập đầy đủ thông tin bắt buộc!"); 
+            return; 
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Đang xử lý...";
+
+        const formData = new FormData();
+        formData.append('class_id', classId);
+        formData.append('ma_loai', maLoai);
+        formData.append('title', title);
+        formData.append('content', content);
+        if (deadline) formData.append('deadline', deadline);
+        if (fileInput.files.length > 0) formData.append('file', fileInput.files[0]);
+
+        try {
+            const res = await fetch('/api/teacher/assignments/create', { method: 'POST', body: formData });
+            const result = await res.json();
+            if (result.success) {
+                alert("✨ Đã giao bài tập mới thành công!");
+                closeCreateModal();
+                fetchAssignments();
+            } else { alert("Lỗi: " + result.message); }
+        } catch (e) { alert("Không thể gửi dữ liệu đến máy chủ."); } 
+        finally {
+            btn.disabled = false;
+            btn.innerText = "Xác Nhận Giao Bài";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchClasses();
+        fetchAssignments();
+    });
+</script>
+{% endblock %}

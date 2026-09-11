@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} | EduNext</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    },
+                    colors: {
+                        edunext: {
+                            primary: '#ee0033',
+                            dark: '#1e293b',
+                            bg: '#f8fafc',
+                            surface: '#ffffff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- CSS chung -->
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(238, 0, 51, 0.05);
+            color: #ee0033;
+        }
+
+        .sidebar-active {
+            background: #ee0033 !important;
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(238, 0, 51, 0.2);
+        }
+
+        .ai-gradient { background: linear-gradient(135deg, #4F46E5 0%, #ee0033 100%); }
+        #ai-panel {
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            clip-path: circle(0% at 100% 100%);
+        }
+        #ai-panel.open {
+            clip-path: circle(150% at 100% 100%);
+        }
+        .chat-bubble { box-shadow: 0 10px 25px -5px rgba(238, 0, 51, 0.2); }
+    </style>
+
+    <!-- CSS riêng từng page -->
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-edunext-bg font-sans text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR (Desktop & Mobile) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out">
+
+        <!-- Logo -->
+        <div class="p-6 flex items-center gap-3">
+            <div
+                class="w-10 h-10 bg-edunext-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-200">
+                <i class="ph-fill ph-graduation-cap text-2xl"></i>
+            </div>
+            <span class="font-extrabold text-xl text-edunext-dark">
+                Edu<span class="text-edunext-primary">Next</span>
+            </span>
+        </div>
+
+        <!-- Menu -->
+        <nav class="flex-1 px-4 py-2 space-y-1.5 overflow-y-auto">
+            {% if session.get('role') == 'Teacher' %}
+                <!-- MENU GIÁO VIÊN -->
+                <p class="px-4 pt-4 pb-2 text-[11px] font-bold text-slate-400 uppercase">Quản lý giảng dạy</p>
+                
+                <a href="/dashboard_teacher" class="sidebar-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-slate-500 transition {{ 'sidebar-active' if active_page == 'dashboard' }}">
+                    <i class="ph-fill ph-chart-pie text-xl"></i> Tổng quan
+                </a>
+                
+                <a href="/teacher/attendance" class="sidebar-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-slate-500 transition {{ 'sidebar-active' if active_page == 'attendance' }}">
+                    <i class="ph-fill ph-calendar-check text-xl"></i> Điểm danh lớp
+                </a>
+
+                <a href="/teacher/class-ledger" class="sidebar-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-slate-500 transition {{ 'sidebar-active' if active_page == 'ledger' }}">
+                    <i class="ph-fill ph-notebook text-xl"></i> Sổ cái lớp học
+                </a>
+
+                <a href="/kho-hoc-lieu" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'khohoclieu' }}">
+                    <i class="ph-fill ph-books text-xl"></i> Kho học liệu
+                </a>
+
+                <a href="/announcements" id="nav-ann-gv" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'announcements' }}">
+                    <i class="ph-fill ph-megaphone text-xl"></i> Thông báo
+                </a>
+
+                <a href="/teacher/messages" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'messages' }}">
+                    <i class="ph-fill ph-chat-circle-dots text-xl"></i> Tin nhắn & Trao đổi
+                </a>
+            {% else %}
+                <!-- MENU HỌC SINH -->
+                <p class="px-4 pt-4 pb-2 text-[11px] font-bold text-slate-400 uppercase">Học tập & Hoạt động</p>
+
+                <a href="/dashboard" class="sidebar-link flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-slate-500 transition {{ 'sidebar-active' if active_page == 'dashboard' }}">
+                    <i class="ph-fill ph-house text-xl"></i> Bàn học của tôi
+                </a>
+
+                <a href="/kho-hoc-lieu" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'khohoclieu' }}">
+                    <i class="ph-fill ph-books text-xl"></i> Kho học liệu
+                </a>
+
+                <a href="/bai-tap" class="sidebar-link flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'baitap' }}">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-exam text-xl"></i> Bài tập & Kiểm tra
+                    </div>
+                </a>
+
+                <a href="/thoi-khoa-bieu" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'thoikhoabieu' }}">
+                    <i class="ph-fill ph-calendar-check text-xl"></i> Thời khóa biểu
+                </a>
+
+                <a href="/bang-thanh-tich" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'bangthanhtich' }}">
+                    <i class="ph-fill ph-medal text-xl"></i> Bảng thành tích
+                </a>
+
+                <a href="/student/announcements" id="nav-ann-hs" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'announcements' }}">
+                    <i class="ph-fill ph-megaphone text-xl"></i> Thông báo & Sự kiện
+                </a>
+
+                <a href="/hoc-sinh/tin-nhan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 font-medium transition {{ 'sidebar-active' if active_page == 'messages' }}">
+                    <i class="ph-fill ph-chat-circle-dots text-xl"></i> Tin nhắn & Trao đổi
+                </a>
+            {% endif %}
+        </nav>
+
+        <!-- Footer -->
+        <div class="p-4 border-t space-y-2">
+
+            <button onclick="window.location.href='/'"
+                class="w-full flex items-center gap-3 p-2.5 text-red-600 hover:bg-red-50 rounded-xl font-bold text-sm">
+                <i class="ph-bold ph-sign-out"></i> Đăng xuất
+            </button>
+
+            <a href="/profile"
+                class="p-3 rounded-2xl flex items-center gap-3 border shadow-sm {{ 'sidebar-active' if active_page == 'profile' }}">
+
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-10 h-10 rounded-full">
+
+                <div>
+                    <p class="font-bold text-sm">
+                        {{ session.get('fullname') or session.get('ho_ten', 'Người dùng') }}
+                    </p>
+                    <p class="text-xs text-slate-400">
+                        {{ session.get('class_name', '') }}
+                    </p>
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- HEADER -->
+        <header class="bg-white border-b px-4 md:px-8 py-4 flex justify-between items-center relative z-30">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Menu Toggle -->
+                <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center text-2xl">
+                    <i id="sidebar-toggle-icon" class="ph-bold ph-list"></i>
+                </button>
+                <div>
+                    <h2 class="text-xl font-bold">
+                        {% block header_title %}{% endblock %}
+                    </h2>
+                    <p class="text-xs text-slate-500">
+                        Thứ Sáu, 17 Tháng 4, 2026
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Chuông thông báo PRO (Dropdown) -->
+                <div class="relative">
+                    <button id="bell-btn-hs"
+                        class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all flex items-center justify-center relative shadow-sm group">
+                        <i class="ph-bold ph-bell text-xl"></i>
+                        <span id="notif-count-hs"
+                            class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-600 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white hidden shadow-sm animate-bounce">0</span>
+                    </button>
+
+                    <!-- BẢNG THÔNG BÁO NHANH -->
+                    <div id="notif-dropdown-hs"
+                        class="absolute right-0 top-full mt-4 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden hidden transition-all transform origin-top-right z-50">
+                        <div class="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                            <h3 class="font-black text-slate-700 text-[10px] uppercase tracking-wider">Thông báo mới nhất</h3>
+                            <button onclick="window.location.href='/student/announcements'"
+                                class="text-[9px] text-edunext-primary font-black hover:underline uppercase">Xem tất cả</button>
+                        </div>
+                        <div id="notif-list-hs" class="max-h-[350px] overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                            <div class="p-8 text-center text-slate-400">
+                                <i class="ph-bold ph-circle-notch animate-spin text-2xl mb-2 block"></i>
+                                <p class="text-[10px] italic">Đang kiểm tra...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Logic đóng mở dropdown
+                    const bellBtn = document.getElementById('bell-btn-hs');
+                    const dropdown = document.getElementById('notif-dropdown-hs');
+
+                    if (bellBtn && dropdown) {
+                        bellBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            dropdown.classList.toggle('hidden');
+                        });
+
+                        document.addEventListener('click', () => {
+                            dropdown.classList.add('hidden');
+                        });
+
+                        dropdown.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                    }
+                </script>
+
+                <a href="/profile">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-10 h-10 rounded-full border">
+                </a>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            {% block content %}{% endblock %}
+
+            <!-- BONG BÓNG CHAT AI DÀNH CHO HỌC SINH -->
+            <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
+                <button onclick="toggleAI()" class="chat-bubble w-14 h-14 ai-gradient text-white rounded-full flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition-all group relative">
+                    <i class="ph-fill ph-sparkle"></i>
+                    <span class="absolute right-full mr-4 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap uppercase tracking-widest hidden md:block">Hỏi Study Buddy AI</span>
+                </button>
+            </div>
+
+            <div id="ai-panel" class="fixed bottom-24 right-4 left-4 md:right-6 md:left-auto md:w-96 h-[550px] max-h-[calc(100vh-150px)] bg-white rounded-[2.8rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-[60] border border-slate-100 flex flex-col overflow-hidden hidden">
+                <div class="p-6 ai-gradient text-white flex items-center justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-student text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black uppercase italic tracking-tight">Gemini Study Buddy</h3>
+                            <p class="text-[8px] font-bold text-white/70 uppercase">Trợ lý học tập thông minh 24/7</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleAI()" class="text-white/60 hover:text-white transition-colors">
+                        <i class="ph-bold ph-x text-xl"></i>
+                    </button>
+                </div>
+
+                <div id="ai-chat-container" class="flex-1 p-6 overflow-y-auto space-y-4 bg-slate-50/30">
+                    <div class="flex flex-col items-start mb-4">
+                        <div class="bg-white text-slate-700 p-4 rounded-2xl rounded-tl-none text-[11px] md:text-xs font-bold shadow-sm border border-slate-100 leading-relaxed max-w-[85%]">
+                            Chào bạn! Tôi là Gemini Study Buddy. Tôi có thể giúp bạn giải bài tập, tóm tắt bài giảng hoặc lập kế hoạch ôn thi. Bạn cần mình hỗ trợ gì không? 🚀
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white border-t border-slate-50">
+                    <div class="relative">
+                        <input type="text" id="ai-input" placeholder="Hỏi mình về bài tập hôm nay..." 
+                            class="w-full pl-5 pr-14 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-edunext-primary/20 outline-none transition-all">
+                        <button onclick="askAI()" id="ai-send-btn" class="absolute right-2 top-2 w-10 h-10 ai-gradient text-white rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition-all">
+                            <i class="ph-fill ph-paper-plane-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+    <!-- JS riêng -->
+    {% block extra_js %}{% endblock %}
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-20 right-6 z-[100] flex flex-col gap-3"></div>
+
+    <script>
+        // --- HỆ THỐNG TOAST REAL-TIME ---
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const id = 'toast-' + Date.now();
+            const icon = type === 'success' ? 'ph-check-circle' : (type === 'warning' ? 'ph-warning-circle' : 'ph-info');
+            const bg = type === 'success' ? 'border-emerald-500' : (type === 'warning' ? 'border-amber-500' : 'border-indigo-500');
+            
+            const html = `
+                <div id="${id}" class="bg-white border-l-4 ${bg} shadow-2xl rounded-xl p-4 w-72 animate-in slide-in-from-right duration-500 flex gap-3 items-start">
+                    <div class="text-2xl ${type === 'success' ? 'text-emerald-500' : (type === 'warning' ? 'text-amber-500' : 'text-indigo-500')}">
+                        <i class="ph-fill ${icon}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-black text-[11px] uppercase tracking-wider text-slate-800">${title}</p>
+                        <p class="text-[10px] text-slate-500 font-medium leading-relaxed mt-0.5">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-slate-500 transition-colors">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('animate-out', 'fade-out', 'slide-out-to-right');
+                    setTimeout(() => el.remove(), 500);
+                }
+            }, 5000);
+        }
+
+        function formatDateVN_layout(dateStr) {
+            if (!dateStr) return "";
+            try {
+                const date = new Date(dateStr);
+                return new Intl.DateTimeFormat('vi-VN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(date);
+            } catch (e) { return dateStr; }
+        }
+
+        let lastMessageCount = 0;
+        let lastAnnId = 0;
+        let lastEventId = 0;
+        let isFirstPoll = true;
+
+        async function checkNewAnnouncements() {
+            try {
+                // 1. GỌI API POLL (REAL-TIME LIGHT)
+                const pollRes = await fetch('/api/notifications/poll').then(r => r.json());
+                if (pollRes.success) {
+                    // Nếu có tin nhắn mới chưa đọc
+                    if (pollRes.new_messages > lastMessageCount) {
+                        if (!isFirstPoll) {
+                            showToast("Tin nhắn mới", "Bạn có tin nhắn mới từ Giáo viên/Nhà trường. Kiểm tra ngay!", "success");
+                        }
+                        lastMessageCount = pollRes.new_messages;
+                    }
+                    
+                    // Nếu có thông báo hoặc sự kiện mới thực sự thay đổi (ID lớn hơn ID cũ)
+                    if (pollRes.latest_ann_id > lastAnnId || pollRes.latest_event_id > lastEventId) {
+                        if (!isFirstPoll) {
+                            if (pollRes.latest_ann_id > lastAnnId) {
+                                showToast("Bảng tin mới", "Có một thông báo mới vừa được đăng. Bấm vào chuông để xem!", "info");
+                            }
+                            if (pollRes.latest_event_id > lastEventId) {
+                                showToast("Sự kiện mới", "Có một sự kiện/hoạt động mới vừa được tạo. Bấm vào chuông để xem!", "info");
+                            }
+                            // Phát tín hiệu làm mới danh sách
+                            window.dispatchEvent(new CustomEvent('refresh-announcements'));
+                        }
+                        lastAnnId = pollRes.latest_ann_id;
+                        lastEventId = pollRes.latest_event_id;
+                    }
+                }
+                isFirstPoll = false;
+
+                // 2. TẢI CHI TIẾT ĐỂ HIỆN TRÊN CHUÔNG
+                let annData = [];
+                let eventData = [];
+                
+                const roleSuffix = "{{ session.get('role') }}";
+                const annApiUrl = roleSuffix === 'Teacher' ? '/api/teacher/announcements' : '/api/student/announcements';
+
+                try {
+                    const annRes = await fetch(annApiUrl).then(r => r.json());
+                    if (annRes.success) annData = annRes.data;
+                } catch (e) {}
+
+                try {
+                    const eventRes = await fetch('/api/events/list').then(r => r.json());
+                    if (eventRes.success) eventData = eventRes.data;
+                } catch (e) {}
+
+                const annKey = 'last_seen_ann_id_' + roleSuffix;
+                const eventKey = 'last_seen_event_id_' + roleSuffix;
+                
+                const localAnnId = parseInt(localStorage.getItem(annKey) || 0);
+                const localEventId = parseInt(localStorage.getItem(eventKey) || 0);
+
+                let allItems = [];
+                let newCount = 0;
+
+                annData.forEach(item => {
+                    const isNew = parseInt(item.MaThongBao) > localAnnId;
+                    if (isNew) newCount++;
+                    allItems.push({
+                        ...item, type: 'ann', id: parseInt(item.MaThongBao),
+                        date: new Date(item.NgayGui), isNew: isNew
+                    });
+                });
+
+                eventData.forEach(item => {
+                    const isNew = parseInt(item.MaSuKien) > localEventId;
+                    if (isNew) newCount++;
+                    allItems.push({
+                        ...item, type: 'event', id: parseInt(item.MaSuKien),
+                        date: new Date(item.NgayTao), isNew: isNew
+                    });
+                });
+
+                allItems.sort((a, b) => b.date - a.date);
+
+                const notifCount = document.getElementById('notif-count-hs');
+                const notifList = document.getElementById('notif-list-hs');
+
+                if (notifCount) {
+                    if (newCount > 0) {
+                        notifCount.innerText = newCount > 9 ? '9+' : newCount;
+                        notifCount.classList.remove('hidden');
+                    } else {
+                        notifCount.classList.add('hidden');
+                    }
+                }
+
+                if (notifList) {
+                    const annUrlBase = roleSuffix === 'Teacher' ? '/announcements' : '/student/announcements';
+                    if (allItems.length > 0) {
+                        notifList.innerHTML = allItems.slice(0, 10).map(item => {
+                            const isEvent = item.type === 'event';
+                            const targetUrl = isEvent ? `${annUrlBase}?tab=events&id=${item.id}` : `${annUrlBase}?id=${item.id}`;
+                            return `
+                                <div onclick="window.location.href='${targetUrl}'" 
+                                     class="p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer flex gap-3 items-start border-b border-slate-50 last:border-0 ${item.isNew ? 'bg-blue-50/30' : ''}">
+                                    <div class="w-8 h-8 rounded-lg ${isEvent ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'} flex items-center justify-center text-sm flex-shrink-0">
+                                        <i class="ph-fill ${isEvent ? 'ph-calendar' : 'ph-megaphone'}"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-[10px] font-black text-slate-800 truncate">${item.TieuDe}</p>
+                                        <p class="text-[9px] text-slate-500 line-clamp-1 mt-0.5">${item.NoiDung}</p>
+                                        <p class="text-[8px] font-bold text-slate-400 mt-1 uppercase">${formatDateVN_layout(item.date)}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        notifList.innerHTML = '<div class="p-8 text-center text-slate-400 text-[10px] italic">Không có thông báo nào</div>';
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+        
+        window.addEventListener('load', () => {
+            checkNewAnnouncements();
+            // Poll mỗi 5 giây để tạo cảm giác Real-time
+            setInterval(checkNewAnnouncements, 5000);
+        });
+
+        // --- LOGIC CHAT AI GEMINI ---
+        function toggleAI() {
+            const panel = document.getElementById('ai-panel');
+            if(panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                setTimeout(() => panel.classList.add('open'), 10);
+            } else {
+                panel.classList.remove('open');
+                setTimeout(() => panel.classList.add('hidden'), 500);
+            }
+        }
+
+        async function askAI() {
+            const input = document.getElementById('ai-input');
+            const btn = document.getElementById('ai-send-btn');
+            const message = input.value.trim();
+            if (!message) return;
+
+            renderAIMessage('user', message);
+            input.value = '';
+            
+            btn.disabled = true;
+            const loadingId = 'ai-loading-' + Date.now();
+            renderAIMessage('ai', 'Để mình suy nghĩ chút...', loadingId);
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: message,
+                        context: `Đối tượng: Học sinh. Tên học sinh: ${document.querySelector('.font-bold.text-sm')?.innerText || 'Bạn'}`
+                    })
+                });
+                const result = await response.json();
+                
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+
+                if (result.success) {
+                    renderAIMessage('ai', result.reply);
+                } else {
+                    renderAIMessage('ai', "Lỗi: " + result.message);
+                }
+            } catch (error) {
+                document.getElementById(loadingId)?.remove();
+                renderAIMessage('ai', "Không thể kết nối tới Study Buddy.");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function renderAIMessage(role, text, id = null) {
+            const container = document.getElementById('ai-chat-container');
+            const isUser = role === 'user';
+            const html = `
+                <div id="${id || ''}" class="flex flex-col ${isUser ? 'items-end' : 'items-start'} mb-4 animate-in slide-in-from-bottom-2 duration-300">
+                    <div class="${isUser ? 'ai-gradient text-white' : 'bg-white text-slate-700 shadow-sm border border-slate-100'} p-4 rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} text-[11px] md:text-xs font-bold leading-relaxed max-w-[85%]">
+                        ${text.replace(/\n/g, '<br>')}
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const icon = document.getElementById('sidebar-toggle-icon');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                icon.className = "ph-bold ph-list";
+            } else {
+                icon.className = "ph-bold ph-x";
+            }
+        }
+
+        document.getElementById('ai-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askAI();
+        });
+    </script>
+
+</body>
+
+</html>

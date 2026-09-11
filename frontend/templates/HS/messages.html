@@ -1,0 +1,202 @@
+{% extends "HS/layout.html" %}
+{% set active_page = 'messages' %}
+
+{% block title %}Tin nhắn{% endblock %}
+
+{% block header_title %}Tin nhắn lớp học{% endblock %}
+
+{% block extra_css %}
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+    .msg-bubble { max-width: 75%; position: relative; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-[calc(100vh-12rem)] bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+    <!-- CONTACT LIST -->
+    <div class="w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
+        <div class="p-6 border-b border-slate-100 bg-white">
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Danh sách trò chuyện</h3>
+            <div class="relative">
+                <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                <input type="text" placeholder="Tìm kiếm..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-red-500 transition-colors">
+            </div>
+        </div>
+        <div id="contact-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+            <div class="p-8 text-center text-slate-400 text-xs italic">Đang tải...</div>
+        </div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="flex-1 flex flex-col bg-white">
+        <div id="chat-header" class="h-20 px-8 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div id="chat-avatar" class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
+                    <i class="ph-fill ph-users-three text-2xl"></i>
+                </div>
+                <div>
+                    <h4 id="chat-name" class="font-black text-slate-800 text-sm italic">Chọn nhóm để bắt đầu</h4>
+                    <p id="chat-status" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Vui lòng chọn một cuộc trò chuyện</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="message-container" class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/20 flex flex-col custom-scrollbar">
+            <div class="m-auto text-center opacity-10">
+                <i class="ph-fill ph-chat-circle-dots text-[120px] text-slate-400"></i>
+                <p class="font-black uppercase tracking-[0.2em] mt-4">Kết nối lớp học</p>
+            </div>
+        </div>
+
+        <div class="p-6 bg-white border-t border-slate-100">
+            <div class="flex gap-4 p-2 bg-slate-50 rounded-[2rem] border border-slate-100 focus-within:border-red-500 transition-all">
+                <input id="msg-input" type="text" placeholder="Nhập tin nhắn vào nhóm lớp..." 
+                       class="flex-1 px-6 py-2 bg-transparent text-xs font-bold outline-none border-none" 
+                       onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button onclick="sendMessage()" class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all">
+                    <i class="ph-fill ph-paper-plane-tilt text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    let currentReceiverId = null;
+    let pollInterval = null;
+    let currentUserId = null;
+
+    async function loadContacts() {
+        try {
+            const response = await fetch('/api/student/chat-contacts');
+            const result = await response.json();
+            if (result.success) {
+                const list = document.getElementById('contact-list');
+                list.innerHTML = result.data.map(con => `
+                    <div onclick="selectGroup(${con.MaNguoiDung}, '${con.HoTen}', ${con.IsGroup})" 
+                         class="p-4 rounded-2xl hover:bg-white hover:shadow-sm cursor-pointer transition-all flex items-center gap-4 group">
+                        <div class="w-12 h-12 ${con.IsGroup ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all">
+                            <i class="ph-fill ${con.IsGroup ? 'ph-users-three' : 'ph-user-circle'} text-xl"></i>
+                        </div>
+                        <div class="flex-1 overflow-hidden">
+                            <p class="font-black text-slate-800 text-xs truncate">${con.HoTen}</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">${con.TenCon || 'Liên lạc hệ thống'}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Mặc định chọn liên lạc đầu tiên
+                if (result.data.length > 0) {
+                    selectGroup(result.data[0].MaNguoiDung, result.data[0].HoTen, result.data[0].IsGroup);
+                }
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    async function selectGroup(id, name, isGroup = true) {
+        currentReceiverId = id;
+        document.getElementById('chat-name').innerText = name;
+        document.getElementById('chat-status').innerText = isGroup ? "Trực tuyến • Nhóm thảo luận" : "Trực tuyến • Trò chuyện cá nhân";
+        loadChatHistory();
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = setInterval(loadChatHistory, 3000);
+    }
+
+    async function deleteMsg(id) {
+        if (!confirm("Bạn chắc chắn muốn xóa tin nhắn này?")) return;
+        try {
+            const res = await fetch(`/api/messages/delete/${id}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (result.success) {
+                loadChatHistory();
+            } else {
+                alert(result.message);
+            }
+        } catch (e) { alert("Lỗi kết nối!"); }
+    }
+
+    async function loadChatHistory() {
+        if (!currentReceiverId) return;
+        try {
+            const response = await fetch(`/api/messages/history?with_user_id=${currentReceiverId}`);
+            const result = await response.json();
+            if (result.success) {
+                currentUserId = Number(result.current_user_id);
+                const container = document.getElementById('message-container');
+                
+                container.innerHTML = result.data.map(msg => {
+                    const isMe = Number(msg.MaNguoiGui) === currentUserId;
+                    const senderName = isMe ? "" : `<p class="text-[9px] font-black text-red-600 mb-1 uppercase tracking-tighter">${msg.TenNguoiGui || 'Bạn học'}</p>`;
+                    
+                    // Hàm nhận diện link và xuống dòng
+                    const formattedContent = msg.NoiDung
+                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="underline text-blue-200 hover:text-white transition-colors">$1</a>')
+                        .replace(/\/kho-hoc-lieu\?id=(\d+)/g, '<a href="/kho-hoc-lieu?id=$1" class="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-white text-rose-600 rounded-xl text-[10px] font-black uppercase shadow-sm hover:bg-rose-50 transition-all">👉 Đi tới tài liệu</a>')
+                        .replace(/(\/uploads\/[^\s]+)/g, '<a href="$1" target="_blank" class="block mt-2 underline text-blue-100 hover:text-white transition-colors italic">📎 Tải tệp trực tiếp</a>')
+                        .replace(/\n/g, '<br>');
+
+                    const deleteBtn = isMe ? `
+                        <button onclick="deleteMsg(${msg.MaTraoDoi})" class="absolute -left-8 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all" title="Xóa tin nhắn">
+                            <i class="ph-bold ph-trash text-xs"></i>
+                        </button>
+                    ` : '';
+
+                    return `
+                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full animate-in fade-in slide-in-from-bottom-2 duration-300 group">
+                            <div class="msg-bubble relative px-5 py-3 rounded-2xl text-[11px] font-bold leading-relaxed shadow-sm ${isMe ? 'bg-red-600 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'}">
+                                ${deleteBtn}
+                                ${senderName}
+                                <div class="whitespace-pre-wrap">${formattedContent}</div>
+                                <p class="text-[7px] mt-1 ${isMe ? 'text-white/60 text-right' : 'text-slate-400'} uppercase font-black tracking-widest">
+                                    ${new Date(msg.NgayGui).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('msg-input');
+        const content = input.value.trim();
+        if (!content || !currentReceiverId) return;
+
+        try {
+            const response = await fetch('/api/messages/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiver_id: currentReceiverId, content: content })
+            });
+            if (response.ok) {
+                input.value = '';
+                loadChatHistory();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    window.onload = async () => {
+        await loadContacts();
+        
+        // Tự động chọn nhóm nếu có with_id trên URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const withId = urlParams.get('with_id');
+        if (withId) {
+            // Đợi một chút để danh sách render xong
+            setTimeout(() => {
+                const contacts = document.querySelectorAll('#contact-list > div');
+                contacts.forEach(el => {
+                    if (el.getAttribute('onclick').includes(`selectGroup(${withId}`)) {
+                        el.click();
+                    }
+                });
+            }, 500);
+        }
+    };
+</script>
+{% endblock %}

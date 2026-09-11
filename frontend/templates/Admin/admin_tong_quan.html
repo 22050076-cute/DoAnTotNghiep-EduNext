@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNext Admin - Hệ Thống Quản Lý</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        },
+                        darkbg: '#0f172a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- 1. SIDEBAR (BÊN TRÁI) -->
+    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+        <div>
+            <!-- Logo -->
+            <div class="flex items-center gap-3 px-3 py-3 mb-6">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-rose-500/30">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="text-xl font-bold text-white tracking-wide">Edu<span class="text-primary-500">Admin</span></span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="space-y-6">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">Hệ thống</p>
+                    <a href="/admin/tong-quan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-600/15 text-primary-500 font-medium border-l-4 border-primary-500 transition-all">
+                        <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                        <span>Tổng quan trường</span>
+                    </a>
+                    <a href="/admin/quan-ly-lop" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium transition-all mt-1">
+                        <i class="fa-solid fa-sitemap w-5 text-center"></i>
+                        <span>Quản lý Khối & Lớp</span>
+                    </a>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">Tài khoản & Logs</p>
+                    <a href="/admin/quan-ly-tai-khoan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium transition-all">
+                        <i class="fa-solid fa-user-gear w-5 text-center"></i>
+                        <span>Quản lý Tài khoản</span>
+                    </a>
+                    <a href="/admin/nhat-ky-he-thong" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium transition-all mt-1">
+                        <i class="fa-solid fa-receipt w-5 text-center"></i>
+                        <span>Nhật ký Hệ thống</span>
+                    </a>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">Cài đặt</p>
+                    <a href="/admin/cau-hinh" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium transition-all">
+                        <i class="fa-solid fa-sliders w-5 text-center"></i>
+                        <span>Cấu hình EduNext</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- System Status Mini Card -->
+        <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+            <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-slate-400">Trạng thái Server</span>
+                <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 99.9%
+                </span>
+            </div>
+            <p class="text-[11px] text-slate-500">Gemini 2.0 Flash Core: Active</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- TOP NAVBAR -->
+        <header class="h-16 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between gap-4 z-10 flex-shrink-0">
+            <div class="relative w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" placeholder="Tìm kiếm lớp học, học sinh, giáo viên..." class="w-full pl-9 pr-4 py-2 bg-slate-100/80 border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all">
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="/admin/quan-ly-tai-khoan" class="px-3 py-1.5 bg-primary-50 text-primary-600 hover:bg-primary-100 rounded-xl text-xs font-semibold transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Thêm Tài Khoản
+                </a>
+
+                <button class="relative w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full"></span>
+                </button>
+
+                <div class="h-6 w-[1px] bg-slate-200"></div>
+
+                <div class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-9 h-9 rounded-xl bg-slate-800 text-white font-bold flex items-center justify-center text-xs ring-2 ring-primary-500/30">
+                        SA
+                    </div>
+                    <div class="text-left hidden sm:block">
+                        <p class="text-xs font-bold text-slate-800 leading-none">Super Admin</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">admin@edunext.edu.vn</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                <!-- CỘT CHÍNH (Chiếm 2/3) -->
+                <div class="xl:col-span-2 space-y-6">
+
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900">Tổng quan Hệ thống EduNext</h1>
+                        <p class="text-xs text-slate-500">Báo cáo hoạt động học tập & hạ tầng theo thời gian thực</p>
+                    </div>
+
+                    <!-- 4 STAT CARDS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Tổng Giáo Viên</p>
+                                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-teachers">0</h3>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-slate-400 font-medium">
+                                <i class="fa-solid fa-user-check mr-1 text-blue-500"></i> Đang giảng dạy
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Tổng Học Sinh</p>
+                                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-students">0</h3>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-slate-400 font-medium">
+                                <i class="fa-solid fa-users mr-1 text-rose-500"></i> Đang theo học
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Số Lớp Học</p>
+                                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-classes">0</h3>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-door-open"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-slate-400 font-medium">
+                                <span>Khối 6, 7, 8, 9</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Chuyên Cần Hôm Nay -->
+                        <div class="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all relative">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Chuyên Cần Hôm Nay</p>
+                                <select id="class-attendance-filter" class="text-xs bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all cursor-pointer">
+                                    <option value="all">Tất cả lớp</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-slate-800" id="stat-attendance-percent">0%</h3>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                                    <i class="fa-regular fa-calendar-check"></i>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center text-xs text-slate-400 font-medium" id="stat-attendance-detail">
+                                <i class="fa-solid fa-clock-rotate-left mr-1 text-emerald-500"></i> <span id="stat-attendance-text">0 Hiện diện / 0 Vắng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG TRẠNG THÁI CHUYÊN CẦN TỪNG LỚP -->
+                    <div class="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Tiến độ điểm danh hôm nay</h2>
+                                <p class="text-xs text-slate-400">Trạng thái chuyên cần chi tiết theo từng lớp học</p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="text-xs text-slate-500 bg-slate-50 border-b border-slate-200/80">
+                                    <tr>
+                                        <th class="px-4 py-3 font-semibold rounded-tl-lg w-1/5">Lớp</th>
+                                        <th class="px-4 py-3 font-semibold w-1/5">Sĩ số</th>
+                                        <th class="px-4 py-3 font-semibold w-1/5">Hiện diện</th>
+                                        <th class="px-4 py-3 font-semibold w-1/5">Vắng</th>
+                                        <th class="px-4 py-3 font-semibold text-right rounded-tr-lg w-1/5">Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-table-body" class="divide-y divide-slate-100">
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-6 text-center text-xs text-slate-400">
+                                            <i class="fa-solid fa-spinner animate-spin mr-1"></i> Đang tải dữ liệu...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- MAIN CHART CARD: PHỔ ĐIỂM & PHÂN LOẠI HỌC LỰC TOÀN TRƯỜNG (THAY THẾ TƯƠNG TÁC THẢO LUẬN) -->
+                    <div class="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-column text-rose-500"></i> Phổ Điểm & Học Lực Toàn Trường
+                                </h2>
+                                <p class="text-xs text-slate-400">Thống kê phân loại kết quả học tập 4 khối (Thông tư 22/2021/TT-BGDĐT)</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="loadDashboardData()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold transition-all">
+                                    <i class="fa-solid fa-rotate mr-1"></i> Làm mới
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CỤM THẺ TỔNG HỢP NHANH TỶ LỆ -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                            <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                <p class="text-[10px] font-bold text-emerald-700 uppercase">Học lực Tốt</p>
+                                <h4 id="stat-rank-tot" class="text-lg font-black text-emerald-600 mt-0.5">0%</h4>
+                            </div>
+                            <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                                <p class="text-[10px] font-bold text-blue-700 uppercase">Học lực Khá</p>
+                                <h4 id="stat-rank-kha" class="text-lg font-black text-blue-600 mt-0.5">0%</h4>
+                            </div>
+                            <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                                <p class="text-[10px] font-bold text-amber-700 uppercase">Học lực Đạt</p>
+                                <h4 id="stat-rank-dat" class="text-lg font-black text-amber-600 mt-0.5">0%</h4>
+                            </div>
+                            <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                                <p class="text-[10px] font-bold text-rose-700 uppercase">Chưa đạt / Hè</p>
+                                <h4 id="stat-rank-chuadat" class="text-lg font-black text-rose-600 mt-0.5">0%</h4>
+                            </div>
+                        </div>
+
+                        <div class="h-64 w-full pt-2">
+                            <canvas id="gradeDistributionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- GIÁM SÁT AI -->
+                    <div class="p-5 bg-slate-900 rounded-2xl text-white shadow-lg space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-wand-magic-sparkles text-rose-400"></i>
+                                <h3 class="text-sm font-bold">Giám sát AI Tutor (Gemini 2.0 Flash)</h3>
+                            </div>
+                            <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-semibold rounded-full border border-emerald-500/30">Hoạt động tốt</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-center">
+                            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
+                                <p class="text-[11px] text-slate-400">Tokens trong ngày</p>
+                                <p class="text-lg font-bold text-rose-400 mt-0.5">142,500</p>
+                            </div>
+                            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
+                                <p class="text-[11px] text-slate-400">Độ trễ trung bình</p>
+                                <p class="text-lg font-bold text-emerald-400 mt-0.5">380ms</p>
+                            </div>
+                            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
+                                <p class="text-[11px] text-slate-400">Online Realtime</p>
+                                <p class="text-lg font-bold text-blue-400 mt-0.5">18 users</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CỘT PHỤ BÊN PHẢI (Chiếm 1/3) -->
+                <div class="space-y-6">
+
+                    <!-- CẢNH BÁO HỌC SINH -->
+                    <div class="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                                Cảnh báo học tập
+                            </h3>
+                            <span class="text-[11px] font-semibold text-slate-400">Gần đây</span>
+                        </div>
+                        <div class="space-y-3" id="warning-list-container">
+                            <p class="text-xs text-slate-400 text-center py-4"><i class="fa-solid fa-spinner animate-spin"></i> Đang tải dữ liệu...</p>
+                        </div>
+                    </div>
+
+                    <!-- LOG HOẠT ĐỘNG TIMELINE -->
+                    <div class="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-slate-800">Nhật ký hoạt động</h3>
+                            <a href="/admin/nhat-ky-he-thong" class="text-xs text-primary-600 font-semibold hover:underline">Xem tất cả</a>
+                        </div>
+
+                        <div class="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-100" id="recent-logs-list">
+                            <p class="text-xs text-slate-400 text-center py-4"><i class="fa-solid fa-spinner animate-spin"></i> Đang tải nhật ký...</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT SYSTEM -->
+    <script>
+    let gradeChart = null;
+    let attendanceData = [];
+
+    function initGradeChart() {
+        const chartCanvas = document.getElementById('gradeDistributionChart');
+        if (!chartCanvas) return;
+
+        const ctx = chartCanvas.getContext('2d');
+
+        gradeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Khối 6', 'Khối 7', 'Khối 8', 'Khối 9'],
+                datasets: [
+                    {
+                        label: 'Tốt (Giỏi)',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: '#10B981',
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Khá',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: '#3B82F6',
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Đạt',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: '#F59E0B',
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Chưa đạt',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: '#EF4444',
+                        borderRadius: 6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.dataset.label}: ${context.parsed.y} học sinh`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { stepSize: 5, font: { family: 'Inter' } },
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
+    }
+
+    async function loadDashboardData() {
+        try {
+            const response = await fetch('/api/admin/stats');
+            const result = await response.json();
+            
+            if (!result.success) {
+                console.error("Lỗi từ server:", result.message);
+                return;
+            }
+
+            const data = result.data;
+
+            if (document.getElementById('stat-teachers')) document.getElementById('stat-teachers').innerText = data.teachers || 0;
+            if (document.getElementById('stat-students')) document.getElementById('stat-students').innerText = data.students || 0;
+            if (document.getElementById('stat-classes')) document.getElementById('stat-classes').innerText = data.classes || 0;
+
+            // Cập nhật biểu đồ Phổ điểm & Tỷ lệ Học lực
+            if (data.grade_distribution && gradeChart) {
+                const gd = data.grade_distribution;
+                gradeChart.data.labels = gd.labels || ['Khối 6', 'Khối 7', 'Khối 8', 'Khối 9'];
+                gradeChart.data.datasets[0].data = gd.tot || [0, 0, 0, 0];
+                gradeChart.data.datasets[1].data = gd.kha || [0, 0, 0, 0];
+                gradeChart.data.datasets[2].data = gd.dat || [0, 0, 0, 0];
+                gradeChart.data.datasets[3].data = gd.chuadat || [0, 0, 0, 0];
+                gradeChart.update();
+
+                // Cập nhật tỷ lệ % toàn trường
+                if (gd.summary_rates) {
+                    document.getElementById('stat-rank-tot').innerText = (gd.summary_rates.tot || 0) + '%';
+                    document.getElementById('stat-rank-kha').innerText = (gd.summary_rates.kha || 0) + '%';
+                    document.getElementById('stat-rank-dat').innerText = (gd.summary_rates.dat || 0) + '%';
+                    document.getElementById('stat-rank-chuadat').innerText = (gd.summary_rates.chuadat || 0) + '%';
+                }
+            }
+
+            // Đồng bộ dữ liệu điểm danh
+            const attRes = await fetch('/api/admin/attendance-summary');
+            const attResult = await attRes.json();
+            if (attResult.success) {
+                attendanceData = attResult.data || [];
+                renderAttendanceTable(attendanceData);
+
+                const filterSelect = document.getElementById('class-attendance-filter');
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="all">Tất cả lớp</option>';
+                    attendanceData.forEach(item => {
+                        filterSelect.innerHTML += `<option value="${item.TenLop}">${item.TenLop}</option>`;
+                    });
+
+                    filterSelect.onchange = (e) => updateAttendanceCard(e.target.value);
+                }
+                updateAttendanceCard('all');
+            }
+
+            // Cảnh báo học sinh
+            const warningContainer = document.getElementById('warning-list-container');
+            if (warningContainer) {
+                if (data.warnings && data.warnings.length > 0) {
+                    warningContainer.innerHTML = data.warnings.map(w => `
+                        <div class="p-2.5 bg-rose-50/60 border border-rose-100 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center uppercase">
+                                    ${w.ho_ten ? w.ho_ten.substring(0, 2) : 'HS'}
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-800">${w.ho_ten}</p>
+                                    <p class="text-[10px] text-rose-600">${w.ly_do} (${w.diem_xp} XP)</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] px-2 py-1 bg-white rounded-lg font-bold text-slate-600 border border-rose-200">${w.ten_lop}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    warningContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Chưa có ghi nhận vi phạm nề nếp</p>`;
+                }
+            }
+
+            // Nhật ký hoạt động
+            const logsContainer = document.getElementById('recent-logs-list');
+            if (logsContainer) {
+                if (data.recent_logs && data.recent_logs.length > 0) {
+                    logsContainer.innerHTML = data.recent_logs.map(log => `
+                        <div class="flex items-start gap-3 relative">
+                            <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold ring-4 ring-white z-10">
+                                <i class="fa-solid fa-activity"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-slate-800">${log.hanh_dong}</p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">${log.thoi_gian}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    logsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Chưa có log hoạt động gần đây</p>`;
+                }
+            }
+
+        } catch (err) {
+            console.error("Lỗi kết nối API:", err);
+        }
+    }
+
+    function renderAttendanceTable(dataList) {
+        const tbody = document.getElementById('attendance-table-body');
+        if (!tbody) return;
+
+        if (!dataList || dataList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-xs text-slate-400">Chưa có dữ liệu</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = dataList.map(item => {
+            let statusBadge = item.TrangThaiDiemDanh === 'Chưa điểm danh' 
+                ? '<span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-lg">Chưa điểm danh</span>'
+                : '<span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-lg border border-emerald-100">Đã điểm danh</span>';
+
+            return `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-4 py-3 font-semibold text-slate-800">${item.TenLop}</td>
+                    <td class="px-4 py-3 text-slate-600">${item.TongHocSinh}</td>
+                    <td class="px-4 py-3 text-emerald-600 font-medium">${item.CoMat}</td>
+                    <td class="px-4 py-3 text-rose-500 font-medium">${item.Vang}</td>
+                    <td class="px-4 py-3 text-right">${statusBadge}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateAttendanceCard(className) {
+        let total = 0, present = 0, absent = 0;
+
+        if (className === 'all') {
+            attendanceData.forEach(item => {
+                total += (item.TongHocSinh || 0);
+                present += (item.CoMat || 0);
+                absent += (item.Vang || 0);
+            });
+        } else {
+            const targetClass = attendanceData.find(item => item.TenLop === className);
+            if (targetClass) {
+                total = targetClass.TongHocSinh || 0;
+                present = targetClass.CoMat || 0;
+                absent = targetClass.Vang || 0;
+            }
+        }
+
+        let percent = total === 0 ? 0 : Math.round((present / total) * 100);
+        
+        const elPercent = document.getElementById('stat-attendance-percent');
+        const elText = document.getElementById('stat-attendance-text');
+
+        if (elPercent) elPercent.innerText = `${percent}%`;
+        if (elText) elText.innerText = `${present} Hiện diện / ${absent} Vắng`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initGradeChart();
+        loadDashboardData();
+    });
+    </script>
+</body>
+</html>

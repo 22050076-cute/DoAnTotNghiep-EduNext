@@ -1,0 +1,258 @@
+{% extends "PH/layout.html" %}
+
+{% set active_page = 'announcements' %}
+
+{% block title %}Thông báo & Sự kiện{% endblock %}
+
+{% block header_extra %}
+<div class="hidden sm:block">
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Bảng tin trường học</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-700">
+    <!-- SEARCH & TABS -->
+    <div class="sticky top-0 z-30 bg-[#f8fafc]/80 backdrop-blur-md py-4 space-y-4">
+        <div class="relative max-w-sm mx-auto">
+            <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="search-ann" oninput="filterAnnouncements()" placeholder="Tìm kiếm thông báo..." 
+                class="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold shadow-sm outline-none focus:ring-2 focus:ring-edunext-primary/20 transition-all">
+        </div>
+
+        <div class="flex p-1.5 bg-slate-100 rounded-[2rem] w-full max-w-sm mx-auto shadow-inner border border-slate-200/50">
+            <button onclick="switchTab('news')" id="tab-news" class="flex-1 px-4 py-3 rounded-[1.5rem] text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-300 bg-white text-edunext-primary shadow-sm">📢 Tin tức</button>
+            <button onclick="switchTab('events')" id="tab-events" class="flex-1 px-4 py-3 rounded-[1.5rem] text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 hover:text-slate-600">📅 Sự kiện</button>
+        </div>
+    </div>
+
+    <!-- Social Feed & Events -->
+    <div id="feed-container" class="space-y-6">
+        <div class="p-20 text-center animate-pulse">
+            <i class="ph-bold ph-circle-notch text-4xl text-edunext-primary animate-spin mb-4"></i>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Đang tải...</p>
+        </div>
+    </div>
+</div>
+
+<!-- COMMENTS MODAL -->
+<div id="comment-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
+        <div class="p-6 md:p-8 border-b border-slate-50 flex items-center justify-between">
+            <h3 class="text-xl font-black text-slate-800 italic uppercase">Bình luận</h3>
+            <button onclick="closeCommentModal()" class="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+        </div>
+        <div id="modal-comments-list" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 custom-scrollbar bg-slate-50/30"></div>
+        <div class="p-6 md:p-8 border-t border-slate-50 bg-white">
+            <div class="flex gap-3">
+                <input type="text" id="modal-comment-input" placeholder="Viết phản hồi..." class="flex-1 px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none">
+                <button id="modal-send-btn" class="w-14 h-14 bg-edunext-primary text-white rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-all">
+                    <i class="ph-fill ph-paper-plane-tilt text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentTab = 'news';
+    let allData = [];
+
+    function formatDateVN(dateStr) {
+        if (!dateStr || dateStr === "N/A" || dateStr === "null") return "Vừa xong";
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+            return new Intl.DateTimeFormat('vi-VN', {
+                weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', hour12: false
+            }).format(date).replace('lúc', '-');
+        } catch (e) { return dateStr; }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        const newsBtn = document.getElementById('tab-news');
+        const eventsBtn = document.getElementById('tab-events');
+        if (tab === 'news') {
+            newsBtn.className = "flex-1 px-4 py-3 rounded-[1.5rem] text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-300 bg-white text-edunext-primary shadow-sm";
+            eventsBtn.className = "flex-1 px-4 py-3 rounded-[1.5rem] text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 hover:text-slate-600";
+            loadAnnouncements();
+        } else {
+            eventsBtn.className = "flex-1 px-4 py-3 rounded-[1.5rem] text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-300 bg-white text-edunext-primary shadow-sm";
+            newsBtn.className = "flex-1 px-4 py-3 rounded-[1.5rem] text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 hover:text-slate-600";
+            loadEvents();
+        }
+    }
+
+    async function loadAnnouncements() {
+        const list = document.getElementById('feed-container');
+        try {
+            const res = await fetch('/api/student/announcements');
+            const result = await res.json();
+            if (result.success) {
+                allData = result.data;
+                renderAnnouncements(allData);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function renderAnnouncements(data) {
+        const list = document.getElementById('feed-container');
+        if (data.length === 0) {
+            list.innerHTML = '<p class="text-center py-20 text-slate-400 italic">Không tìm thấy thông báo nào</p>';
+            return;
+        }
+        list.innerHTML = data.map(ann => `
+            <div id="ann-${ann.MaThongBao}" class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden card-hover transition-all duration-500">
+                <div class="p-6 md:p-8 pb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=${ann.NguoiDang || 'school'}" class="w-12 h-12 rounded-2xl bg-slate-50 p-2 border border-slate-100 shadow-sm">
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800 uppercase italic">${ann.NguoiDang || 'Giáo viên chủ nhiệm'}</h4>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${formatDateVN(ann.NgayGui)}</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-edunext-50 text-edunext-primary text-[9px] font-black rounded-full uppercase">Thông báo</span>
+                </div>
+                <div class="p-6 md:p-8 pt-0 space-y-4">
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-tight">${ann.TieuDe}</h2>
+                    <p class="text-xs text-slate-600 leading-relaxed font-medium">${ann.NoiDung}</p>
+                    ${ann.HinhAnh ? `<div class="rounded-2xl overflow-hidden shadow-sm border border-slate-100 mt-4"><img src="${ann.HinhAnh}" class="w-full h-auto object-cover max-h-96"></div>` : ''}
+                    <div class="flex items-center gap-6 pt-4 border-t border-slate-50">
+                        <button onclick="toggleLike(${ann.MaThongBao}, this)" class="flex items-center gap-2 text-slate-400 hover:text-edunext-primary transition-all group">
+                            <i class="${ann.IsLiked ? 'ph-fill text-rose-500' : 'ph-bold'} ph-heart text-lg group-hover:scale-125 transition-all"></i>
+                            <span class="text-[10px] font-black">${ann.LikeCount || 0} Yêu thích</span>
+                        </button>
+                        <button onclick="openCommentModal(${ann.MaThongBao})" class="flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-all group">
+                            <i class="ph-bold ph-chat-circle-dots text-lg group-hover:scale-125 transition-all"></i>
+                            <span class="text-[10px] font-black">${ann.CommentCount || 0} Phản hồi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        // Tự động cuộn đến ID nếu có
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetId = urlParams.get('id');
+        if (targetId) {
+            setTimeout(() => {
+                const el = document.getElementById(`ann-${targetId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('ring-4', 'ring-edunext-primary/20', 'border-edunext-primary');
+                }
+            }, 500);
+        }
+    }
+
+    function filterAnnouncements() {
+        const query = document.getElementById('search-ann').value.toLowerCase();
+        const filtered = allData.filter(ann => 
+            ann.TieuDe.toLowerCase().includes(query) || 
+            ann.NoiDung.toLowerCase().includes(query) ||
+            (ann.NguoiDang && ann.NguoiDang.toLowerCase().includes(query))
+        );
+        renderAnnouncements(filtered);
+    }
+
+    async function loadEvents() {
+        const list = document.getElementById('feed-container');
+        try {
+            const res = await fetch('/api/events/list');
+            const result = await res.json();
+            if (result.success) {
+                list.innerHTML = result.data.map(ev => `
+                    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden card-hover">
+                        <div class="p-6 md:p-8 pb-4 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-2xl"><i class="ph-fill ph-calendar-star"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-black text-slate-800 uppercase italic">Sự kiện Sắp tới</h4>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${formatDateVN(ev.ThoiGianBatDau)}</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[9px] font-black rounded-full uppercase">Sắp diễn ra</span>
+                        </div>
+                        <div class="p-6 md:p-8 pt-0 space-y-4">
+                            <h2 class="text-lg font-black text-slate-900 tracking-tight leading-tight">${ev.TieuDe}</h2>
+                            <p class="text-xs text-slate-600 leading-relaxed font-medium">${ev.NoiDung}</p>
+                            <div class="flex items-center gap-4 py-4 px-6 bg-slate-50 rounded-2xl border border-slate-100">
+                                <i class="ph-fill ph-map-pin text-blue-500"></i>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${ev.DiaDiem}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function openCommentModal(annId) {
+        document.getElementById('comment-modal').classList.remove('hidden');
+        const list = document.getElementById('modal-comments-list');
+        list.innerHTML = '<div class="p-10 text-center animate-pulse text-[10px] font-black text-slate-400 uppercase tracking-widest">Đang tải bình luận...</div>';
+        
+        try {
+            const res = await fetch(`/api/social/interactions/ThongBao/${annId}`);
+            const result = await res.json();
+            if (result.success) {
+                const comments = result.data.comments;
+                if (comments.length === 0) {
+                    list.innerHTML = '<div class="text-center py-10 text-slate-400 italic text-xs">Chưa có bình luận nào</div>';
+                } else {
+                    list.innerHTML = comments.map(c => `
+                        <div class="flex items-start gap-4">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${c.HoTen}" class="w-8 h-8 rounded-full border border-white shadow-sm">
+                            <div class="flex-1 bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm">
+                                <p class="text-[10px] font-black text-slate-800 mb-1">${c.HoTen}</p>
+                                <p class="text-xs text-slate-600 font-medium">${c.NoiDung}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (e) { console.error(e); }
+
+        document.getElementById('modal-send-btn').onclick = () => submitComment(annId);
+    }
+
+    function closeCommentModal() { document.getElementById('comment-modal').classList.add('hidden'); }
+
+    async function submitComment(annId) {
+        const input = document.getElementById('modal-comment-input');
+        const content = input.value.trim();
+        if (!content) return;
+        try {
+            const res = await fetch('/api/social/comment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'ThongBao', id: annId, content: content })
+            });
+            if ((await res.json()).success) { 
+                input.value = ''; 
+                openCommentModal(annId);
+                loadAnnouncements(); // Refresh count
+            }
+        } catch (err) { alert("Lỗi gửi bình luận!"); }
+    }
+
+    async function toggleLike(annId, btn) {
+        try {
+            const res = await fetch('/api/social/like', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'ThongBao', id: annId })
+            });
+            if ((await res.json()).success) loadAnnouncements();
+        } catch (err) { console.error(err); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAnnouncements);
+</script>
+{% endblock %}

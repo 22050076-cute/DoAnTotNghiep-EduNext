@@ -1,0 +1,334 @@
+{% extends "GV/layout.html" %}
+
+{% set active_page = 'dashboard' %}
+
+{% block title %}EduNext Pro | Teacher Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    #ai-panel {
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        clip-path: circle(0% at 100% 0%);
+    }
+    #ai-panel.open {
+        clip-path: circle(150% at 100% 0%);
+    }
+    .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+</style>
+{% endblock %}
+
+{% block header_breadcrumb %}Teacher Space / <span id="current-user-name" class="text-brand-dark">GV</span> - <span id="header-class-name" class="text-brand-dark">Lớp học</span>{% endblock %}
+
+{% block header_right %}
+<div class="hidden md:flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100/50">
+    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+    <span class="text-[10px] font-black uppercase tracking-wider italic">Hệ thống AI Camera: Online</span>
+</div>
+<button onclick="toggleAI()" class="h-11 w-11 md:w-auto md:px-5 flex items-center justify-center gap-2 rounded-2xl ai-gradient text-white font-bold text-sm shadow-xl shadow-rose-200 hover:scale-105 transition-all">
+    <i class="ph-fill ph-sparkle text-lg"></i> <span class="hidden md:inline">Gemini Mentor</span>
+</button>
+<button onclick="window.location.href='/logout'" class="h-11 w-11 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 transition-all shadow-sm">
+    <i class="ph-bold ph-sign-out text-xl"></i>
+</button>
+{% endblock %}
+
+{% block content %}
+<div id="section-overview" class="space-y-8 animate-in fade-in duration-500">
+    <!-- Banner chào mừng -->
+    <section class="w-full">
+        <div class="ai-gradient rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl min-h-[180px] flex items-center">
+            <div class="relative z-10 space-y-3">
+                <span class="px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Học kỳ II • Niên khóa 2025-2026</span>
+                <h1 id="welcome-message" class="text-3xl md:text-4xl font-black tracking-tighter italic">Chào buổi sáng!</h1>
+                <p class="text-white/70 text-sm font-medium italic">Chúc bạn có một ngày giảng dạy thật hiệu quả.</p>
+            </div>
+            <i class="ph-fill ph-chalkboard-teacher absolute -right-6 -bottom-10 text-[200px] text-white/10 -rotate-12"></i>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <!-- Cột trái: Bài làm mới nộp & Phản hồi -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Bài làm mới nộp -->
+            <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-black text-slate-800 uppercase italic">Bài làm mới nộp</h3>
+                    <span class="px-3 py-1 bg-rose-50 text-brand-primary text-[10px] font-black rounded-full uppercase">Cần chấm: <span id="pending-grade-count">0</span></span>
+                </div>
+                <div id="submissions-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="text-center py-10 text-slate-400 italic text-sm">Đang tải bài nộp...</div>
+                </div>
+            </div>
+
+            <!-- Hỏi đáp & Phản hồi -->
+            <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200/50 shadow-sm flex flex-col max-h-[600px]">
+                <h3 class="text-lg font-black text-slate-800 uppercase italic mb-6">Hỏi đáp & Phản hồi</h3>
+                <div id="feedback-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pr-2 custom-scrollbar"></div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Widget Giao bài tập & Danh sách đã giao -->
+        <div class="space-y-8">
+            <!-- Giao bài tập nhanh -->
+            <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-md font-black text-slate-800 uppercase italic">Giao bài tập mới</h3>
+                    <!-- LIÊN KẾT 1: Nút mở trang quản lý riêng -->
+                    <a href="/teacher/assignments" class="text-[10px] font-black text-brand-primary hover:underline uppercase flex items-center gap-1 transition-all">
+                        Trang quản lý <i class="ph-bold ph-arrow-square-out"></i>
+                    </a>
+                </div>
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Lớp & Môn</label>
+                        <select id="assign-class-id" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                            <option value="">Đang tải...</option>
+                        </select>
+                    </div>
+                    <input id="assign-title" type="text" placeholder="Tên bài tập..." class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                    <textarea id="assign-content" placeholder="Yêu cầu..." class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary h-24"></textarea>
+                    <button onclick="submitAssignment()" class="w-full py-3.5 ai-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-[1.02] transition-all">Giao bài</button>
+                </div>
+            </div>
+
+            <!-- Bài tập đã giao gần đây -->
+            <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-md font-black text-slate-800 uppercase italic">Bài tập đã giao</h3>
+                    <!-- LIÊN KẾT 2: Nút xem tất cả danh sách bài tập -->
+                    <a href="/teacher/assignments" class="text-[10px] font-black text-brand-primary hover:underline uppercase flex items-center gap-1 transition-all">
+                        Xem tất cả <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
+                <div id="created-assignments-list" class="space-y-3">
+                    <div class="text-center py-6 text-slate-400 italic text-[10px]">Đang tải danh sách...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI PANEL -->
+<div id="ai-panel" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-white/80 backdrop-blur-3xl rounded-[2.8rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] z-[110] border border-white/50 flex flex-col overflow-hidden max-h-[80vh] md:max-h-[90vh]">
+    <div class="p-6 ai-gradient text-white shadow-lg">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner">
+                    <i class="ph-fill ph-sparkle text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black tracking-tight italic">Gemini Mentor</h3>
+                    <p class="text-[8px] font-bold text-white/60 uppercase tracking-[0.2em]">Trợ lý học đường</p>
+                </div>
+            </div>
+            <button onclick="toggleAI()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all">
+                <i class="ph-bold ph-x font-bold"></i>
+            </button>
+        </div>
+    </div>
+    <div id="ai-chat-container" class="flex-1 p-6 overflow-y-auto space-y-6 custom-scrollbar bg-white/50">
+        <div class="bg-rose-50/50 p-4 rounded-[2rem] border border-rose-100/50">
+            <p class="text-[9px] font-black text-brand-primary uppercase mb-2 tracking-widest">Phân tích nề nếp</p>
+            <p class="text-xs text-slate-700 leading-relaxed font-semibold italic">"Chào cô! Tôi là Gemini Mentor. Cô cần giúp gì về giáo án hay tình hình lớp học không?"</p>
+        </div>
+    </div>
+    <div class="p-6 bg-white/50 border-t border-slate-100/50">
+        <div class="relative">
+            <input type="text" id="ai-input" placeholder="Hỏi AI..." class="w-full pl-6 pr-14 py-4 bg-white border border-slate-200/50 rounded-3xl shadow-sm outline-none text-xs font-bold">
+            <button onclick="askAI()" id="ai-send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 ai-gradient text-white rounded-2xl flex items-center justify-center shadow-lg transition-all hover:scale-105">
+                <i class="ph-fill ph-paper-plane-right text-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let teacherId = null;
+    let teacherClassId = null;
+
+    function toggleAI() { document.getElementById('ai-panel').classList.toggle('open'); }
+
+    async function askAI() {
+        const input = document.getElementById('ai-input');
+        const btn = document.getElementById('ai-send-btn');
+        const message = input.value.trim();
+        if (!message) return;
+
+        renderAIMessage('user', message);
+        input.value = '';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i>';
+        
+        try {
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, context: `Lớp: ${document.getElementById('header-class-name')?.innerText || 'Chưa rõ'}` })
+            });
+            const result = await response.json();
+            if (result.success) renderAIMessage('ai', result.reply);
+            else renderAIMessage('ai', "Lỗi: " + result.message);
+        } catch (error) { renderAIMessage('ai', "Lỗi kết nối AI."); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="ph-fill ph-paper-plane-right text-lg"></i>'; }
+    }
+
+    function renderAIMessage(role, text) {
+        const container = document.getElementById('ai-chat-container');
+        const isUser = role === 'user';
+        const html = `<div class="flex flex-col ${isUser ? 'items-end' : 'items-start'} mb-4">
+            <div class="${isUser ? 'ai-gradient text-white' : 'bg-white text-slate-700 shadow-sm border border-slate-100'} p-4 rounded-[1.5rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} text-xs leading-relaxed font-bold">
+                ${text.replace(/\n/g, '<br>')}
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function loadUserProfile() {
+        try {
+            const res = await fetch('/api/user/profile');
+            const result = await res.json();
+            if (result.success) {
+                const user = result.data;
+                const fname = user.fullname || "Giáo viên";
+                const cname = user.class_name || "Lớp học";
+                const hour = new Date().getHours();
+                let greeting = "Chào buổi sáng";
+                if (hour >= 12 && hour < 18) greeting = "Chào buổi chiều";
+                else if (hour >= 18) greeting = "Chào buổi tối";
+                
+                if (document.getElementById('welcome-message')) document.getElementById('welcome-message').innerHTML = `${greeting},<br>${fname}!`;
+                if (document.getElementById('current-user-name')) document.getElementById('current-user-name').innerText = fname;
+                if (document.getElementById('header-class-name')) document.getElementById('header-class-name').innerText = cname;
+                document.querySelectorAll('.display-class-name').forEach(el => el.innerText = cname);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadTeacherClasses() {
+        const select = document.getElementById('assign-class-id');
+        if (!select) return;
+        try {
+            const res = await fetch('/api/teacher/assignments/classes');
+            const result = await res.json();
+            if (result.success) {
+                select.innerHTML = '<option value="">--- Chọn Lớp ---</option>' + 
+                    result.data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        } catch (e) { select.innerHTML = '<option value="">Lỗi tải lớp</option>'; }
+    }
+
+    async function loadSubmissions() {
+        const list = document.getElementById('submissions-list');
+        try {
+            const res = await fetch('/api/teacher/submissions/pending');
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('pending-grade-count').innerText = result.data.length;
+                if (result.data.length === 0) {
+                    list.innerHTML = '<div class="text-center py-10 text-slate-400 italic text-sm">Hiện chưa có bài nộp mới</div>';
+                    return;
+                }
+                list.innerHTML = result.data.map(s => `
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-brand-primary"><i class="ph ph-file-text text-xl"></i></div>
+                            <div>
+                                <h4 class="text-xs font-black text-slate-800">${s.TenHocSinh}</h4>
+                                <p class="text-[10px] font-bold text-slate-400">${s.TieuDe}</p>
+                            </div>
+                        </div>
+                        <button onclick="window.location.href='/teacher/gradebook'" class="px-4 py-2 bg-white text-brand-primary text-[10px] font-black uppercase rounded-xl border border-rose-100 opacity-0 group-hover:opacity-100 transition-all">Chấm điểm</button>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadFeedbacks() {
+        const list = document.getElementById('feedback-list');
+        try {
+            const res = await fetch('/api/social/interactions/feedback/teacher');
+            const result = await res.json();
+            if (result.success) {
+                if (result.data.length === 0) {
+                    list.innerHTML = '<div class="col-span-2 text-center py-10 text-slate-400 italic text-sm">Chưa có phản hồi từ phụ huynh</div>';
+                    return;
+                }
+                list.innerHTML = result.data.map(f => `
+                    <div class="p-5 bg-slate-50 rounded-3xl border border-slate-100 relative group">
+                        <div class="flex items-center gap-3 mb-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${f.HoTen}" class="w-8 h-8 rounded-full bg-white shadow-sm">
+                            <div>
+                                <h5 class="text-[10px] font-black text-slate-800">${f.HoTen}</h5>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase">Phụ huynh học sinh</p>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-600 font-semibold italic mb-3">"${f.NoiDung}"</p>
+                        <button onclick="window.location.href='/teacher/messages?with_id=${f.MaNguoiGui}'" class="w-full py-2 bg-white text-brand-primary text-[10px] font-black uppercase rounded-xl border border-rose-100 opacity-0 group-hover:opacity-100 transition-all shadow-sm">
+                            <i class="ph-bold ph-chats-teardrop mr-1"></i> Phản hồi ngay
+                        </button>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadCreatedAssignments() {
+        const list = document.getElementById('created-assignments-list');
+        if (!list) return;
+        try {
+            const res = await fetch('/api/teacher/assignments/list');
+            const result = await res.json();
+            if (result.success) {
+                if (result.data.length === 0) {
+                    list.innerHTML = '<div class="text-center py-6 text-slate-400 italic text-[10px]">Chưa có bài tập nào được giao</div>';
+                    return;
+                }
+                list.innerHTML = result.data.map(a => `
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-brand-primary/30 transition-all">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-[11px] font-black text-slate-800 truncate pr-2">${a.TieuDe}</h4>
+                            <span class="text-[8px] font-black text-brand-primary uppercase">${a.TenLop}</span>
+                        </div>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase italic">${a.TenMonHoc}</p>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function submitAssignment() {
+        const classId = document.getElementById('assign-class-id').value;
+        const title = document.getElementById('assign-title').value.trim();
+        const content = document.getElementById('assign-content').value.trim();
+        if (!classId || !title || !content) { alert("Vui lòng nhập đủ thông tin!"); return; }
+        try {
+            const res = await fetch('/api/teacher/assignments/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ class_id: classId, title, content })
+            });
+            const result = await res.json();
+            if (result.success) { 
+                alert("✨ Đã giao bài thành công!"); 
+                document.getElementById('assign-title').value=''; 
+                document.getElementById('assign-content').value='';
+                loadCreatedAssignments(); // Làm mới danh sách ngay lập tức
+            }
+        } catch (e) { alert("Lỗi giao bài!"); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUserProfile();
+        loadTeacherClasses();
+        loadSubmissions();
+        loadFeedbacks();
+        loadCreatedAssignments();
+        setInterval(() => { if (!document.hidden) { loadSubmissions(); loadFeedbacks(); loadCreatedAssignments(); } }, 30000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm bài tập | EduNext Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .assignment-box {
+            height: calc(100vh - 120px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header điều hướng -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <button onclick="history.back()"
+                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all">
+                <i class="ph-bold ph-arrow-left"></i>
+            </button>
+            <div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+            <h1 id="task-title" class="font-bold text-slate-800 text-lg">Đang tải bài tập...</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase">Đã mở</span>
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                class="w-10 h-10 rounded-full border border-slate-200">
+        </div>
+    </header>
+
+    <main class="max-w-[1400px] mx-auto p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 assignment-box">
+
+            <!-- CỘT TRÁI: ĐỀ BÀI (8 Cột) -->
+            <div class="lg:col-span-8 space-y-6 overflow-y-auto pr-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center text-2xl">
+                        <i class="ph-fill ph-clipboard-text"></i>
+                    </div>
+                    <div>
+                        <p id="teacher-name" class="text-sm font-bold text-slate-600">Giáo viên: ---</p>
+                        <p class="text-xs text-slate-400 italic">Đã đăng 10:45 • 19 thg 3</p>
+                    </div>
+                </div>
+
+                <div class="border-b border-slate-200 pb-4 flex justify-between items-center">
+                    <p class="font-bold text-slate-800">10 điểm</p>
+                    <p class="text-sm font-bold text-red-600">Đến hạn: 23:59 hôm nay</p>
+                </div>
+
+                <div class="prose prose-slate max-w-none">
+                    <h3 class="text-lg font-extrabold text-slate-800 uppercase">Yêu cầu bài làm:</h3>
+                    <ul id="task-desc"
+                        class="list-disc list-inside text-slate-600 space-y-2 mt-4 font-medium leading-relaxed">
+                        <li>Học sinh đọc kỹ tài liệu hướng dẫn đính kèm.</li>
+                        <li>Trình bày bài giải rõ ràng ra file Word hoặc PDF.</li>
+                        <li>Nộp bài đúng hạn quy định, bài nộp muộn sẽ bị trừ điểm.</li>
+                    </ul>
+                </div>
+
+                <!-- File đính kèm -->
+                <div class="mt-8">
+                    <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Tài liệu đính kèm</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div
+                            class="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-red-200 transition-all cursor-pointer group">
+                            <div
+                                class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all">
+                                <i class="ph-fill ph-file-pdf"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-800 truncate">Huong-dan-bai-tap.pdf</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Tài liệu PDF</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: NỘP BÀI (4 Cột) -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Card Nộp bài -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-slate-800">Bài tập của bạn</h3>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Chưa nộp</span>
+                    </div>
+
+                    <!-- Khu vực File đã chọn -->
+                    <div id="file-list" class="space-y-3 mb-6">
+                        <div
+                            class="text-center py-6 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                            <i class="ph-duotone ph-cloud-arrow-up text-4xl text-slate-300 mb-2"></i>
+                            <p class="text-xs font-bold text-slate-400">Kéo thả file vào đây để nộp</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button
+                            class="w-full py-3.5 border-2 border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-plus"></i> Thêm hoặc tạo mới
+                        </button>
+                        <button onclick="alert('Đã nộp bài thành công!')"
+                            class="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-lg hover:bg-red-600 transition-all">
+                            Nộp bài ngay
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nhận xét riêng tư -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="ph-bold ph-user-circle text-slate-400 text-xl"></i>
+                        <h3 class="text-sm font-bold text-slate-800">Nhận xét riêng tư</h3>
+                    </div>
+                    <div class="relative">
+                        <input type="text" placeholder="Thêm nhận xét cho giáo viên..."
+                            class="w-full pl-4 pr-12 py-3 bg-slate-50 rounded-xl text-xs outline-none focus:ring-1 focus:ring-slate-200 transition-all">
+                        <button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-600">
+                            <i class="ph-fill ph-paper-plane-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Logic đơn giản để lấy tên bài tập từ URL
+        const params = new URLSearchParams(window.location.search);
+        const taskId = params.get('id');
+
+        // Bạn có thể dùng taskId để fetch dữ liệu thật từ API
+        if (taskId) {
+            document.getElementById('task-title').innerText = "Bài thực hành số " + taskId;
+            document.getElementById('teacher-name').innerText = "Giáo viên: Nguyễn Thanh Sơn";
+        }
+    </script>
+</body>
+
+</html>

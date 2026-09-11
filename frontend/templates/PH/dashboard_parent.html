@@ -1,0 +1,336 @@
+{% extends "PH/layout.html" %}
+
+{% set active_page = 'dashboard_parent' %}
+
+{% block title %}Tổng quan Phụ huynh{% endblock %}
+
+{% block header_extra %}
+<div class="hidden sm:block">
+    <p id="class-info" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Đang tải thông tin lớp...</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-in fade-in duration-500">
+    <!-- HERO CARD TỔNG QUAN HỌC SINH -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-3 red-gradient rounded-[2.5rem] p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center gap-6 md:gap-8 shadow-2xl shadow-red-100">
+            <div class="relative shrink-0">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student"
+                    class="w-24 h-24 md:w-32 md:h-32 rounded-[2rem] border-4 border-white/30 bg-white/10 backdrop-blur-md object-cover shadow-2xl">
+                <div id="student-rank" class="absolute -bottom-2 -right-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-full text-[10px] font-black shadow-lg">Hạng --</div>
+            </div>
+            <div class="flex-1 text-center md:text-left space-y-4">
+                <div>
+                    <h3 id="student-name-hero" class="text-2xl md:text-3xl font-black tracking-tight italic">Em học sinh</h3>
+                    <p id="class-info-hero" class="text-white/80 font-bold text-xs md:text-sm mt-1 uppercase tracking-wider">Đang tải thông tin...</p>
+                </div>
+                <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-2">
+                        <i class="ph-fill ph-star text-yellow-300"></i>
+                        <span id="student-xp" class="text-xs font-bold">0 XP</span>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-2">
+                        <i class="ph-fill ph-lightning text-orange-300"></i>
+                        <span id="student-streak" class="text-xs font-bold">Chuỗi 0 ngày</span>
+                    </div>
+                </div>
+            </div>
+            <i class="ph ph-student absolute -right-4 -bottom-4 text-[150px] text-white/5 -rotate-12 hidden md:block"></i>
+        </div>
+    </div>
+
+    <!-- KHU VỰC ĐIỀU HƯỚNG NHANH -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <a href="/parent/gradebook" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm card-hover group flex flex-col items-center text-center space-y-3">
+            <div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all shadow-inner">
+                <i class="ph-fill ph-chart-bar"></i>
+            </div>
+            <p class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Kết quả học tập</p>
+        </a>
+        <a href="/parent/homework" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm card-hover group flex flex-col items-center text-center space-y-3">
+            <div class="w-14 h-14 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all shadow-inner">
+                <i class="ph-fill ph-book-open"></i>
+            </div>
+            <p class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Bài tập & Nhiệm vụ</p>
+        </a>
+        <a href="/parent/wallet" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm card-hover group flex flex-col items-center text-center space-y-3">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all shadow-inner">
+                <i class="ph-fill ph-wallet"></i>
+            </div>
+            <p class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Học phí & Ví</p>
+        </a>
+        <a href="/parent/messages" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm card-hover group flex flex-col items-center text-center space-y-3">
+            <div class="w-14 h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-all shadow-inner">
+                <i class="ph-fill ph-chat-circle-dots"></i>
+            </div>
+            <p class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Trao đổi GV</p>
+        </a>
+    </div>
+
+    <!-- KHU VỰC CHUYÊN CẦN, ĐƠN NGHỈ VÀ THỜI KHÓA BIỂU -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <!-- Chuyên cần -->
+        <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 shadow-sm flex flex-col h-full card-hover">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
+                        <i class="ph-bold ph-calendar-x text-xl"></i>
+                    </div>
+                    <h4 class="font-black text-slate-800 text-sm uppercase italic">Chuyên cần</h4>
+                </div>
+                <div id="absent-count" class="bg-rose-500 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg">0 ngày nghỉ</div>
+            </div>
+            <div id="attendance-list" class="space-y-4 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar flex-1">
+                <p class="text-[10px] text-slate-400 italic text-center py-4">Đang tải dữ liệu...</p>
+            </div>
+        </div>
+
+        <!-- Đơn xin nghỉ -->
+        <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 shadow-sm flex flex-col h-full card-hover">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
+                        <i class="ph-bold ph-note-pencil text-xl"></i>
+                    </div>
+                    <h4 class="font-black text-slate-800 text-sm uppercase italic">Đơn xin nghỉ</h4>
+                </div>
+                <button onclick="openLeaveModal()" class="px-4 py-2 bg-amber-500 text-white text-[9px] font-black rounded-xl uppercase shadow-lg hover:scale-105 transition-all">Nộp đơn</button>
+            </div>
+            <div id="leave-history" class="space-y-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar flex-1">
+                <p class="text-[10px] text-slate-400 italic text-center py-4">Đang tải lịch sử...</p>
+            </div>
+        </div>
+
+        <!-- THỜI KHÓA BIỂU NÂNG CẤP CHUẨN NHƯ GV & HS -->
+        <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 shadow-sm flex flex-col h-full card-hover lg:col-span-1">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 shrink-0">
+                        <i class="ph-bold ph-calendar-blank text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-black text-slate-800 text-sm uppercase italic">Thời Khóa Biểu</h4>
+                        <p id="current-day-label" class="text-[10px] font-bold text-slate-400">Đang chọn lịch học</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bộ lọc Tuần & Học Kỳ -->
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <select id="select-semester" onchange="onSemesterChange()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-primary text-xs cursor-pointer">
+                    <option value="1" selected>Học kỳ 1</option>
+                    <option value="2">Học kỳ 2</option>
+                </select>
+                <select id="select-week" onchange="onWeekChange()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-primary text-xs cursor-pointer">
+                    <!-- Sinh danh sách tuần bằng JS -->
+                </select>
+            </div>
+
+            <!-- Chi tiết TKB 2 buổi -->
+            <div class="space-y-4 overflow-y-auto max-h-[350px] pr-1 custom-scrollbar flex-1">
+                <!-- Buổi Sáng -->
+                <div>
+                    <div class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg font-black text-[9px] uppercase tracking-wider inline-flex items-center gap-1.5 mb-2">
+                        <i class="ph-bold ph-sun"></i> Buổi Sáng (Tiết 1 - 5)
+                    </div>
+                    <div id="schedule-morning-body" class="space-y-2">
+                        <p class="text-[10px] text-slate-400 italic text-center py-2">Đang nạp TKB sáng...</p>
+                    </div>
+                </div>
+
+                <!-- Buổi Chiều -->
+                <div>
+                    <div class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-black text-[9px] uppercase tracking-wider inline-flex items-center gap-1.5 mb-2">
+                        <i class="ph-bold ph-moon-stars"></i> Buổi Chiều (Tiết 6 - 10)
+                    </div>
+                    <div id="schedule-afternoon-body" class="space-y-2">
+                        <p class="text-[10px] text-slate-400 italic text-center py-2">Đang nạp TKB chiều...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentSemester = "1";
+    let currentWeekIndex = 0;
+    let weeksData = [];
+
+    const semesterConfigs = {
+        "1": { startDate: "2026-09-07", totalWeeks: 18 },
+        "2": { startDate: "2027-01-11", totalWeeks: 18 }
+    };
+
+    function generateWeeks(semesterId) {
+        const config = semesterConfigs[semesterId];
+        const selectWeek = document.getElementById('select-week');
+        selectWeek.innerHTML = '';
+        weeksData = [];
+        
+        let currentStart = new Date(config.startDate);
+        const today = new Date();
+        let defaultWeekIndex = 0;
+
+        for (let w = 1; w <= config.totalWeeks; w++) {
+            let monday = new Date(currentStart);
+            let sunday = new Date(currentStart);
+            sunday.setDate(currentStart.getDate() + 6);
+            
+            const pad = (n) => n < 10 ? '0' + n : n;
+            const label = `Tuần ${w} (${pad(monday.getDate())}/${pad(monday.getMonth()+1)} - ${pad(sunday.getDate())}/${pad(sunday.getMonth()+1)})`;
+            
+            weeksData.push({ weekNumber: w, monday, sunday });
+
+            let option = document.createElement('option');
+            option.value = w;
+            option.innerText = label;
+            selectWeek.appendChild(option);
+
+            if (today >= monday && today <= sunday) defaultWeekIndex = w - 1;
+            currentStart.setDate(currentStart.getDate() + 7);
+        }
+        
+        currentWeekIndex = defaultWeekIndex;
+        selectWeek.selectedIndex = currentWeekIndex;
+    }
+
+    async function loadDashboardData() {
+        try {
+            const selectedWeekNum = weeksData[currentWeekIndex] ? weeksData[currentWeekIndex].weekNumber : 1;
+            const selectedSemester = document.getElementById('select-semester').value;
+
+            const res = await fetch(`/api/parent/dashboard?week=${selectedWeekNum}&semester=${selectedSemester}`);
+            const result = await res.json();
+            
+            if (result.success) {
+                const d = result.data;
+                document.getElementById('student-name-hero').innerText = `Em ${d.student_name}`;
+                document.getElementById('class-info-hero').innerText = `Lớp ${d.class_name} • GVCN: ${d.teacher_name}`;
+                if (document.getElementById('class-info')) 
+                    document.getElementById('class-info').innerText = `Lớp ${d.class_name} • GVCN: ${d.teacher_name}`;
+                
+                // Rank, XP, Streak
+                document.getElementById('student-rank').innerText = `Hạng ${d.rank}`;
+                document.getElementById('student-xp').innerText = `${d.xp.toLocaleString()} XP`;
+                document.getElementById('student-streak').innerText = `Chuỗi ${d.streak} ngày`;
+                
+                // Chuyên cần
+                const attList = document.getElementById('attendance-list');
+                if (d.absent_dates && d.absent_dates.length > 0) {
+                    document.getElementById('absent-count').innerText = `${d.absent_dates.length} ngày nghỉ`;
+                    attList.innerHTML = d.absent_dates.map(a => `
+                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-rose-500 shadow-sm font-black text-[10px]">${a.Ngay.split('-')[2]}</div>
+                                <span class="text-xs font-bold text-slate-700">${a.Ngay}</span>
+                            </div>
+                            <span class="text-[9px] font-black uppercase text-rose-400">Vắng mặt</span>
+                        </div>
+                    `).join('');
+                } else {
+                    attList.innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4">Học sinh đi học đầy đủ ✨</p>';
+                }
+
+                // Lịch sử đơn nghỉ
+                const leaveList = document.getElementById('leave-history');
+                if (d.leave_requests && d.leave_requests.length > 0) {
+                    leaveList.innerHTML = d.leave_requests.map(l => {
+                        const colors = { 'ChoDuyet': 'bg-amber-500', 'DaDuyet': 'bg-emerald-500', 'TuChoi': 'bg-rose-500' };
+                        const labels = { 'ChoDuyet': 'Chờ duyệt', 'DaDuyet': 'Đã duyệt', 'TuChoi': 'Từ chối' };
+                        return `
+                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-700">${l.NgayNghi}</p>
+                                <p class="text-[9px] text-slate-400 italic truncate max-w-[120px]">${l.LyDo}</p>
+                            </div>
+                            <span class="px-2 py-1 ${colors[l.TrangThai] || 'bg-slate-400'} text-white text-[8px] font-black rounded-lg uppercase">${labels[l.TrangThai] || l.TrangThai}</span>
+                        </div>`;
+                    }).join('');
+                } else {
+                    leaveList.innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4">Chưa có đơn xin nghỉ</p>';
+                }
+
+                // XỬ LÝ THỜI KHÓA BIỂU THEO THỨ VÀ BUỔI
+                renderSchedule(d.schedule || []);
+            }
+        } catch (err) { console.error("Lỗi nạp Dashboard Phụ huynh:", err); }
+    }
+
+    function renderSchedule(scheduleData) {
+        const morningBody = document.getElementById('schedule-morning-body');
+        const afternoonBody = document.getElementById('schedule-afternoon-body');
+        
+        // Xác định Thứ hiện tại (0-6 -> 8, 2, 3, 4, 5, 6, 7)
+        const dayMap = [8, 2, 3, 4, 5, 6, 7];
+        const todayThu = dayMap[new Date().getDay()];
+        const todayName = todayThu === 8 ? 'Chủ Nhật' : `Thứ ${todayThu}`;
+        
+        document.getElementById('current-day-label').innerText = `Lịch học ${todayName} Hôm nay`;
+
+        // Lọc tiết của ngày hôm nay
+        const todaySched = scheduleData.filter(s => Number(s.Thu || s.thu) === todayThu);
+
+        if (todaySched.length === 0) {
+            const emptyHtml = '<p class="text-[10px] text-slate-400 italic text-center py-3 bg-slate-50 rounded-xl">Không có lịch học</p>';
+            morningBody.innerHTML = emptyHtml;
+            afternoonBody.innerHTML = emptyHtml;
+            return;
+        }
+
+        let morningHtml = '';
+        let afternoonHtml = '';
+
+        for (let period = 1; period <= 5; period++) {
+            const item = todaySched.find(s => Number(s.Tiet || s.tiet) === period);
+            if (item && item.TenMonHoc) {
+                morningHtml += renderScheduleRow(period, item);
+            }
+        }
+
+        for (let period = 6; period <= 10; period++) {
+            const item = todaySched.find(s => Number(s.Tiet || s.tiet) === period);
+            if (item && item.TenMonHoc) {
+                afternoonHtml += renderScheduleRow(period, item);
+            }
+        }
+
+        morningBody.innerHTML = morningHtml || '<p class="text-[10px] text-slate-400 italic text-center py-2 bg-slate-50 rounded-xl">Sáng nghỉ học</p>';
+        afternoonBody.innerHTML = afternoonHtml || '<p class="text-[10px] text-slate-400 italic text-center py-2 bg-slate-50 rounded-xl">Chiều nghỉ học</p>';
+    }
+
+    function renderScheduleRow(period, item) {
+        return `
+            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-sm transition-all">
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] font-black text-slate-400 uppercase w-10">Tiết ${period}</span>
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">${item.TenMonHoc}</p>
+                        ${item.TenGiaoVien ? `<p class="text-[9px] font-bold text-rose-500 italic">GV: ${item.TenGiaoVien}</p>` : ''}
+                    </div>
+                </div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase bg-white px-2 py-1 rounded-md border border-slate-100">${item.PhongHoc || 'Phòng bộ môn'}</span>
+            </div>
+        `;
+    }
+
+    function onSemesterChange() {
+        const semId = document.getElementById('select-semester').value;
+        generateWeeks(semId);
+        loadDashboardData();
+    }
+
+    function onWeekChange() {
+        currentWeekIndex = document.getElementById('select-week').selectedIndex;
+        loadDashboardData();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        generateWeeks("1");
+        loadDashboardData();
+    });
+</script>
+{% endblock %}

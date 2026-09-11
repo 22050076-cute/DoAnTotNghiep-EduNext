@@ -1,0 +1,24 @@
+# Môi trường ảo Python
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Cấu hình chứa API Key và mật khẩu
+.env
+instance/
+
+# Thư mục upload tệp tĩnh người dùng
+backend/static/uploads/*
+!backend/static/uploads/.gitkeep
+
+# Thư viện Frontend (nếu có dùng npm/node_modules)
+node_modules/
+.next/
+dist/
+
+# File tạm hệ điều hành / IDE
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

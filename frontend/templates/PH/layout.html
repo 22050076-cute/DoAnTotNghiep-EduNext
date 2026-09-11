@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} | EduNext Cổng Thông Tin Phụ Huynh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        edunext: {
+                            50: '#fff1f2',
+                            primary: '#ee0033',
+                            dark: '#0f172a',
+                            accent: '#ba0028',
+                            emerald: '#10b981'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .red-gradient { background: linear-gradient(135deg, #ee0033 0%, #ba0028 100%); }
+        .ai-gradient { background: linear-gradient(135deg, #4F46E5 0%, #ee0033 100%); }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #ai-panel { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); clip-path: circle(0% at 100% 100%); }
+        #ai-panel.open { clip-path: circle(150% at 100% 100%); }
+        .chat-bubble { box-shadow: 0 10px 25px -5px rgba(238, 0, 51, 0.2); }
+        * { font-style: normal !important; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-[#f8fafc] font-sans text-slate-900 h-screen overflow-hidden flex">
+
+    <!-- OVERLAY (Mobile) -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-[90] hidden backdrop-blur-sm lg:hidden"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex flex-col z-[100] transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out shadow-sm">
+        <div class="p-8 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 red-gradient rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="ph-fill ph-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl tracking-tight text-slate-900 italic">EduNext</h1>
+                    <p class="text-[10px] font-bold text-edunext-primary uppercase tracking-[0.2em]">Parent Hub</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-6 space-y-8 overflow-y-auto">
+            <div>
+                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Quản lý học tập</p>
+                <div class="space-y-1">
+                    <a href="/dashboard_parent" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group {% if active_page == 'dashboard_parent' %}bg-edunext-50 text-edunext-primary font-bold shadow-sm{% else %}text-slate-500 font-semibold hover:bg-slate-50{% endif %}">
+                        <i class="ph-bold ph-squares-four text-xl group-hover:text-edunext-primary"></i>
+                        Tổng quan
+                    </a>
+                    <a href="/parent/announcements" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group {% if active_page == 'announcements' %}bg-edunext-50 text-edunext-primary font-bold shadow-sm{% else %}text-slate-500 font-semibold hover:bg-slate-50{% endif %}">
+                        <i class="ph-bold ph-megaphone text-xl group-hover:text-edunext-primary"></i>
+                        Thông báo & Sự kiện
+                    </a>
+                    <a href="/parent/homework" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group {% if active_page == 'bai-tap' %}bg-edunext-50 text-edunext-primary font-bold shadow-sm{% else %}text-slate-500 font-semibold hover:bg-slate-50{% endif %}">
+                        <i class="ph-bold ph-book-open text-xl group-hover:text-edunext-primary"></i>
+                        Bài tập về nhà
+                    </a>
+                    <a href="/parent/gradebook" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group {% if active_page == 'diem-so' %}bg-edunext-50 text-edunext-primary font-bold shadow-sm{% else %}text-slate-500 font-semibold hover:bg-slate-50{% endif %}">
+                        <i class="ph-bold ph-chart-bar text-xl group-hover:text-edunext-primary"></i>
+                        Kết quả học tập
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Đời sống & Tài chính</p>
+                <div class="space-y-1">
+                    <a href="/parent/messages" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group {% if active_page == 'messages' %}bg-edunext-50 text-edunext-primary font-bold shadow-sm{% else %}text-slate-500 font-semibold hover:bg-slate-50{% endif %}">
+                        <i class="ph-bold ph-chat-circle-dots text-xl group-hover:text-edunext-primary"></i>
+                        Tin nhắn
+                    </a>
+                    <a href="/parent/wallet" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group {% if active_page == 'vi-dien-tu' %}bg-edunext-50 text-edunext-primary font-bold shadow-sm{% else %}text-slate-500 font-semibold hover:bg-slate-50{% endif %}">
+                        <i class="ph-bold ph-wallet text-xl group-hover:text-edunext-primary"></i>
+                        Học phí & Ví điện tử
+                    </a>
+                    <a href="#" onclick="openLeaveModal()" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-500 font-semibold hover:bg-slate-50 transition-all group">
+                        <i class="ph-bold ph-calendar-x text-xl group-hover:text-edunext-primary"></i> Xin nghỉ học
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-6 border-t border-slate-50 space-y-4">
+            <button onclick="window.location.href='/logout'" class="w-full flex items-center gap-3 p-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all font-bold text-sm">
+                <i class="ph-bold ph-sign-out text-lg"></i> Đăng xuất
+            </button>
+            <div class="p-4 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center gap-3">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=parent" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-800 truncate leading-tight">{{ session.get('ho_ten', 'Phụ huynh') }}</p>
+                    <p id="side-student-info" class="text-[9px] font-black text-edunext-primary uppercase tracking-widest mt-0.5">Phụ huynh học sinh</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
+        <header class="h-20 glass border-b border-slate-200 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600">
+                    <i id="sidebar-icon" class="ph-bold ph-list text-xl"></i>
+                </button>
+                <div class="hidden sm:block">
+                    <h2 class="text-lg font-extrabold text-slate-900 leading-tight italic">
+                        Chào anh/chị, <span class="text-edunext-primary">{{ session.get('ho_ten', 'Phụ huynh') }}</span>
+                    </h2>
+                    {% block header_extra %}{% endblock %}
+                </div>
+                <div class="sm:hidden font-black text-slate-900 tracking-tight italic">Edu<span class="text-edunext-primary">Next</span></div>
+            </div>
+            <div class="flex items-center gap-2 md:gap-4">
+                <div class="hidden md:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-emerald-700 uppercase">Học sinh đang ở trường</span>
+                </div>
+                
+                <!-- NOTIFICATION BELL -->
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-edunext-primary transition-all relative">
+                        <i class="ph-bold ph-bell text-xl"></i>
+                        <span id="notif-dot" class="absolute top-2 right-2 w-2 h-2 bg-edunext-primary rounded-full border border-white hidden"></span>
+                    </button>
+                    <!-- Quick Notif Dropdown -->
+                    <div id="notif-panel" class="absolute right-0 mt-3 w-80 bg-white rounded-[2rem] shadow-2xl border border-slate-100 z-50 hidden animate-in slide-in-from-top-2 duration-300">
+                        <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+                            <h4 class="text-xs font-black uppercase italic tracking-widest text-slate-800">Thông báo mới</h4>
+                            <span class="text-[9px] font-bold text-slate-400">Gần đây</span>
+                        </div>
+                        <div id="notif-list" class="max-h-80 overflow-y-auto p-2 custom-scrollbar">
+                            <div class="p-8 text-center text-[10px] text-slate-400 italic">Đang tải...</div>
+                        </div>
+                        <div class="p-4 border-t border-slate-50 text-center">
+                            <a href="/parent/announcements" class="text-[10px] font-black text-edunext-primary uppercase hover:underline">Xem tất cả</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- AI CHAT BUBBLE -->
+        <div class="fixed bottom-6 right-6 z-50">
+            <button onclick="toggleAI()" class="chat-bubble w-14 h-14 ai-gradient text-white rounded-full flex items-center justify-center text-2xl shadow-xl hover:scale-110 transition-all">
+                <i class="ph-fill ph-sparkle"></i>
+            </button>
+        </div>
+
+        <div id="ai-panel" class="fixed bottom-24 right-6 left-6 md:left-auto md:w-96 h-[500px] bg-white rounded-[2.5rem] shadow-2xl z-[60] border border-slate-100 flex flex-col overflow-hidden hidden">
+            <div class="p-6 ai-gradient text-white flex items-center justify-between shadow-lg">
+                <div class="flex items-center gap-3">
+                    <i class="ph-fill ph-robot text-xl"></i>
+                    <h3 class="text-sm font-black uppercase italic tracking-tight">Gemini Parent Hub</h3>
+                </div>
+                <button onclick="toggleAI()"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div id="ai-chat-container" class="flex-1 p-6 overflow-y-auto space-y-4 bg-slate-50/30 custom-scrollbar"></div>
+            <div class="p-4 bg-white border-t border-slate-50">
+                <div class="relative">
+                    <input type="text" id="ai-input" placeholder="Hỏi AI..." class="w-full pl-5 pr-12 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none transition-all focus:ring-2 focus:ring-edunext-primary/10">
+                    <button onclick="askAI()" id="ai-send-btn" class="absolute right-2 top-2 w-10 h-10 ai-gradient text-white rounded-xl flex items-center justify-center shadow-lg"><i class="ph-fill ph-paper-plane-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEAVE MODAL -->
+        <div id="leave-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center hidden p-4">
+            <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 md:p-10 relative shadow-2xl animate-in zoom-in duration-300">
+                <button onclick="closeLeaveModal()" class="absolute top-6 right-6 text-slate-400 hover:text-edunext-primary"><i class="ph-bold ph-x text-2xl"></i></button>
+                <div class="mb-8 text-center md:text-left">
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight italic uppercase">Đơn xin nghỉ học</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Vui lòng điền thông tin chính xác</p>
+                </div>
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-2">Ngày nghỉ</label>
+                        <input id="leave-date" type="date" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-edunext-primary/20 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-2">Lý do nghỉ</label>
+                        <textarea id="leave-reason" placeholder="Ví dụ: Bé bị sốt cần đi khám..." class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold h-32 focus:ring-2 focus:ring-edunext-primary/20 outline-none"></textarea>
+                    </div>
+                    <button onclick="submitLeaveRequest()" class="w-full py-4 red-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-[1.02] transition-all">Gửi đơn ngay</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-20 right-6 z-[100] flex flex-col gap-3"></div>
+
+    <script>
+        function formatDateVN_layout(dateStr) {
+            if (!dateStr) return "";
+            try {
+                const date = new Date(dateStr);
+                return new Intl.DateTimeFormat('vi-VN', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                }).format(date);
+            } catch (e) { return dateStr; }
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const id = 'toast-' + Date.now();
+            const icon = type === 'success' ? 'ph-check-circle' : (type === 'warning' ? 'ph-warning-circle' : 'ph-megaphone');
+            const bg = type === 'success' ? 'border-emerald-500' : (type === 'warning' ? 'border-amber-500' : 'border-indigo-500');
+            
+            const html = `
+                <div id="${id}" onclick="window.location.href='/parent/announcements'" class="bg-white border-l-4 ${bg} shadow-2xl rounded-xl p-4 w-72 animate-in slide-in-from-right duration-500 flex gap-3 items-start cursor-pointer hover:bg-slate-50 transition-all">
+                    <div class="text-2xl ${type === 'success' ? 'text-emerald-500' : (type === 'warning' ? 'text-amber-500' : 'text-indigo-500')}">
+                        <i class="ph-fill ${icon}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-black text-[11px] uppercase tracking-wider text-slate-800 italic">${title}</p>
+                        <p class="text-[10px] text-slate-500 font-medium leading-relaxed mt-0.5">${message}</p>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('animate-out', 'fade-out', 'slide-out-to-right');
+                    setTimeout(() => el.remove(), 500);
+                }
+            }, 5000);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notif-panel');
+            panel.classList.toggle('hidden');
+            if(!panel.classList.contains('hidden')) {
+                document.getElementById('notif-dot').classList.add('hidden');
+                
+                // Cập nhật last_seen để không hiện chấm đỏ nữa
+                if (window.lastToastId) {
+                    localStorage.setItem('last_seen_ann_id_Parent', window.lastToastId);
+                }
+                
+                loadQuickNotifs();
+            }
+        }
+
+        async function loadQuickNotifs() {
+            const list = document.getElementById('notif-list');
+            try {
+                const res = await fetch('/api/student/announcements');
+                const result = await res.json();
+                if (result.success) {
+                    const data = result.data.slice(0, 5);
+                    if (data.length > 0) {
+                        list.innerHTML = data.map(item => `
+                            <div class="p-4 hover:bg-slate-50 border-b border-slate-50 last:border-0 cursor-pointer transition-all flex gap-3 items-start"
+                                 onclick="window.location.href='/parent/announcements?id=${item.MaThongBao}'">
+                                <div class="w-8 h-8 rounded-lg bg-red-50 text-edunext-primary flex items-center justify-center shrink-0">
+                                    <i class="ph-fill ph-megaphone"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[10px] font-black text-slate-800 leading-tight line-clamp-1">${item.TieuDe}</p>
+                                    <p class="text-[9px] text-slate-500 line-clamp-1 mt-0.5">${item.NoiDung}</p>
+                                    <p class="text-[8px] font-bold text-slate-400 mt-1 uppercase">${formatDateVN_layout(item.NgayGui)}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        list.innerHTML = '<div class="p-8 text-center text-slate-400 text-[10px] italic">Không có thông báo nào</div>';
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        let isFirstPoll = true;
+        async function checkNewNotifs() {
+            try {
+                const res = await fetch('/api/notifications/poll');
+                const result = await res.json();
+                if (result.success) {
+                    const localAnnId = parseInt(localStorage.getItem('last_seen_ann_id_Parent') || 0);
+                    if (result.latest_ann_id > localAnnId) {
+                        document.getElementById('notif-dot').classList.remove('hidden');
+                        if (!isFirstPoll) {
+                            showToast("Thông báo mới", `Nhà trường vừa gửi một thông báo hoặc cập nhật nề nếp mới!`, 'info');
+                        }
+                        // Optionally update local to prevent multiple toasts until they click bell
+                        // But wait, if we update local, dot will hide? No, dot only hides on click.
+                        // Actually let's not update local here, so the dot stays on. But we shouldn't show toast again.
+                        // So we store a temporary 'toast_shown_for' variable.
+                        if (!window.lastToastId || window.lastToastId < result.latest_ann_id) {
+                            if (!isFirstPoll) {
+                                showToast("Thông báo mới", `Nhà trường vừa gửi một thông báo hoặc cập nhật nề nếp mới!`, 'info');
+                            }
+                            window.lastToastId = result.latest_ann_id;
+                        }
+                    }
+                }
+                isFirstPoll = false;
+            } catch (e) {}
+        }
+
+        function toggleAI() { 
+            const panel = document.getElementById('ai-panel');
+            panel.classList.toggle('hidden');
+            setTimeout(() => panel.classList.toggle('open'), 10);
+        }
+
+        async function loadSidebarProfile() {
+            try {
+                const res = await fetch('/api/parent/dashboard');
+                const result = await res.json();
+                if (result.success) {
+                    const d = result.data;
+                    if (document.getElementById('side-student-info')) 
+                        document.getElementById('side-student-info').innerText = `PH em ${d.student_name} - Lớp ${d.class_name}`;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function openLeaveModal() { document.getElementById('leave-modal').classList.remove('hidden'); }
+        function closeLeaveModal() { document.getElementById('leave-modal').classList.add('hidden'); }
+
+        async function submitLeaveRequest() {
+            const date = document.getElementById('leave-date').value;
+            const reason = document.getElementById('leave-reason').value;
+            if(!date || !reason) { alert("Vui lòng nhập đủ thông tin!"); return; }
+            try {
+                const res = await fetch('/api/parent/leave-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, reason })
+                });
+                if ((await res.json()).success) { alert("✨ Đã gửi đơn thành công!"); closeLeaveModal(); }
+            } catch (err) { alert("Lỗi gửi đơn!"); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSidebarProfile();
+            setInterval(checkNewNotifs, 10000);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

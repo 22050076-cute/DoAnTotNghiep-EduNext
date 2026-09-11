@@ -1,0 +1,157 @@
+{% extends "GV/layout.html" %}
+
+{% set active_page = 'attendance' %}
+
+{% block title %}Điểm danh lớp | EduNext Pro{% endblock %}
+
+{% block header_breadcrumb %}Nghiệp vụ / <span class="text-brand-dark">Điểm danh lớp</span>{% endblock %}
+
+{% block content %}
+<div id="section-attendance" class="space-y-10 animate-in fade-in duration-500">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div class="bg-white p-2 rounded-2xl border border-slate-200 flex items-center">
+                <input type="date" id="attendance-date-picker" class="bg-transparent border-none px-4 py-2 font-bold text-slate-700 outline-none w-full">
+            </div>
+            <button onclick="loadAttendanceData()" class="px-6 py-3.5 bg-brand-dark text-white rounded-2xl font-black text-xs uppercase hover:bg-brand-primary transition-all shadow-lg active:scale-95">Kiểm tra dữ liệu</button>
+        </div>
+        <button onclick="saveAttendance()" class="px-8 py-4 ai-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-[1.02] transition-all active:scale-95">Lưu điểm danh hôm nay</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-6">
+            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0"><i class="ph-fill ph-users-four text-3xl"></i></div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sĩ số lớp</p>
+                <span id="att-total-count" class="text-2xl font-black text-slate-800 italic">0</span>
+            </div>
+        </div>
+        <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-6">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0"><i class="ph-fill ph-check-circle text-3xl"></i></div>
+            <div>
+                <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Hiện diện</p>
+                <span id="att-present-count" class="text-2xl font-black text-slate-800 italic">0</span>
+            </div>
+        </div>
+        <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-6">
+            <div class="w-14 h-14 bg-rose-50 text-brand-primary rounded-2xl flex items-center justify-center shrink-0"><i class="ph-fill ph-x-circle text-3xl"></i></div>
+            <div>
+                <p class="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">Vắng mặt</p>
+                <span id="att-absent-count" class="text-2xl font-black text-slate-800 italic">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left min-w-[600px]">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học sinh</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">MSSV</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Trạng thái</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Ghi chú AI</th>
+                    </tr>
+                </thead>
+                <tbody id="attendance-table-body" class="divide-y divide-slate-50">
+                    <!-- Data -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let attendanceData = [];
+    let currentClassId = null;
+
+    async function loadAttendanceData() {
+        const date = document.getElementById('attendance-date-picker').value;
+        const tbody = document.getElementById('attendance-table-body');
+        tbody.innerHTML = '<tr><td colspan="4" class="p-20 text-center animate-pulse"><i class="ph ph-circle-notch animate-spin text-4xl text-brand-primary"></i></td></tr>';
+        
+        try {
+            const res = await fetch(`/api/teacher/attendance?date=${date}`);
+            const result = await res.json();
+            if (result.success) {
+                attendanceData = result.data;
+                currentClassId = result.class_id;
+                renderAttendance();
+                updateCounts();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    function renderAttendance() {
+        const tbody = document.getElementById('attendance-table-body');
+        tbody.innerHTML = attendanceData.map(st => `
+            <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="px-8 py-5 font-bold text-slate-700">${st.HoTen}</td>
+                <td class="px-8 py-5 font-black text-xs text-slate-400 uppercase">${st.MSSV || 'N/A'}</td>
+                <td class="px-8 py-5 text-center">
+                    <select onchange="updateStatus(${st.MaNguoiDung}, this.value)" class="px-4 py-2 rounded-xl text-xs font-black uppercase border-none bg-slate-100 focus:ring-2 focus:ring-brand-primary cursor-pointer">
+                        <option value="HienDien" ${st.TrangThai === 'HienDien' ? 'selected' : ''} class="text-emerald-600">Hiện diện</option>
+                        <option value="VangCP" ${st.TrangThai === 'VangCP' ? 'selected' : ''} class="text-amber-600">Vắng (P)</option>
+                        <option value="VangKP" ${st.TrangThai === 'VangKP' ? 'selected' : ''} class="text-rose-600">Vắng (K)</option>
+                        <option value="Muon" ${st.TrangThai === 'Muon' ? 'selected' : ''} class="text-blue-600">Đi muộn</option>
+                    </select>
+                </td>
+                <td class="px-8 py-5 text-center">
+                    <span class="text-[10px] font-bold text-slate-400 italic">${st.GhiChuAI || 'Không có dữ liệu camera'}</span>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateStatus(uid, status) {
+        const st = attendanceData.find(x => x.MaNguoiDung === uid);
+        if (st) st.TrangThai = status;
+        updateCounts();
+    }
+
+    function updateCounts() {
+        document.getElementById('att-total-count').innerText = attendanceData.length;
+        document.getElementById('att-present-count').innerText = attendanceData.filter(x => x.TrangThai === 'HienDien' || x.TrangThai === 'Muon').length;
+        document.getElementById('att-absent-count').innerText = attendanceData.filter(x => x.TrangThai === 'VangCP' || x.TrangThai === 'VangKP').length;
+    }
+
+    async function saveAttendance() {
+        const date = document.getElementById('attendance-date-picker').value;
+        if (!currentClassId) {
+            alert("Vui lòng chọn lớp học trước!");
+            return;
+        }
+        try {
+            const res = await fetch('/api/teacher/attendance/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    date, 
+                    class_id: currentClassId, 
+                    attendance: attendanceData 
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert("✨ Đã lưu điểm danh thành công!");
+            } else {
+                alert("Lỗi: " + result.message);
+            }
+        } catch (err) { alert("Lỗi kết nối máy chủ!"); }
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('attendance-date-picker').value = today;
+        loadAttendanceData();
+        
+        // Polling AI Cam data (20s)
+        setInterval(() => {
+            if (!document.hidden) loadAttendanceData();
+        }, 20000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "PH/layout.html" %}
+
+{% set active_page = 'messages' %}
+
+{% block title %}Tin nhắn Phụ huynh{% endblock %}
+
+{% block extra_css %}
+<style>
+    #chat-main { height: calc(100vh - 160px); }
+    @media (max-width: 768px) {
+        #chat-main { height: calc(100vh - 120px); }
+        .contact-list-active #contact-list-container { display: flex; }
+        .contact-list-active #chat-window-container { display: none; }
+        .chat-active #contact-list-container { display: none; }
+        .chat-active #chat-window-container { display: flex; }
+    }
+    .message-bubble { max-width: 85%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="chat-main" class="bg-white shadow-xl rounded-[2.5rem] overflow-hidden flex border border-slate-100 animate-in fade-in duration-500 contact-list-active md:chat-active">
+    
+    <!-- CONTACT LIST -->
+    <aside id="contact-list-container" class="w-full md:w-80 border-r border-slate-100 flex flex-col bg-white">
+        <div class="p-6 border-b border-slate-50">
+            <h1 class="text-xl font-black text-slate-900 mb-4 italic">Tin nhắn</h1>
+            <div class="relative">
+                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" placeholder="Tìm giáo viên..." class="w-full bg-slate-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-xs font-bold outline-none">
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar" id="contact-list">
+            <div class="p-8 text-center animate-pulse"><i class="ph-bold ph-circle-notch animate-spin text-2xl text-edunext-primary"></i></div>
+        </div>
+    </aside>
+
+    <!-- CHAT WINDOW -->
+    <main id="chat-window-container" class="flex-1 flex flex-col bg-[#fdfdfd]">
+        <header class="p-4 md:p-5 border-b border-slate-100 flex items-center justify-between bg-white">
+            <div class="flex items-center gap-3">
+                <button onclick="backToContacts()" class="md:hidden w-8 h-8 flex items-center justify-center text-slate-400"><i class="ph-bold ph-arrow-left text-xl"></i></button>
+                <div class="w-10 h-10 red-gradient rounded-xl flex items-center justify-center text-white shadow-lg"><i class="ph-fill ph-chalkboard-teacher text-xl"></i></div>
+                <div>
+                    <h3 class="text-sm font-black text-slate-900 leading-none" id="chat-name">Chọn giáo viên</h3>
+                    <p class="text-[9px] font-bold text-emerald-500 mt-1 uppercase tracking-tight hidden" id="chat-status">Trực tuyến</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center"><i class="ph-bold ph-phone"></i></button>
+                <button class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center"><i class="ph-bold ph-info"></i></button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 custom-scrollbar bg-slate-50/20" id="chat-messages">
+            <div class="h-full flex flex-col items-center justify-center opacity-20 text-center p-10">
+                <i class="ph-bold ph-chat-circle-dots text-6xl"></i>
+                <p class="mt-4 font-black uppercase tracking-widest text-xs">Trao đổi với giáo viên của con</p>
+            </div>
+        </div>
+
+        <div class="p-4 md:p-6 bg-white border-t border-slate-100">
+            <div class="flex items-center gap-3 md:gap-4 bg-slate-50 p-2 rounded-[1.8rem] border border-slate-100 focus-within:ring-2 focus-within:ring-edunext-primary/10 transition-all">
+                <input type="text" id="msg-input" placeholder="Nhập tin nhắn..." class="flex-1 bg-transparent border-none outline-none text-sm px-4 font-bold">
+                <button onclick="sendMessage()" class="w-11 h-11 red-gradient text-white rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-all active:scale-95"><i class="ph-fill ph-paper-plane-right text-lg"></i></button>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentReceiverId = null;
+    let currentUserId = null;
+
+    function backToContacts() {
+        document.getElementById('chat-main').classList.replace('chat-active', 'contact-list-active');
+    }
+
+    async function loadContacts() {
+        try {
+            const res = await fetch('/api/parent/chat-contacts');
+            const result = await res.json();
+            if (result.success) {
+                const list = document.getElementById('contact-list');
+                list.innerHTML = result.data.map(c => `
+                    <div onclick="openChat(${c.MaNguoiDung}, '${c.HoTen}')" 
+                        class="p-4 rounded-2xl flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-all group ${currentReceiverId == c.MaNguoiDung ? 'bg-slate-50' : ''}">
+                        <div class="w-10 h-10 rounded-xl bg-edunext-50 text-edunext-primary flex items-center justify-center font-black shadow-sm group-hover:scale-110 transition-all">
+                            ${c.HoTen.charAt(0)}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs font-black text-slate-800 truncate">${c.HoTen}</p>
+                                ${c.UnreadCount > 0 ? `<span class="bg-edunext-primary text-white text-[8px] px-1.5 py-0.5 rounded-full font-black animate-pulse">${c.UnreadCount}</span>` : ''}
+                            </div>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase truncate mt-0.5">${c.TenCon || 'Giáo viên bộ môn'}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                if (window.innerWidth > 768 && result.data.length > 0 && !currentReceiverId) {
+                    openChat(result.data[0].MaNguoiDung, result.data[0].HoTen);
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function openChat(rid, name) {
+        currentReceiverId = rid;
+        document.getElementById('chat-name').innerText = name;
+        document.getElementById('chat-status').classList.remove('hidden');
+        document.getElementById('chat-main').classList.replace('contact-list-active', 'chat-active');
+        
+        // Highlight active contact
+        loadContacts(); 
+        loadChatHistory();
+    }
+
+    async function loadChatHistory() {
+        if (!currentReceiverId) return;
+        try {
+            const res = await fetch(`/api/messages/history?with_user_id=${currentReceiverId}`);
+            const result = await res.json();
+            if (result.success) {
+                currentUserId = result.current_user_id;
+                const container = document.getElementById('chat-messages');
+                if (result.data.length === 0) {
+                    container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-20 text-center p-10"><p class="font-black uppercase tracking-widest text-xs">Hãy bắt đầu cuộc trò chuyện</p></div>`;
+                    return;
+                }
+                container.innerHTML = result.data.map(m => {
+                    const isMe = m.MaNguoiGui == currentUserId;
+                    return `
+                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-1 duration-300">
+                            <div class="message-bubble ${isMe ? 'red-gradient text-white rounded-[1.5rem] rounded-tr-none' : 'bg-white border border-slate-100 text-slate-700 rounded-[1.5rem] rounded-tl-none'} p-4 shadow-sm">
+                                <p class="text-xs font-bold leading-relaxed">${m.NoiDung}</p>
+                                <p class="text-[8px] ${isMe ? 'text-white/60' : 'text-slate-400'} mt-1 font-black text-right">${new Date(m.ThoiGian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        </div>`;
+                }).join('');
+                container.scrollTop = container.scrollHeight;
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('msg-input');
+        const content = input.value.trim();
+        if (!content || !currentReceiverId) return;
+        try {
+            const res = await fetch('/api/messages/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiver_id: currentReceiverId, content })
+            });
+            if ((await res.json()).success) { 
+                input.value = ''; 
+                loadChatHistory(); 
+                // Xóa badge thông báo nếu đang chat
+                loadContacts();
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    document.getElementById('msg-input').onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+    document.addEventListener('DOMContentLoaded', loadContacts);
+    
+    // Polling history every 3s
+    setInterval(() => { 
+        if (!document.hidden && currentReceiverId) loadChatHistory(); 
+    }, 3000);
+</script>
+{% endblock %}

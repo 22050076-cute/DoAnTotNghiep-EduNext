@@ -1,0 +1,283 @@
+{% extends "PH/layout.html" %}
+
+{% set active_page = 'vi-dien-tu' %}
+
+{% block title %}Quản lý Học phí & Tài chính{% endblock %}
+
+{% block extra_css %}
+<!-- Thư viện Xuất File Excel (SheetJS) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .card-shadow { box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05); }
+</style>
+{% endblock %}
+
+{% block header_extra %}
+<div class="hidden sm:block">
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Quản lý Tài chính & Thu Học phí THCS</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    
+    <!-- TIÊU ĐỀ TRANG VÀ NÚT THAO TÁC -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight italic flex items-center gap-3">
+                <i class="ph-fill ph-receipt text-rose-600"></i> Tra Cứu Học Phí Học Đường
+            </h1>
+            <p id="student-title-sub" class="text-xs font-bold text-slate-500 uppercase mt-1">Đang tải thông tin học sinh...</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="px-5 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                <i class="ph-bold ph-printer text-base"></i> In phiếu
+            </button>
+            <button onclick="exportToExcel()" class="px-5 py-3 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-emerald-100 hover:scale-105 transition-all flex items-center gap-2">
+                <i class="ph-bold ph-file-xls text-base"></i> Xuất Excel (.xlsx)
+            </button>
+        </div>
+    </div>
+
+    <!-- BỘ CHỌN LỌC HỌC KỲ VÀ STAT CARDS -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-100 card-shadow flex flex-col justify-center gap-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Chọn Khối Lớp / Học kỳ tra cứu</label>
+            <select id="filter-semester" onchange="onSemesterFilterChange(this.value)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-500 text-xs cursor-pointer">
+                <option value="ALL">--- Tất cả các học kỳ (Lịch sử tích lũy) ---</option>
+                <optgroup label="Lớp 6 (Năm học 2024 - 2025)">
+                    <option value="L6_HK1">Khối 6 - Học kỳ I</option>
+                    <option value="L6_HK2">Khối 6 - Học kỳ II</option>
+                </optgroup>
+                <optgroup label="Lớp 7 (Năm học 2025 - 2026)">
+                    <option value="L7_HK1">Khối 7 - Học kỳ I</option>
+                    <option value="L7_HK2">Khối 7 - Học kỳ II</option>
+                </optgroup>
+                <optgroup label="Lớp 8 (Năm học 2026 - 2027) - Đang học">
+                    <option value="L8_HK1" selected>Khối 8 - Học kỳ I (Hiện tại - Cần đóng)</option>
+                    <option value="L8_HK2">Khối 8 - Học kỳ II (Chưa diễn ra)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 card-shadow flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl font-black">
+                <i class="ph-bold ph-coins"></i>
+            </div>
+            <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tổng phải thu</p>
+                <h3 id="stat-must-pay" class="text-lg font-black text-slate-800 mt-0.5">0đ</h3>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 card-shadow flex items-center gap-4 border-2 border-dashed border-rose-200">
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl font-black">
+                <i class="ph-bold ph-warning-circle"></i>
+            </div>
+            <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Cần thanh toán</p>
+                <h3 id="stat-debt" class="text-lg font-black text-rose-600 mt-0.5">0đ</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC HIỂN THỊ DỮ LIỆU ĐỘNG -->
+    <div id="tuition-container" class="space-y-8">
+        <!-- Đổ HTML động bằng JS -->
+    </div>
+</div>
+
+<!-- MODAL QR CODE THANH TOÁN -->
+<div id="payment-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[150] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-6 bg-rose-600 text-white flex items-center justify-between">
+            <h3 class="font-black text-lg italic uppercase">Thanh toán Học phí</h3>
+            <button onclick="togglePaymentModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-all">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 text-center space-y-4">
+            <p class="text-xs font-bold text-slate-500 uppercase">Quét mã VietQR để thanh toán cho học sinh</p>
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block shadow-inner">
+                <img id="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=EduNext_Tuition" class="w-48 h-48 mx-auto">
+            </div>
+            <div class="text-left bg-rose-50 p-4 rounded-xl border border-rose-100 space-y-1">
+                <p class="text-[10px] font-black text-rose-600 uppercase">Số tiền thanh toán: <span id="modal-pay-amount" class="text-sm">0đ</span></p>
+                <p class="text-[10px] font-bold text-slate-600">Nội dung: <span id="modal-pay-content" class="font-mono text-slate-800">HP_L8HK1_30</span></p>
+            </div>
+            <button onclick="confirmPayment()" class="w-full py-3.5 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-emerald-700 transition-all">
+                Đã hoàn tất chuyển khoản
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let rawTuitionData = null;
+
+    async function loadTuitionData() {
+        try {
+            const res = await fetch('/api/parent/tuition');
+            const result = await res.json();
+            if (result.success) {
+                rawTuitionData = result.data;
+                document.getElementById('student-title-sub').innerText = `Học sinh: ${result.student_name} • Lớp ${result.class_name}`;
+                renderData('L8_HK1'); // Mặc định mở Lớp 8 HK1 hiện tại
+            }
+        } catch (e) { console.error("Lỗi nạp học phí:", e); }
+    }
+
+    function onSemesterFilterChange(val) {
+        renderData(val);
+    }
+
+    function renderData(filterKey) {
+        if (!rawTuitionData) return;
+
+        const container = document.getElementById('tuition-container');
+        let mustPayTotal = 0;
+        let debtTotal = 0;
+
+        if (filterKey === 'ALL') {
+            // VIEW TỔNG HỢP TẤT CẢ CÁC HỌC KỲ
+            let rowsHtml = '';
+            let idx = 1;
+
+            rawTuitionData.semesters.forEach(sem => {
+                mustPayTotal += sem.phai_thu;
+                debtTotal += sem.con_no;
+
+                rowsHtml += `
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="px-4 py-3.5 text-center text-slate-400 font-bold">${idx++}</td>
+                        <td class="px-6 py-3.5 font-bold italic text-slate-800">${sem.ten_hoc_ky}</td>
+                        <td class="px-4 py-3.5 text-right font-bold text-slate-700">${sem.muc_hoc_phi.toLocaleString()}đ</td>
+                        <td class="px-4 py-3.5 text-right font-bold text-emerald-600">${sem.mien_giam.toLocaleString()}đ</td>
+                        <td class="px-4 py-3.5 text-right font-black text-slate-800">${sem.phai_thu.toLocaleString()}đ</td>
+                        <td class="px-4 py-3.5 text-right font-bold text-emerald-600">${sem.da_thu.toLocaleString()}đ</td>
+                        <td class="px-4 py-3.5 text-right font-black ${sem.con_no > 0 ? 'text-rose-600' : 'text-slate-400'}">${sem.con_no.toLocaleString()}đ</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 card-shadow space-y-6">
+                    <h3 class="text-base font-black text-slate-800 uppercase italic border-b border-slate-100 pb-4">
+                        Bảng Báo Cáo Học Phí Tích Lũy Qua Các Học Kỳ (Khối 6 - Khối 8)
+                    </h3>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table id="table-tuition-export" class="w-full text-left min-w-[850px]">
+                            <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3 text-center">Stt</th>
+                                    <th class="px-6 py-3">Niên học học kỳ</th>
+                                    <th class="px-4 py-3 text-right">Mức học phí</th>
+                                    <th class="px-4 py-3 text-right">Miễn giảm</th>
+                                    <th class="px-4 py-3 text-right">Phải thu</th>
+                                    <th class="px-4 py-3 text-right">Đã thu</th>
+                                    <th class="px-4 py-3 text-right text-rose-600">Còn nợ</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50 text-xs">
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        } else {
+            // VIEW CHI TIẾT 1 HỌC KỲ CỤ THỂ
+            const sem = rawTuitionData.semesters.find(s => s.key === filterKey);
+            if (!sem) {
+                container.innerHTML = `<div class="p-8 bg-white rounded-3xl text-center text-slate-400 font-bold italic">Chưa có dữ liệu cho học kỳ này.</div>`;
+                return;
+            }
+
+            mustPayTotal = sem.phai_thu;
+            debtTotal = sem.con_no;
+
+            let itemsHtml = sem.items.map((item, i) => `
+                <tr class="hover:bg-slate-50/50">
+                    <td class="px-4 py-4 text-center text-slate-400 font-bold">${i + 1}</td>
+                    <td class="px-6 py-4 font-bold text-slate-800 text-xs">${item.ten_khoan_thu}</td>
+                    <td class="px-4 py-4 text-right font-bold text-slate-700">${item.so_tien.toLocaleString()}đ</td>
+                    <td class="px-4 py-4 text-center">
+                        <span class="px-3 py-1 ${item.trang_thai === 'Đã thu' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'} text-[10px] font-black rounded-full uppercase">
+                            ${item.trang_thai}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 card-shadow space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 uppercase italic">${sem.ten_hoc_ky}</h3>
+                            <p class="text-xs font-bold text-slate-400">Chi tiết hóa đơn các khoản thu bắt buộc & đóng góp</p>
+                        </div>
+                        ${sem.con_no > 0 ? `
+                            <button onclick="openPayment('${sem.ten_hoc_ky}', ${sem.con_no})" class="px-6 py-3 red-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">
+                                <i class="ph-bold ph-qr-code mr-1"></i> Thanh toán ${sem.con_no.toLocaleString()}đ
+                            </button>
+                        ` : `
+                            <span class="px-4 py-2 bg-emerald-50 text-emerald-600 font-black text-xs rounded-xl uppercase">✨ Đã hoàn tất học phí</span>
+                        `}
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table id="table-tuition-export" class="w-full text-left min-w-[650px]">
+                            <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3 text-center">STT</th>
+                                    <th class="px-6 py-3">Danh mục khoản thu</th>
+                                    <th class="px-4 py-3 text-right">Số tiền</th>
+                                    <th class="px-4 py-3 text-center">Trạng thái đóng</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50 text-xs">
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('stat-must-pay').innerText = mustPayTotal.toLocaleString() + 'đ';
+        document.getElementById('stat-debt').innerText = debtTotal.toLocaleString() + 'đ';
+    }
+
+    // CHỨC NĂNG XUẤT EXCEL THẬT CỦA SHEETJS
+    function exportToExcel() {
+        const table = document.getElementById("table-tuition-export");
+        if (!table) { alert("Không có dữ liệu bảng để xuất!"); return; }
+
+        const wb = XLSX.utils.table_to_book(table, { sheet: "BaoCaoHocPhi" });
+        XLSX.writeFile(wb, `BaoCao_HocPhi_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function togglePaymentModal() {
+        document.getElementById('payment-modal').classList.toggle('hidden');
+        document.getElementById('payment-modal').classList.toggle('flex');
+    }
+
+    function openPayment(title, amount) {
+        document.getElementById('modal-pay-amount').innerText = amount.toLocaleString() + 'đ';
+        document.getElementById('modal-pay-content').innerText = `HP_${title.replace(/[^a-zA-Z0-9]/g, '')}`;
+        togglePaymentModal();
+    }
+
+    function confirmPayment() {
+        alert("✨ Đã xác nhận yêu cầu thanh toán! Hệ thống sẽ cập nhật sau khi ngân hàng đối soát.");
+        togglePaymentModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadTuitionData);
+</script>
+{% endblock %}

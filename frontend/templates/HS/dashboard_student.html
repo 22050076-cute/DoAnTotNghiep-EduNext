@@ -1,0 +1,210 @@
+{% extends "HS/layout.html" %}
+
+{% set active_page = 'dashboard' %}
+
+{% block title %}Bàn học của tôi{% endblock %}
+
+{% block header_title %}Hồ sơ của tôi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-bubble { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; }
+    .chat-bubble:hover { transform: translateY(-5px) scale(1.05); }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+    .animate-shimmer { animation: shimmer 2s infinite; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-in fade-in duration-700">
+    <!-- Banner Chào mừng -->
+    <div class="bg-gradient-to-r from-edunext-primary to-rose-600 rounded-3xl p-8 lg:p-10 text-white relative overflow-hidden shadow-xl shadow-red-100">
+        <div class="relative z-10 max-w-2xl">
+            <h1 id="user-welcome" class="text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight">Chào buổi sáng! 👋</h1>
+            <p id="today-alert" class="text-white/80 text-lg mb-8 leading-relaxed max-w-xl">Hệ thống đang tải dữ liệu học tập của bạn...</p>
+            <div class="flex flex-wrap gap-4">
+                <button class="bg-white text-edunext-primary px-6 py-3.5 rounded-xl font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
+                    <i class="ph-fill ph-video-camera text-lg"></i> Vào lớp Online ngay
+                </button>
+            </div>
+        </div>
+        <i class="ph-fill ph-rocket-launch absolute -right-4 -bottom-4 text-[200px] text-white/10 rotate-12"></i>
+    </div>
+
+    <!-- --- [GOLD STANDARD: CLASS ANNOUNCEMENTS] --- -->
+    <div id="announcements-section" class="hidden animate-in fade-in slide-in-from-top duration-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-extrabold text-xl text-slate-800 flex items-center gap-2">
+                <i class="ph-fill ph-megaphone text-amber-500"></i> Thông báo mới từ Thầy/Cô
+            </h3>
+            <span class="text-xs font-bold bg-amber-100 text-amber-600 px-3 py-1 rounded-full border border-amber-200 uppercase tracking-widest">Tin mới nhất</span>
+        </div>
+        <div id="announcements-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Announcements will be injected here -->
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-xl text-slate-800 flex items-center gap-2">
+                    <i class="ph-fill ph-push-pin text-edunext-primary"></i> Nhiệm vụ cần làm
+                </h3>
+                <a href="/bai-tap" class="text-sm font-bold text-edunext-primary hover:underline">Xem tất cả</a>
+            </div>
+
+            <div id="tasks-list" class="space-y-4">
+                <div class="p-8 text-center text-slate-400 font-bold italic">Hệ thống đang tải nhiệm vụ của bạn...</div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Chuyên cần của mình -->
+            <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col h-full">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
+                            <i class="ph-bold ph-calendar-x text-xl"></i>
+                        </div>
+                        <h4 class="font-black text-slate-800 text-sm uppercase italic">Chuyên cần của mình</h4>
+                    </div>
+                    <div id="absent-count" class="bg-rose-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg shadow-rose-100">
+                        0 ngày nghỉ
+                    </div>
+                </div>
+                <div id="attendance-list" class="space-y-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                    <p class="text-[10px] text-slate-400 italic text-center py-4">Đang tải dữ liệu...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Buttons -->
+<div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
+    <button onclick="toggleFeedbackModal()" class="chat-bubble w-14 h-14 bg-white text-edunext-primary rounded-full flex items-center justify-center text-2xl border border-slate-200 shadow-xl group relative">
+        <i class="ph-fill ph-chat-circle-dots"></i>
+        <span class="absolute right-full mr-3 px-3 py-1 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Phản hồi GVCN</span>
+    </button>
+</div>
+
+<!-- Modals & Scripts -->
+<script>
+    async function loadDashboardData() {
+        try {
+            const resp = await fetch('/api/student/dashboard/summary');
+            const res = await resp.json();
+            if (res.success) {
+                const data = res.data;
+                document.getElementById('user-welcome').innerText = `Chào buổi sáng, ${data.user.first_name}! 👋`;
+                document.getElementById('today-alert').innerText = data.user.today_alert;
+                
+                const taskContainer = document.getElementById('tasks-list');
+                if (data.tasks.length > 0) {
+                    taskContainer.innerHTML = data.tasks.map(task => `
+                        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-5 hover:border-edunext-primary transition-all group">
+                            <div class="flex items-start gap-4 flex-1">
+                                <div class="w-14 h-14 rounded-2xl bg-${task.color}-50 text-${task.color}-600 flex items-center justify-center shrink-0 border border-${task.color}-100">
+                                    <i class="ph-fill ${task.icon} text-3xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-extrabold text-slate-800 group-hover:text-edunext-primary text-lg">${task.title}</h4>
+                                    <span class="text-[10px] px-2.5 py-1 bg-slate-100 rounded-lg text-slate-500 font-bold uppercase mt-2 inline-block italic">Hạn: ${task.deadline}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <a href="/bai-tap" class="px-6 py-3 bg-edunext-primary text-white font-black text-xs rounded-xl shadow-lg hover:scale-105 transition-all">Làm bài ngay</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadAnnouncements() {
+        try {
+            const resp = await fetch('/api/student/announcements');
+            const res = await resp.json();
+            if (res.success && res.data.length > 0) {
+                document.getElementById('announcements-section').classList.remove('hidden');
+                document.getElementById('announcements-list').innerHTML = res.data.slice(0, 2).map(ann => `
+                    <div onclick="window.location.href='/student/announcements'" class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-edunext-primary transition-all group relative overflow-hidden cursor-pointer">
+                        <div class="flex items-start gap-4 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-2xl bg-${ann.PhamVi === 'Truong' ? 'rose' : 'amber'}-50 text-${ann.PhamVi === 'Truong' ? 'rose' : 'amber'}-500 flex items-center justify-center shrink-0 shadow-inner">
+                                <i class="ph-fill ${ann.PhamVi === 'Truong' ? 'ph-buildings' : 'ph-megaphone'} text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-slate-800 group-hover:text-edunext-primary transition-colors">${ann.TieuDe}</h4>
+                                    <span class="text-[8px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-1 rounded-md">${ann.PhamVi === 'Truong' ? 'Trường' : 'Lớp'}</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Gửi bởi: ${ann.TenNguoiDang || 'GVCN'}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium line-clamp-2 relative z-10 mb-4">${ann.NoiDung}</p>
+                        <div class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-t border-slate-50 pt-4">
+                            <span class="flex items-center gap-1.5"><i class="ph-fill ph-heart text-rose-400"></i> ${ann.LikeCount || 0}</span>
+                            <span class="flex items-center gap-1.5"><i class="ph-fill ph-chat-circle text-blue-400"></i> ${ann.CommentCount || 0}</span>
+                            <span class="ml-auto text-edunext-primary group-hover:translate-x-1 transition-transform">Xem chi tiết <i class="ph-bold ph-caret-right"></i></span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadAttendance() {
+        try {
+            const res = await fetch('/api/student/attendance');
+            const result = await res.json();
+            if (result.success) {
+                const list = document.getElementById('attendance-list');
+                const countBadge = document.getElementById('absent-count');
+
+                const absences = result.data.filter(a => 
+                    a.TrangThai.includes('Vắng') || a.TrangThai.includes('Vang')
+                );
+                countBadge.innerText = `${absences.length} ngày nghỉ`;
+
+                if (result.data.length === 0) {
+                    list.innerHTML = '<div class="text-center py-10"><i class="ph-bold ph-check-circle text-4xl text-emerald-100 mb-2"></i><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Bạn đi học đầy đủ ✨</p></div>';
+                    return;
+                }
+
+                list.innerHTML = result.data.map(a => `
+                    <div class="flex items-start gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-rose-200 transition-all">
+                        <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center ${a.TrangThai.includes('Vắng') ? 'bg-rose-100 text-rose-500' : 'bg-amber-100 text-amber-500'}">
+                            <i class="ph-fill ${a.TrangThai.includes('Vắng') ? 'ph-calendar-x' : 'ph-clock'} text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <p class="text-[11px] font-black text-slate-800">${new Date(a.NgayDiemDanh).toLocaleDateString('vi-VN')}</p>
+                                <span class="text-[8px] font-black uppercase px-2 py-0.5 rounded-md ${a.TrangThai.includes('Vắng') ? 'bg-rose-200 text-rose-700' : 'bg-amber-200 text-amber-700'}">${a.TrangThai}</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 italic">${a.GhiChu || ''}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function refreshDashboard() {
+        if (!document.hidden) {
+            loadDashboardData(); 
+            loadAnnouncements(); 
+            loadAttendance(); 
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { 
+        loadDashboardData(); 
+        loadAnnouncements(); 
+        loadAttendance(); 
+        
+        // Tự động làm mới dữ liệu sau mỗi 30 giây để đảm bảo tính thời gian thực (Nền tảng số)
+        setInterval(refreshDashboard, 30000);
+    });
+</script>
+{% endblock %}

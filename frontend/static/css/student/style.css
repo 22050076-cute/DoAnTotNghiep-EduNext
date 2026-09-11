@@ -1,0 +1,59 @@
+/* --- Khung cuộn toàn trang --- */
+::-webkit-scrollbar { 
+    width: 6px; 
+}
+::-webkit-scrollbar-thumb { 
+    background: #cbd5e1; 
+    border-radius: 10px; 
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* --- Sidebar Logic --- */
+.sidebar-link {
+    transition: all 0.2s ease-in-out;
+}
+.sidebar-link:hover { 
+    background: rgba(238, 0, 51, 0.05); 
+    color: #ee0033; 
+}
+.sidebar-active { 
+    background: #ee0033 !important; 
+    color: white !important; 
+    box-shadow: 0 10px 15px -3px rgba(238, 0, 51, 0.2); 
+}
+
+/* --- Các nút bong bóng Chat/AI --- */
+.chat-bubble {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.chat-bubble:hover { 
+    transform: translateY(-5px) scale(1.05); 
+}
+
+/* --- Hiệu ứng Shimmer cho Progress Bar --- */
+@keyframes shimmer { 
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); } 
+}
+.animate-shimmer { 
+    animation: shimmer 2s infinite linear; 
+}
+
+/* --- FIX LỖI HIỂN THỊ BANNER (Quan trọng) --- */
+/* Đảm bảo các thành phần trong Banner không bị mất màu do Backdrop Blur */
+.bg-white\/20 {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.backdrop-blur-md {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Đảm bảo text luôn hiển thị trên nền Gradient */
+.text-white\/80 {
+    color: rgba(255, 255, 255, 0.8) !important;
+}

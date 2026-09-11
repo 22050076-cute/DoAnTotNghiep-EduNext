@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Tài Khoản - EduNext Admin</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c' },
+                        darkbg: '#0f172a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- 1. SIDEBAR -->
+    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+        <div>
+            <div class="flex items-center gap-3 px-3 py-3 mb-6">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="text-xl font-bold text-white">Edu<span class="text-primary-500">Admin</span></span>
+            </div>
+            <nav class="space-y-4">
+                <a href="/admin/tong-quan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium transition-all">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> <span>Tổng quan trường</span>
+                </a>
+                <a href="/admin/quan-ly-lop" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium transition-all">
+                    <i class="fa-solid fa-sitemap w-5 text-center"></i> <span>Quản lý Khối & Lớp</span>
+                </a>
+                <a href="/admin/quan-ly-tai-khoan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-600/15 text-primary-500 font-medium border-l-4 border-primary-500 transition-all">
+                    <i class="fa-solid fa-user-gear w-5 text-center"></i> <span>Quản lý Tài khoản</span>
+                </a>
+                <a href="/admin/nhat-ky-he-thong" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium transition-all">
+                    <i class="fa-solid fa-receipt w-5 text-center"></i> <span>Nhật ký Hệ thống</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+            <p class="text-xs text-slate-400">EduNext Identity v4.0</p>
+            <p class="text-[11px] text-emerald-400 font-medium mt-0.5"><i class="fa-solid fa-circle text-[7px] mr-1"></i>Database Connected</p>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- HEADER -->
+        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
+            <h1 class="text-lg font-bold text-slate-800">Quản Lý Tài Khoản Người Dùng</h1>
+            <button onclick="openCreateModal()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-semibold shadow-md transition-all flex items-center gap-2">
+                <i class="fa-solid fa-user-plus"></i> Tạo Tài Khoản Mới
+            </button>
+        </header>
+
+        <!-- BODY -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            
+            <!-- TAB CHỌN VAI TRÒ -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                <div class="flex gap-2">
+                    <button onclick="switchRole('teachers')" id="tab-teachers" class="px-5 py-2 rounded-xl font-bold text-xs bg-primary-600 text-white transition-all shadow-sm">
+                        <i class="fa-solid fa-chalkboard-user mr-1.5"></i> Giáo viên (<span id="count-teachers">0</span>)
+                    </button>
+                    <button onclick="switchRole('students')" id="tab-students" class="px-5 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-graduation-cap mr-1.5"></i> Học sinh (<span id="count-students">0</span>)
+                    </button>
+                    <button onclick="switchRole('parents')" id="tab-parents" class="px-5 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-users-between-lines mr-1.5"></i> Phụ huynh (<span id="count-parents">0</span>)
+                    </button>
+                </div>
+
+                <!-- TÌM KIẾM NHANH -->
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-account" oninput="filterLocalAccounts()" placeholder="Tìm theo tên, email..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary-500/50">
+                </div>
+            </div>
+
+            <!-- BẢNG DANH SÁCH TÀI KHOẢN -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                    <h3 id="account-title" class="text-base font-bold text-slate-800">Danh sách Giáo viên</h3>
+                    <div class="text-xs text-slate-400">Dữ liệu liên thông SQL Server</div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="py-3.5 px-6">Họ tên & ID</th>
+                                <th class="py-3.5 px-6">Email / Tài khoản</th>
+                                <th class="py-3.5 px-6" id="th-extra-col">Thông tin phụ trách</th>
+                                <th class="py-3.5 px-6">Trạng thái</th>
+                                <th class="py-3.5 px-6 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accounts-body" class="divide-y divide-slate-100 text-xs">
+                            <!-- Loaded dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL TẠO TÀI KHOẢN MỚI CHO GV, HS, PH -->
+    <div id="create-user-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            
+            <!-- HEADER MODAL -->
+            <div class="p-6 bg-gradient-to-r from-primary-600 to-rose-500 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                        <i class="fa-solid fa-user-plus text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base">Tạo Tài Khoản Người Dùng</h3>
+                        <p class="text-[10px] text-white/80">Khởi tạo và phân quyền truy cập hệ thống</p>
+                    </div>
+                </div>
+                <button onclick="closeCreateModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- FORM BODY -->
+            <div class="p-6 overflow-y-auto custom-scrollbar space-y-4 flex-1">
+                <!-- 1. CHỌN VAI TRÒ -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Vai trò người dùng <span class="text-rose-500">*</span></label>
+                    <select id="modal-role" onchange="onRoleChange()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="Teacher">👩‍🏫 Giáo viên (Teacher)</option>
+                        <option value="Student">👨‍🎓 Học sinh (Student)</option>
+                        <option value="Parent">👨‍👩‍👦 Phụ huynh (Parent)</option>
+                    </select>
+                </div>
+
+                <!-- 2. HỌ VÀ TÊN -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Họ và tên <span class="text-rose-500">*</span></label>
+                    <input type="text" id="modal-hoten" placeholder="Ví dụ: Nguyễn Văn An" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary-500">
+                </div>
+
+                <!-- 3. EMAIL / TÊN ĐĂNG NHẬP -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Email / Tài khoản <span class="text-rose-500">*</span></label>
+                        <input type="email" id="modal-email" placeholder="an.nguyen@edunext.edu.vn" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mật khẩu khởi tạo</label>
+                        <input type="text" id="modal-password" value="123456" class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 outline-none">
+                    </div>
+                </div>
+
+                <!-- 4. TRƯỜNG THAY ĐỔI ĐỘNG THEO VAI TRÒ -->
+                <!-- A. DÀNH CHO HỌC SINH: CHỌN LỚP HỌC -->
+                <div id="field-student-class" class="hidden">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Xếp vào Lớp học <span class="text-rose-500">*</span></label>
+                    <select id="modal-student-class-id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                        <!-- Tải danh sách lớp -->
+                    </select>
+                </div>
+
+                <!-- B. DÀNH CHO GIÁO VIÊN: GÁN MÔN HỌC & GVCN -->
+                <div id="field-teacher-assignment" class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Môn học phụ trách chính <span class="text-rose-500">*</span></label>
+                        <select id="modal-teacher-subject-id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value="1">Toán học</option>
+                            <option value="2">Ngữ văn</option>
+                            <option value="3">Tiếng Anh</option>
+                            <option value="4">Khoa học tự nhiên</option>
+                            <option value="5">Lịch sử và Địa lí</option>
+                            <option value="6">Tin học</option>
+                            <option value="7">Công nghệ</option>
+                            <option value="8">Giáo dục công dân</option>
+                            <option value="9">Nghệ thuật</option>
+                            <option value="10">Giáo dục thể chất</option>
+                            <option value="11">Hoạt động trải nghiệm</option>
+                            <option value="12">Nội dung GD địa phương</option>
+                            <option value="13">Hóa học</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Chủ nhiệm lớp (Không bắt buộc)</label>
+                        <select id="modal-teacher-class-id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value="">--- Không chủ nhiệm ---</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- C. DÀNH CHO PHỤ HUYNH: LIÊN KẾT CON (HỌC SINH) -->
+                <div id="field-parent-link" class="hidden space-y-3">
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] font-semibold text-amber-800">
+                        <i class="fa-solid fa-link mr-1"></i> Chọn đúng học sinh là con để phụ huynh theo dõi điểm số.
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Chọn Học sinh liên kết <span class="text-rose-500">*</span></label>
+                        <select id="modal-parent-child-id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                            <!-- Tải danh sách toàn bộ học sinh -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER MODAL -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                <button onclick="closeCreateModal()" class="px-4 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs uppercase hover:bg-slate-300 transition-all">Hủy</button>
+                <button onclick="submitCreateUser()" id="btn-submit-user" class="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs uppercase shadow-md transition-all">
+                    Tạo Tài Khoản
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ DỮ LIỆU -->
+    <script>
+        let currentRole = 'teachers';
+        let rawAccountList = [];
+        let globalClasses = [];
+        let globalStudents = [];
+
+        function switchRole(role) {
+            currentRole = role;
+            ['teachers', 'students', 'parents'].forEach(r => {
+                const btn = document.getElementById('tab-' + r);
+                if (r === role) {
+                    btn.className = "px-5 py-2 rounded-xl font-bold text-xs bg-primary-600 text-white transition-all shadow-sm";
+                } else {
+                    btn.className = "px-5 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all";
+                }
+            });
+            loadAccounts(role);
+        }
+
+        async function loadAuxiliaryData() {
+            try {
+                // Tải danh sách lớp
+                const cRes = await fetch('/api/admin/classes');
+                const cJson = await cRes.json();
+                if (cJson.success) {
+                    globalClasses = cJson.data || [];
+                    const sClassSelect = document.getElementById('modal-student-class-id');
+                    const tClassSelect = document.getElementById('modal-teacher-class-id');
+                    
+                    let opts = globalClasses.map(c => `<option value="${c.MaLop}">${c.TenLop}</option>`).join('');
+                    sClassSelect.innerHTML = opts;
+                    tClassSelect.innerHTML = '<option value="">--- Không chủ nhiệm ---</option>' + opts;
+                }
+
+                // Tải danh sách học sinh để phụ huynh liên kết
+                const stRes = await fetch('/api/admin/users/students');
+                const stJson = await stRes.json();
+                if (stJson.success) {
+                    globalStudents = stJson.data || [];
+                    const pChildSelect = document.getElementById('modal-parent-child-id');
+                    pChildSelect.innerHTML = globalStudents.map(s => `<option value="${s.MaNguoiDung}">${s.HoTen} (${s.TenLop || 'Lớp học'})</option>`).join('');
+                }
+            } catch (e) { console.error("Lỗi nạp danh mục phụ trợ:", e); }
+        }
+
+        async function loadAccounts(role) {
+            const title = document.getElementById('account-title');
+            const roleName = role === 'teachers' ? 'Giáo viên' : (role === 'students' ? 'Học sinh' : 'Phụ huynh');
+            title.innerText = `Danh sách ${roleName}`;
+            
+            const extraTh = document.getElementById('th-extra-col');
+            if (role === 'teachers') extraTh.innerText = "Môn dạy & Chủ nhiệm";
+            else if (role === 'students') extraTh.innerText = "Lớp đang học";
+            else extraTh.innerText = "Con liên kết";
+
+            const body = document.getElementById('accounts-body');
+            body.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400 font-medium"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Đang tải dữ liệu...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/admin/users/${role}`); 
+                const result = await res.json();
+
+                if (result.success) {
+                    rawAccountList = result.data || [];
+                    document.getElementById(`count-${role}`).innerText = rawAccountList.length;
+                    renderAccountsTable(rawAccountList, role);
+                }
+            } catch(e) { 
+                console.error(e);
+                body.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-rose-500">Lỗi kết nối máy chủ!</td></tr>'; 
+            }
+        }
+
+        function renderAccountsTable(list, role) {
+            const body = document.getElementById('accounts-body');
+            if (!list || list.length === 0) {
+                body.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">Không tìm thấy tài khoản nào</td></tr>';
+                return;
+            }
+
+            body.innerHTML = list.map(u => {
+                let extraInfo = '---';
+                if (role === 'teachers') {
+                    const monText = u.TenMonHoc ? `<span class="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md border border-rose-200 mr-1.5"><i class="fa-solid fa-book-open mr-1"></i>${u.TenMonHoc}</span>` : '';
+                    const gvcnText = u.TenLop ? `<span class="px-2 py-0.5 bg-amber-50 text-amber-700 font-bold rounded-md border border-amber-200">CN: ${u.TenLop}</span>` : '<span class="text-slate-400 italic">Bộ môn</span>';
+                    extraInfo = `<div class="flex flex-wrap items-center gap-1">${monText}${gvcnText}</div>`;
+                } else if (role === 'students') {
+                    extraInfo = u.TenLop ? `<span class="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-200">${u.TenLop}</span>` : 'Chưa xếp lớp';
+                } else if (role === 'parents') {
+                    extraInfo = u.TenHocSinh ? `<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg border border-emerald-200"><i class="fa-solid fa-child mr-1"></i>${u.TenHocSinh} (${u.TenLopCon || ''})</span>` : '<span class="text-rose-500">Chưa liên kết</span>';
+                }
+
+                return `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-3.5 px-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs uppercase shadow-sm">
+                                ${u.HoTen ? u.HoTen.charAt(0) : 'U'}
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">${u.HoTen || 'Chưa cập nhật'}</p>
+                                <p class="text-[10px] text-slate-400 font-bold">#${u.MaNguoiDung}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-6 text-slate-600 font-medium">${u.Email || 'N/A'}</td>
+                    <td class="py-3.5 px-6 font-semibold">${extraInfo}</td>
+                    <td class="py-3.5 px-6">
+                        <span class="px-2.5 py-1 ${u.TrangThaiOnline ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-400'} text-[10px] font-bold rounded-full">
+                            <i class="fa-solid fa-circle text-[7px] mr-1"></i> ${u.TrangThaiOnline ? 'Online' : 'Offline'}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-6 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="resetPassword(${u.MaNguoiDung}, '${u.HoTen}')" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-700 transition-all text-[11px] font-bold" title="Đặt lại mật khẩu">
+                                <i class="fa-solid fa-key mr-1"></i> Reset Pass
+                            </button>
+                            <button onclick="deleteAccount(${u.MaNguoiDung}, '${u.HoTen}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-500 hover:text-white text-slate-600 transition-all flex items-center justify-center" title="Xóa tài khoản">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function filterLocalAccounts() {
+            const kw = document.getElementById('search-account').value.toLowerCase().trim();
+            const filtered = rawAccountList.filter(u => 
+                (u.HoTen && u.HoTen.toLowerCase().includes(kw)) ||
+                (u.Email && u.Email.toLowerCase().includes(kw))
+            );
+            renderAccountsTable(filtered, currentRole);
+        }
+
+        function openCreateModal() {
+            document.getElementById('create-user-modal').classList.remove('hidden');
+            onRoleChange();
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-user-modal').classList.add('hidden');
+            document.getElementById('modal-hoten').value = '';
+            document.getElementById('modal-email').value = '';
+        }
+
+        function onRoleChange() {
+            const role = document.getElementById('modal-role').value;
+            const fieldStudent = document.getElementById('field-student-class');
+            const fieldTeacher = document.getElementById('field-teacher-assignment');
+            const fieldParent = document.getElementById('field-parent-link');
+
+            fieldStudent.classList.add('hidden');
+            fieldTeacher.classList.add('hidden');
+            fieldParent.classList.add('hidden');
+
+            if (role === 'Student') fieldStudent.classList.remove('hidden');
+            else if (role === 'Teacher') fieldTeacher.classList.remove('hidden');
+            else if (role === 'Parent') fieldParent.classList.remove('hidden');
+        }
+
+        async function submitCreateUser() {
+            const role = document.getElementById('modal-role').value;
+            const hoten = document.getElementById('modal-hoten').value.trim();
+            const email = document.getElementById('modal-email').value.trim();
+            const password = document.getElementById('modal-password').value.trim();
+
+            if (!hoten || !email) {
+                alert("Vui lòng điền đầy đủ Họ tên và Email!");
+                return;
+            }
+
+            const payload = {
+                role: role,
+                ho_ten: hoten,
+                email: email,
+                password: password,
+                class_id: document.getElementById('modal-student-class-id').value,
+                subject_id: document.getElementById('modal-teacher-subject-id').value,
+                gvcn_class_id: document.getElementById('modal-teacher-class-id').value,
+                child_id: document.getElementById('modal-parent-child-id').value
+            };
+
+            const btn = document.getElementById('btn-submit-user');
+            btn.disabled = true;
+            btn.innerText = "Đang xử lý...";
+
+            try {
+                const res = await fetch('/api/admin/users/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    alert("✨ " + result.message);
+                    closeCreateModal();
+                    loadAccounts(role === 'Teacher' ? 'teachers' : (role === 'Student' ? 'students' : 'parents'));
+                    loadAuxiliaryData();
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = "Tạo Tài Khoản";
+            }
+        }
+
+        async function resetPassword(uid, name) {
+            if (!confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu cho tài khoản "${name}" về mặc định (123456)?`)) return;
+            try {
+                const res = await fetch(`/api/admin/users/reset-password/${uid}`, { method: 'POST' });
+                const result = await res.json();
+                if (result.success) alert(`✨ Đã reset mật khẩu tài khoản ${name} về 123456!`);
+                else alert("Lỗi: " + result.message);
+            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
+        }
+
+        async function deleteAccount(uid, name) {
+            if (!confirm(`CẢNH BÁO: Bạn có chắc chắn muốn xóa tài khoản "${name}" khỏi hệ thống?`)) return;
+            try {
+                const res = await fetch(`/api/admin/users/delete/${uid}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    alert("✨ Đã xóa tài khoản thành công!");
+                    loadAccounts(currentRole);
+                } else alert("Lỗi: " + result.message);
+            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAuxiliaryData();
+            loadAccounts('teachers');
+        });
+    </script>
+</body>
+</html>

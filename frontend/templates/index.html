@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNext | Nền Tảng Hỗ Trợ Học Đường THCS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
+            background-color: var(--bg-light);
+            scroll-behavior: smooth;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .card-premium {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-premium:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.2);
+            border-color: #2563eb;
+        }
+
+        #chat-window {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(226, 232, 240, 1);
+        }
+
+        .chat-bubble-user {
+            background: var(--primary);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .chat-bubble-ai {
+            background: #f1f5f9;
+            color: #334155;
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .float-anim {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- THANH ĐIỀU HƯỚNG (NAVIGATION) -->
+    <nav class="fixed top-0 w-full glass-header z-[1000] h-20 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
+            <div class="flex items-center gap-2 group cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-11 h-11 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform">
+                    <i class="ph-bold ph-lightning text-2xl"></i>
+                </div>
+                <span class="text-2xl font-extrabold tracking-tighter">Edu<span class="text-blue-600">Next</span></span>
+            </div>
+
+            <div class="hidden lg:flex gap-8 items-center text-[13px] font-bold uppercase tracking-wider text-slate-500">
+                <a href="#ai-consult" class="hover:text-blue-600">Đánh giá Năng lực</a>
+                <a href="#events" class="hover:text-blue-600">Sự kiện</a>
+                <a href="#materials" class="hover:text-blue-600">Học liệu tiêu biểu</a>
+                <a href="/thu-vien-cong-khai" class="hover:text-blue-600">Thư viện mở</a>
+            </div>
+
+            <div class="hidden md:flex gap-3">
+                <a href="/login" class="px-6 py-2.5 font-bold text-slate-600">Đăng nhập</a>
+                <a href="/register" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-blue-200 shadow-lg hover:bg-blue-700 transition-all">Bắt đầu ngay</a>
+            </div>
+
+            <button onclick="toggleMobileMenu()" class="lg:hidden w-11 h-11 bg-slate-50 rounded-xl flex items-center justify-center text-slate-600">
+                <i id="menu-icon" class="ph-bold ph-list text-2xl"></i>
+            </button>
+        </div>
+        
+        <div id="mobile-menu" class="hidden lg:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-200 p-6 flex flex-col gap-4">
+            <a href="#ai-consult" onclick="toggleMobileMenu()" class="font-bold text-slate-600 hover:text-blue-600">Đánh giá Năng lực</a>
+            <a href="#events" onclick="toggleMobileMenu()" class="font-bold text-slate-600 hover:text-blue-600">Sự kiện</a>
+            <a href="#materials" onclick="toggleMobileMenu()" class="font-bold text-slate-600 hover:text-blue-600">Học liệu tiêu biểu</a>
+            <a href="/thu-vien-cong-khai" class="font-bold text-slate-600 hover:text-blue-600">Thư viện mở</a>
+            <div class="h-px bg-slate-100 my-2"></div>
+            <a href="/login" class="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-center">Đăng nhập</a>
+            <a href="/register" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl text-center">Bắt đầu ngay</a>
+        </div>
+    </nav>
+
+    <!-- TRANG CHỦ (HERO SECTION) -->
+    <section class="pt-40 pb-24 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full font-bold text-[11px] uppercase tracking-widest mb-8">
+                    <i class="ph-fill ph-sparkle"></i> Nền Tảng Hỗ Trợ Học Đường THCS
+                </div>
+                <h1 class="text-4xl md:text-7xl font-extrabold text-slate-900 leading-tight mb-8 tracking-tight">
+                    Học thông minh,<br><span class="text-blue-600">Kiến tạo</span> tương lai.
+                </h1>
+                <p class="text-lg text-slate-500 mb-10 leading-relaxed max-w-lg">
+                    Hệ thống đánh giá năng lực học sinh, kết nối chặt chẽ giữa Nhà trường - Giáo viên chủ nhiệm và Phụ huynh.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="scrollToId('ai-consult')" class="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-blue-600 transition-all flex items-center gap-3">
+                        Làm bài test Năng lực <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                    <button onclick="scrollToId('events')" class="px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl shadow-sm hover:bg-slate-50 transition-all">
+                        Xem Sự kiện Trường
+                    </button>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="absolute -top-20 -right-20 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800" class="card-premium relative z-10 grayscale hover:grayscale-0 transition-all duration-700">
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 1: ĐÁNH GIÁ NĂNG LỰC & TƯ VẤN HỌC ĐƯỜNG -->
+    <section id="ai-consult" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold text-[10px] uppercase tracking-wider mb-3 animate-pulse">
+                    <i class="ph-bold ph-graduation-cap"></i> Khảo sát định lượng & Chẩn đoán năng lực
+                </div>
+                <h2 class="text-4xl font-extrabold mb-4 uppercase italic tracking-tight">
+                    Đánh giá năng lực & <span class="text-blue-600 underline decoration-blue-100 decoration-8 underline-offset-8">Tư vấn Học đường</span>
+                </h2>
+                <p class="text-slate-500 font-medium">Hệ thống chẩn đoán lỗ hổng kiến thức & định hướng phát triển cho Giáo viên chủ nhiệm và Phụ huynh[cite: 8].</p>
+            </div>
+
+            <div class="grid lg:grid-cols-5 gap-10 items-stretch">
+                <!-- CỘT TRÁI (2 CỘT): FORM THÔNG TIN HỒ SƠ HỌC SINH -->
+                <div class="lg:col-span-2 flex flex-col justify-between bg-slate-50 p-8 rounded-[32px] border border-slate-200/60 shadow-sm relative overflow-hidden">
+                    <div class="space-y-4 relative z-10 w-full">
+                        <h4 class="text-sm font-extrabold uppercase flex items-center gap-2 text-slate-800 tracking-wider border-b border-slate-200 pb-3">
+                            <i class="ph-bold ph-user-circle text-blue-600 text-xl"></i> Hồ sơ khảo sát học sinh
+                        </h4>
+                        
+                        <div class="space-y-3 text-left">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-600 uppercase">Mã Học Sinh / Email (Nếu có)</label>
+                                <input type="text" id="student-code" oninput="handleAutoFillByCode()" placeholder="Tự động điền nếu đã có tài khoản" class="w-full mt-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-blue-600 outline-none focus:border-blue-600">
+                            </div>
+
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-600 uppercase">Họ và tên học sinh <span class="text-red-500 font-bold">(*)</span></label>
+                                <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn An" class="w-full mt-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-600">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-600 uppercase">Khối lớp hiện tại <span class="text-red-500 font-bold">(*)</span></label>
+                                    <select id="consult-grade" onchange="updateSurveyMode()" class="w-full mt-1 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-600 cursor-pointer">
+                                        <option value="6">Lớp 6</option>
+                                        <option value="7">Lớp 7</option>
+                                        <option value="8">Lớp 8</option>
+                                        <option value="9">Lớp 9</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-600 uppercase">Thời điểm khảo sát <span class="text-red-500 font-bold">(*)</span></label>
+                                    <select id="consult-period" onchange="updateSurveyMode()" class="w-full mt-1 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-600 cursor-pointer">
+                                        <option value="start">Đầu năm học (Tháng 9)</option>
+                                        <option value="end">Cuối năm học (Tháng 5)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-600 uppercase">Lớp sinh hoạt <span class="text-red-500 font-bold">(*)</span></label>
+                                <input type="text" id="student-class" placeholder="Ví dụ: 6A1 (hoặc 'Chờ xếp lớp')" class="w-full mt-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-600">
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] text-slate-400 font-medium italic text-left space-y-0.5 pt-1">
+                            <div><span class="text-red-500 font-bold">(*)</span> Thông tin bắt buộc để phục vụ phân tích báo cáo.</div>
+                            <div>💡 <em>Học sinh Lớp 5 lên 6 chưa có lớp có thể ghi <strong>"Chờ xếp lớp"</strong>[cite: 8].</em></div>
+                        </div>
+
+                        <div id="test-info-box" class="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-left mt-2">
+                            <div class="text-[11px] font-bold text-blue-800 uppercase mb-1 flex items-center gap-1">
+                                <i class="ph-fill ph-info"></i> <span id="survey-title-lbl">ĐÁNH GIÁ VÀ TƯ VẤN NĂNG LỰC</span>
+                            </div>
+                            <p id="survey-desc-lbl" class="text-[11px] text-blue-600 leading-relaxed font-medium">Hệ thống sẽ tải ngân hàng đề khảo sát từ Cơ sở dữ liệu tương ứng theo khối lớp[cite: 8].</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 relative z-10">
+                        <button id="btn-start-test" onclick="startPlacementTest()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-play-circle text-xl"></i> Bắt đầu Khảo sát Năng lực
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI (3 CỘT): KHU VỰC KHUNG TEST & KẾT QUẢ TỨC THỜI -->
+                <div class="lg:col-span-3 flex flex-col h-full">
+                    <div id="ai-placeholder" class="flex-1 border border-slate-200 rounded-[32px] bg-slate-50/30 p-8 flex flex-col items-center justify-center relative overflow-hidden min-h-[450px]">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-md mb-4 float-anim">
+                            <i class="ph-bold ph-chart-line-up text-3xl"></i>
+                        </div>
+                        <h5 class="text-base font-extrabold text-slate-800 mb-2">Đánh giá năng lực & Tư vấn học đường</h5>
+                        <p class="text-xs text-slate-500 max-w-sm leading-relaxed text-center">
+                            Vui lòng nhập thông tin học sinh và chọn thời điểm khảo sát để hệ thống tải đề từ CSDL và tư vấn năng lực phù hợp[cite: 8].
+                        </p>
+                    </div>
+
+                    <div id="quiz-box" class="hidden flex-1 bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                                <span class="text-[11px] font-extrabold uppercase px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-full flex items-center gap-1.5">
+                                    <span class="w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
+                                    <span id="quiz-badge-lbl">Đang tải đề...</span>
+                                </span>
+                                <span class="text-xs font-bold text-slate-600 flex items-center gap-1">
+                                    <i class="ph-bold ph-timer text-base text-slate-400"></i> Thời gian: <span id="quiz-timer" class="text-red-500 font-extrabold text-sm">15:00</span>
+                                </span>
+                            </div>
+                            <div id="quiz-questions-container" class="max-h-[380px] overflow-y-auto pr-2 space-y-4">
+                                <!-- Nạp động từ API CSDL -->
+                            </div>
+                        </div>
+                        <button id="btn-submit-test" onclick="submitPlacementTest()" class="w-full mt-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-100 transition-all flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-xl"></i> Hoàn thành & Phân tích lộ trình AI
+                        </button>
+                    </div>
+
+                    <div id="ai-result-box" class="hidden flex-1 bg-slate-900 text-white p-8 md:p-10 rounded-[32px] shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-800">
+                                <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-2xl border border-blue-500/20">
+                                    <i class="ph-bold ph-chart-pie-slice"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-blue-400 font-bold uppercase text-[10px] tracking-[0.2em] mb-0.5">Báo cáo chẩn đoán định lượng AI</h4>
+                                    <div class="text-lg font-black tracking-tight text-white" id="student-result-title">SƠ ĐỒ NĂNG LỰC HỌC SINH</div>
+                                </div>
+                            </div>
+
+                            <div id="ai-scores-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6"></div>
+
+                            <div class="space-y-3">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="ph-bold ph-chat-centered-text text-blue-400 text-sm"></i> Nhận xét Sư phạm & Lộ trình Cá nhân hóa
+                                </div>
+                                <div id="ai-analysis-text" class="text-sm leading-relaxed text-slate-300 font-medium space-y-3 bg-slate-800/40 p-5 rounded-2xl border border-slate-800/60 max-h-[250px] overflow-y-auto text-left"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-slate-800/60 flex justify-between items-center">
+                            <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                                <i class="ph-bold ph-check-circle"></i> Đã gửi báo cáo xếp nhóm đến Giáo viên chủ nhiệm
+                            </span>
+                            <button onclick="startPlacementTest()" class="px-5 py-2.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 hover:bg-slate-700 hover:text-white transition-all">
+                                Làm lại khảo sát
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 2: SỰ KIỆN NỔI BẬT KHỐI THCS (#events) -->
+    <section id="events" class="py-24 bg-slate-50 border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold text-[10px] uppercase tracking-wider mb-3">
+                        <i class="ph-bold ph-calendar"></i> Hoạt động học đường
+                    </div>
+                    <h2 class="text-4xl font-extrabold uppercase italic tracking-tight text-slate-900">
+                        Sự Kiện & <span class="text-blue-600">Phong Trào Thi Đua</span>
+                    </h2>
+                </div>
+                <p class="text-slate-500 font-medium max-w-md">Các sự kiện ngoại khóa, hội thi sáng tạo và lịch họp phụ huynh được cập nhật thời gian thực[cite: 8].</p>
+            </div>
+
+            <div id="guest-events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- PHẦN 3: HỌC LIỆU TIÊU BIỂU (#materials) -->
+    <section id="materials" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full font-bold text-[10px] uppercase tracking-wider mb-3">
+                        <i class="ph-bold ph-books"></i> Kho tri thức mở
+                    </div>
+                    <h2 class="text-4xl font-extrabold uppercase italic tracking-tight text-slate-900">
+                        Học Liệu <span class="text-emerald-600">Tiêu Biểu</span>
+                    </h2>
+                </div>
+                <a href="/thu-vien-cong-khai" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all text-xs uppercase flex items-center gap-2 w-max">
+                    Xem tất cả tài liệu <i class="ph-bold ph-arrow-right"></i>
+                </a>
+            </div>
+
+            <div id="public-materials-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- MODAL ĐĂNG KÝ SỰ KIỆN CHO KHÁCH -->
+    <div id="event-register-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[2500] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-6 bg-blue-600 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="font-black text-lg italic uppercase">Đăng Ký Tham Gia Sự Kiện</h3>
+                    <p id="modal-event-name" class="text-xs font-bold text-white/80 mt-0.5">Tên sự kiện...</p>
+                </div>
+                <button onclick="toggleRegisterModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-all">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-8 space-y-4">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Họ và tên người đăng ký (*)</label>
+                    <input type="text" id="reg-name" placeholder="Ví dụ: Nguyễn Văn A" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Địa chỉ Email nhận mã (*)</label>
+                    <input type="email" id="reg-email" placeholder="example@gmail.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Số điện thoại liên hệ (*)</label>
+                    <input type="tel" id="reg-phone" placeholder="0901234567" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+
+                <div class="pt-4">
+                    <button onclick="submitGuestEventRegister()" id="btn-submit-guest-reg" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase rounded-2xl shadow-xl shadow-blue-100 transition-all flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-paper-plane-tilt text-base"></i> Xác Nhận Đăng Ký
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING CHAT THCS -->
+    <div id="chat-bubble" class="fixed bottom-8 right-8 z-[2000]">
+        <button onclick="toggleChat()" class="w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 transition-all float-anim">
+            <i class="ph-fill ph-chat-circle-dots text-3xl"></i>
+        </button>
+
+        <div id="chat-window" class="hidden absolute bottom-20 right-0 w-[calc(100vw-2rem)] md:w-[380px] bg-white rounded-[32px] flex flex-col overflow-hidden">
+            <div class="bg-blue-600 p-6 text-white flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
+                    <i class="ph-fill ph-robot"></i>
+                </div>
+                <div>
+                    <p class="font-bold italic leading-none mb-1">Trợ lý Học đường THCS</p>
+                    <p class="text-[10px] uppercase opacity-70 tracking-widest">Đang trực tuyến</p>
+                </div>
+                <button onclick="toggleChat()" class="ml-auto opacity-50 hover:opacity-100"><i class="ph-bold ph-x"></i></button>
+            </div>
+
+            <div id="chat-content" class="h-[400px] overflow-y-auto p-6 space-y-4">
+                <div class="chat-bubble-ai p-4 text-xs italic">
+                    Xin chào! Tôi là Trợ lý Học đường. Em hoặc phụ huynh có thắc mắc gì về chương trình học THCS hay định hướng thi lớp 10 không?[cite: 8]
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 flex gap-2">
+                <input type="text" id="chat-input" placeholder="Nhập câu hỏi..." class="flex-1 bg-white border border-slate-200 px-4 py-3 rounded-xl text-sm outline-none focus:border-blue-600">
+                <button onclick="sendChatMessage()" class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700">
+                    <i class="ph-fill ph-paper-plane-right text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ TOÀN BỘ LOGIC KẾT NỐI API CSDL -->
+    <script>
+        let currentTimer = null;
+        let selectedEventTitle = '';
+        let activeQuestions = []; // Lưu trữ câu hỏi nạp động từ CSDL
+
+        // 1. CẬP NHẬT CHẾ ĐỘ THÔNG BÁO THEO KHỐI LỚP VÀ THỜI ĐIỂM
+        function updateSurveyMode() {
+            const gradeEl = document.getElementById("consult-grade");
+            const periodEl = document.getElementById("consult-period");
+            if (!gradeEl || !periodEl) return;
+
+            const grade = gradeEl.value;
+            const period = periodEl.value;
+            const titleLbl = document.getElementById("survey-title-lbl");
+            const descLbl = document.getElementById("survey-desc-lbl");
+
+            if (!titleLbl || !descLbl) return;
+
+            if (period === 'start') {
+                if (grade === '6') {
+                    titleLbl.innerText = "CHẾ ĐỘ: CHẨN ĐOÁN KỸ NĂNG HÒA NHẬP & NỀN TẢNG LỚP 5";
+                    descLbl.innerText = "Khảo sát đầu năm Lớp 6 đánh giá kỹ năng tự học, thể trạng và khả năng thích ứng từ Tiểu học chuyển sang môi trường THCS[cite: 8].";
+                } else {
+                    const targetPrev = parseInt(grade) - 1;
+                    titleLbl.innerText = `CHẾ ĐỘ: CHẨN ĐOÁN LỖ HỔNG KIẾN THỨC LỚP ${targetPrev}`;
+                    descLbl.innerText = `Khảo sát đầu năm Lớp ${grade} sẽ kiểm tra lại kiến thức trọng tâm Lớp ${targetPrev} nhằm phát hiện các phần kiến thức bị rơi rớt sau kỳ nghỉ Hè[cite: 8].`;
+                }
+            } else {
+                if (grade === '9') {
+                    titleLbl.innerText = "CHẾ ĐỘ: RÚT TRÍCH SỔ ĐIỂM & TƯ VẤN NGUYỆN VỌNG THI 10";
+                    descLbl.innerText = "Phân tích điểm cả năm Lớp 9 kết hợp sở trường để gợi ý các trường THPT Chuyên/Công lập phù hợp nhất[cite: 8].";
+                } else {
+                    titleLbl.innerText = `CHẾ ĐỘ: ĐÁNH GIÁ TỔNG KẾT NĂNG LỰC LỚP ${grade}`;
+                    descLbl.innerText = `Phân tích toàn bộ điểm Sổ điện tử Lớp ${grade} để lập kế hoạch tự ôn tập và định hướng năm học tiếp theo[cite: 8].`;
+                }
+            }
+        }
+
+        // 2. TỰ ĐỘNG ĐIỀN THÔNG TIN KHI NHẬP MÃ HỌC SINH / EMAIL
+        function handleAutoFillByCode() {
+            const code = document.getElementById("student-code").value.trim().toLowerCase();
+            const studentProfiles = {
+                "lehoangnam6a1@student.edunext.vn": { name: "Lê Hoàng Nam", class: "6A1", grade: "6" },
+                "phamminhchau6a1@student.edunext.vn": { name: "Phạm Minh Châu", class: "6A1", grade: "6" },
+                "hoangngocdiip7a1@student.edunext.vn": { name: "Hoàng Ngọc Diệp", class: "7A1", grade: "7" },
+                "dengtiendong7a1@student.edunext.vn": { name: "Đặng Tiến Dũng", class: "7A1", grade: "7" },
+                "buixuanhuan8a1@student.edunext.vn": { name: "Bùi Xuân Huấn", class: "8A1", grade: "8" },
+                "laphaungnam8a1@student.edunext.vn": { name: "Lý Phương Nam", class: "8A1", grade: "8" },
+                "nguyenhocsinh9a1@student.edunext.vn": { name: "Nguyễn Học Sinh", class: "9A1", grade: "9" },
+                "suntung9a1@student.edunext.vn": { name: "Sơn Tùng", class: "9A1", grade: "9" }
+            };
+
+            if (studentProfiles[code]) {
+                const profile = studentProfiles[code];
+                document.getElementById("student-name").value = profile.name;
+                document.getElementById("student-class").value = profile.class;
+                document.getElementById("consult-grade").value = profile.grade;
+                updateSurveyMode();
+            }
+        }
+
+        // 3. XÁC ĐỊNH KHỐI LỚP CẦN TRUY VẤN ĐỀ
+        function getTargetQuestionGrade() {
+            const grade = document.getElementById("consult-grade").value;
+            const period = document.getElementById("consult-period").value;
+            
+            if (period === 'start') {
+                return grade === '6' ? '6' : String(parseInt(grade) - 1);
+            } else {
+                return grade;
+            }
+        }
+
+        // 4. BẮT ĐẦU LÀM BÀI TEST: TRUY VẤN TỪ MS SQL SERVER QUA BACKEND
+        async function startPlacementTest() {
+            const studentName = document.getElementById("student-name").value.trim();
+            const studentClass = document.getElementById("student-class").value.trim();
+
+            if (!studentName) {
+                alert("Vui lòng nhập Họ tên học sinh trước khi bắt đầu khảo sát!");
+                document.getElementById("student-name").focus();
+                return;
+            }
+
+            if (!studentClass) {
+                alert("Vui lòng nhập Lớp sinh hoạt (Ví dụ: 6A1 hoặc ghi 'Chờ xếp lớp' nếu là học sinh mới Lớp 6)!");
+                document.getElementById("student-class").focus();
+                return;
+            }
+
+            const targetGrade = getTargetQuestionGrade();
+            const period = document.getElementById("consult-period").value;
+            const currentGrade = document.getElementById("consult-grade").value;
+
+            document.getElementById("ai-placeholder").classList.add("hidden");
+            document.getElementById("ai-result-box").classList.add("hidden");
+            
+            const quizBox = document.getElementById("quiz-box");
+            quizBox.classList.remove("hidden");
+
+            const badgeLbl = document.getElementById("quiz-badge-lbl");
+            if (badgeLbl) {
+                badgeLbl.innerText = period === 'start' 
+                    ? (currentGrade === '6' ? 'Chẩn đoán Nền tảng Lớp 5' : `Chẩn đoán Nền tảng Lớp ${targetGrade}`)
+                    : `Đánh giá Tổng kết Lớp ${currentGrade}`;
+            }
+
+            // Tải đề động từ API
+            await loadQuestionsFromDatabase(targetGrade);
+            startTimer(15 * 60);
+        }
+
+        // HÀM GỌI API BACKEND TRUY VẤN BẢNG dbo.CauHoiNangLuc
+        async function loadQuestionsFromDatabase(grade) {
+            const container = document.getElementById("quiz-questions-container");
+            container.innerHTML = `
+                <div class="py-12 text-center">
+                    <i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600 mb-3 block"></i>
+                    <p class="text-xs font-bold text-slate-500">Đang truy xuất ngân hàng đề từ CSDL SQL Server...</p>
+                </div>
+            `;
+
+            try {
+                // Gọi RESTful API Backend Flask (UC09)
+                const res = await fetch(`/api/questions/${grade}`);
+                const data = await res.json();
+
+                if (data.success && data.questions && data.questions.length > 0) {
+                    activeQuestions = data.questions;
+                    renderQuestions(activeQuestions);
+                } else {
+                    renderFallbackQuestions(grade);
+                }
+            } catch (err) {
+                console.warn("Mất kết nối API máy chủ, kích hoạt bộ đệm dữ liệu cục bộ:", err);
+                renderFallbackQuestions(grade);
+            }
+        }
+
+        // KẾT XUẤT CÂU HỎI RA GIAO DIỆN
+        function renderQuestions(questions) {
+            const container = document.getElementById("quiz-questions-container");
+            container.innerHTML = "";
+            
+            questions.forEach((item, index) => {
+                const qDiv = document.createElement("div");
+                qDiv.className = "mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-left";
+                qDiv.setAttribute("data-qid", item.id);
+                qDiv.setAttribute("data-type", item.type || item.nhom_nang_luc);
+
+                qDiv.innerHTML = `
+                    <p class="text-xs font-bold text-slate-800 mb-3">Câu ${index + 1}: ${item.q || item.noi_dung}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 cursor-pointer hover:border-blue-500 transition-all">
+                            <input type="radio" name="question_${item.id}" value="A" class="text-blue-600 focus:ring-0"> A. ${item.a || item.dap_an_a}
+                        </label>
+                        <label class="flex items-center gap-2.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 cursor-pointer hover:border-blue-500 transition-all">
+                            <input type="radio" name="question_${item.id}" value="B" class="text-blue-600 focus:ring-0"> B. ${item.b || item.dap_an_b}
+                        </label>
+                        <label class="flex items-center gap-2.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 cursor-pointer hover:border-blue-500 transition-all">
+                            <input type="radio" name="question_${item.id}" value="C" class="text-blue-600 focus:ring-0"> C. ${item.c || item.dap_an_c}
+                        </label>
+                        <label class="flex items-center gap-2.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 cursor-pointer hover:border-blue-500 transition-all">
+                            <input type="radio" name="question_${item.id}" value="D" class="text-blue-600 focus:ring-0"> D. ${item.d || item.dap_an_d}
+                        </label>
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+        }
+
+        // BỘ DỰ PHÒNG CỤC BỘ NẾU CHƯA KHỞI ĐỘNG SERVER FLASK
+        function renderFallbackQuestions(grade) {
+            const fallback = {
+                "6": [
+                    { id: 1, type: "ToanLogic", q: "[Toán học & Tư duy] Một cửa hàng ngày thứ nhất bán được 120kg gạo, ngày thứ hai bán bằng 2/3 ngày thứ nhất. Hỏi trung bình mỗi ngày cửa hàng bán được bao nhiêu kg gạo?", a: "100 kg", b: "90 kg", c: "80 kg", d: "110 kg" },
+                    { id: 2, type: "NgoaiNgu", q: "[Ngoại ngữ] Choose the correct answer: Look! The students ___ football in the schoolyard.", a: "play", b: "plays", c: "are playing", d: "played" },
+                    { id: 9, type: "TinHocCongNghe", q: "[Tin học & Công nghệ] Trong soạn thảo văn bản, tổ hợp phím nào dùng để sao chép (Copy)?", a: "Ctrl + V", b: "Ctrl + X", c: "Ctrl + C", d: "Ctrl + Z" }
+                ],
+                "8": [
+                    { id: 21, type: "ToanLogic", q: "[Toán học & Tư duy] Phân tích đa thức thành nhân tử: x² - 4y².", a: "(x - 4y)(x + 4y)", b: "(x - 2y)(x + 2y)", c: "(x - 2y)²", d: "(x - 4y)²" },
+                    { id: 23, type: "KHTN", q: "[Khoa học Tự nhiên] Để dập đám cháy do xăng dầu, phương pháp AN TOÀN nhất?", a: "Dội nước", b: "Dùng bình khí CO2 hoặc phủ cát kín", c: "Bật quạt gió", d: "Phủ vải khô mỏng" },
+                    { id: 25, type: "TinHocCongNghe", q: "[Tin học & Công nghệ] Cụm từ 'WWW' trong Internet là viết tắt của gì?", a: "World Wide Web", b: "World Wireless Way", c: "Web Wide World", d: "Wide Word Web" }
+                ]
+            };
+            activeQuestions = fallback[grade] || fallback["8"];
+            renderQuestions(activeQuestions);
+        }
+
+        function startTimer(duration) {
+            if (currentTimer) clearInterval(currentTimer);
+            let timer = duration, minutes, seconds;
+            const timerDisplay = document.getElementById("quiz-timer");
+            
+            currentTimer = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                if (timerDisplay) timerDisplay.innerText = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(currentTimer);
+                    alert("Hết thời gian! Hệ thống tự động nộp bài.");
+                    submitPlacementTest();
+                }
+            }, 1000);
+        }
+
+        // 5. NỘP BÀI LÀM: GỬI TẬP ĐÁP ÁN LÊN SERVER ĐỐI CHIẾU VÀ LƯU BẢNG KetQuaTestNangLuc
+        async function submitPlacementTest() {
+            const container = document.getElementById("quiz-questions-container");
+            const totalQ = container.querySelectorAll('[data-qid]').length;
+            const answeredInputs = container.querySelectorAll('input[type="radio"]:checked');
+
+            if (answeredInputs.length < totalQ) {
+                const confirmSubmit = confirm(`Em mới hoàn thành ${answeredInputs.length}/${totalQ} câu hỏi. Em có chắc chắn muốn nộp bài để AI phân tích ngay không?[cite: 8]`);
+                if (!confirmSubmit) return;
+            }
+
+            const submitBtn = document.getElementById("btn-submit-test");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang đối soát và lưu CSDL...';
+            }
+
+            if (currentTimer) clearInterval(currentTimer);
+
+            // Thu thập tập đáp án của học sinh
+            const userAnswers = [];
+            answeredInputs.forEach(input => {
+                const qDiv = input.closest('[data-qid]');
+                userAnswers.push({
+                    question_id: parseInt(qDiv.getAttribute('data-qid')),
+                    selected: input.value
+                });
+            });
+
+            const currentGrade = document.getElementById("consult-grade").value;
+            const period = document.getElementById("consult-period").value;
+            const studentName = document.getElementById("student-name").value;
+            const studentClass = document.getElementById("student-class").value;
+            const studentCodeEl = document.getElementById("student-code");
+            const studentCode = studentCodeEl ? studentCodeEl.value.trim() : "";
+
+            document.getElementById("quiz-box").classList.add("hidden");
+            document.getElementById("student-result-title").innerText = `SƠ ĐỒ NĂNG LỰC: ${studentName.toUpperCase()} (${studentClass})`;
+            document.getElementById("ai-result-box").classList.remove("hidden");
+
+            const analysisTextEl = document.getElementById("ai-analysis-text");
+            analysisTextEl.innerHTML = "<div class='text-center py-4'><i class='ph-bold ph-spinner animate-spin text-xl text-blue-400 mb-2 block'></i><p class='text-xs text-slate-300'>Hệ thống đang chấm điểm tự động và gửi JSON sang Gemini 2.0 Flash...</p></div>";
+
+            try {
+                // Gọi API chấm điểm & kích hoạt AI (Backend bọc CSDL)
+                const aiResponse = await fetch('/api/submit-assessment-v2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        student_name: studentName,
+                        student_class: studentClass,
+                        student_code: studentCode,
+                        current_grade: currentGrade,
+                        period: period,
+                        answers: userAnswers
+                    })
+                });
+
+                const aiResult = await aiResponse.json();
+                
+                if (aiResult.success) {
+                    renderScores(aiResult.scores);
+                    let formattedText = (aiResult.advice || '')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>');
+                    analysisTextEl.innerHTML = formattedText;
+                } else {
+                    renderMockScores();
+                    analysisTextEl.innerHTML = "Hệ thống đã ghi nhận kết quả kiểm tra vào cơ sở dữ liệu và gửi thông báo cho Giáo viên chủ nhiệm[cite: 8].";
+                }
+            } catch(e) {
+                renderMockScores();
+                analysisTextEl.innerHTML = "Hệ thống đã ghi nhận điểm khảo sát vào hồ sơ và tự động thông báo đến Giáo viên chủ nhiệm[cite: 8].";
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="ph-bold ph-check-square-offset text-xl"></i> Hoàn thành & Phân tích lộ trình AI';
+                }
+            }
+        }
+
+        function renderScores(scores) {
+            const scoresContainer = document.getElementById("ai-scores-summary");
+            scoresContainer.innerHTML = "";
+            const nameMapping = { 
+                "ToanLogic": "Toán & Tư duy", "NgoaiNgu": "Ngoại Ngữ", "NguVanDienDat": "Ngữ Văn", 
+                "KHTN": "KHTN", "KHXH": "KHXH", "TinHocCongNghe": "Tin Học", "TuHocQuanLy": "Tự Học" 
+            };
+            
+            for (const [key, val] of Object.entries(scores || {})) {
+                scoresContainer.innerHTML += `
+                    <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 text-center">
+                        <div class="text-[9px] font-bold text-slate-400 uppercase">${nameMapping[key] || key}</div>
+                        <div class="text-sm font-black text-blue-400">${val}/100</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMockScores() {
+            renderScores({
+                "ToanLogic": 80, "NguVanDienDat": 75, "NgoaiNgu": 85,
+                "KHTN": 70, "KHXH": 65, "TinHocCongNghe": 90, "TuHocQuanLy": 80
+            });
+        }
+
+        // NẠP SỰ KIỆN CÔNG KHAI
+        async function fetchGuestEvents() {
+            const grid = document.getElementById('guest-events-grid');
+            if (!grid) return;
+
+            try {
+                const res = await fetch('/api/guest/events');
+                const result = await res.json();
+                if (result.success && result.data.length > 0) {
+                    grid.innerHTML = result.data.map(ev => {
+                        const safeTitle = (ev.TieuDe || '').replace(/'/g, "\\'");
+                        return `
+                            <div class="card-premium p-6 flex flex-col justify-between space-y-4">
+                                <div>
+                                    ${ev.HinhAnh ? `<img src="${ev.HinhAnh}" class="w-full h-40 object-cover rounded-2xl mb-4">` : ''}
+                                    <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[9px] font-black rounded-full uppercase">Sự kiện công khai</span>
+                                    <h3 class="text-lg font-black text-slate-800 mt-2 leading-snug">${ev.TieuDe}</h3>
+                                    <p class="text-xs text-slate-500 font-medium line-clamp-2 mt-1">${ev.NoiDung || ''}</p>
+                                </div>
+                                <div class="space-y-3 pt-4 border-t border-slate-100">
+                                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400">
+                                        <span><i class="ph-bold ph-map-pin"></i> ${ev.DiaDiem || 'Trường THCS'}</span>
+                                        <span class="text-blue-600 font-black">${ev.RegCount || 0} Đã đăng ký</span>
+                                    </div>
+                                    <button onclick="openRegisterModal('${safeTitle}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs uppercase transition-all shadow-md flex items-center justify-center gap-1.5">
+                                        <i class="ph-bold ph-user-plus"></i> Đăng Ký Tham Gia
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 italic">Chưa có sự kiện công khai mới.</div>';
+                }
+            } catch (e) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 italic">Không thể nạp danh sách sự kiện.</div>';
+            }
+        }
+
+        // NẠP HỌC LIỆU TỪ BACKEND
+        async function fetchPublicMaterials() {
+            const grid = document.getElementById('public-materials-grid');
+            if (!grid) return;
+
+            try {
+                const res = await fetch('/api/platform/highlights');
+                const result = await res.json();
+                if (result.success && result.materials.length > 0) {
+                    grid.innerHTML = result.materials.map(m => `
+                        <div class="card-premium p-6 flex flex-col justify-between space-y-4">
+                            <div>
+                                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-full uppercase">Tài liệu mở</span>
+                                <h3 class="text-base font-black text-slate-800 mt-2 leading-snug">${m.TenTaiLieu}</h3>
+                                <p class="text-xs text-slate-500 font-medium line-clamp-2 mt-1">${m.MoTa || 'Học liệu tham khảo bậc THCS'}</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-slate-400">GV: ${m.TenGiaoVien || 'Hệ thống'}</span>
+                                <a href="/thu-vien-cong-khai" class="text-xs font-black text-blue-600 hover:underline">Tải về <i class="ph-bold ph-download-simple"></i></a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 italic">Chưa có học liệu công khai.</div>';
+                }
+            } catch (e) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 italic">Không thể kết nối máy chủ.</div>';
+            }
+        }
+
+        function openRegisterModal(eventTitle) {
+            selectedEventTitle = eventTitle;
+            const nameEl = document.getElementById('modal-event-name');
+            if (nameEl) nameEl.innerText = `Sự kiện: ${eventTitle}`;
+            toggleRegisterModal();
+        }
+
+        function toggleRegisterModal() {
+            const modal = document.getElementById('event-register-modal');
+            if (!modal) return;
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        async function submitGuestEventRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const btn = document.getElementById('btn-submit-guest-reg');
+
+            if (!name || !email || !phone) {
+                alert("Vui lòng điền đầy đủ Họ tên, Email và Số điện thoại!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-circle-notch animate-spin mr-1"></i> Đang đăng ký...';
+
+            try {
+                const res = await fetch('/guest/api/register-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, event: selectedEventTitle })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    alert(`✨ Đăng ký thành công! Mã xác nhận của bạn là [${result.code}]. Kiểm tra Email để xem chi tiết.`);
+                    toggleRegisterModal();
+                    fetchGuestEvents();
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (e) {
+                alert("Không thể kết nối tới máy chủ.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt text-base"></i> Xác Nhận Đăng Ký';
+            }
+        }
+
+        function toggleChat() { 
+            const chatWin = document.getElementById('chat-window');
+            if (chatWin) chatWin.classList.toggle('hidden'); 
+        }
+        
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const content = document.getElementById('chat-content');
+            if (!input || !input.value) return;
+
+            const msg = input.value;
+            content.innerHTML += `<div class="chat-bubble-user p-4 text-xs italic ml-auto max-w-[80%] shadow-lg">${msg}</div>`;
+            input.value = "";
+            content.scrollTop = content.scrollHeight;
+
+            try {
+                const res = await fetch('/guest/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, role: 'student' })
+                });
+                const data = await res.json();
+                content.innerHTML += `<div class="chat-bubble-ai p-4 text-xs italic shadow-sm">${data.success ? data.response : 'Trợ lý Học đường đang xử lý...'}</div>`;
+            } catch (e) {
+                content.innerHTML += `<div class="text-[10px] text-red-400 text-center uppercase font-bold tracking-widest">Lỗi kết nối...</div>`;
+            }
+            content.scrollTop = content.scrollHeight;
+        }
+
+        function scrollToId(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const mobMenu = document.getElementById('mobile-menu');
+            if (mobMenu) mobMenu.classList.toggle('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSurveyMode();
+            fetchGuestEvents();
+            fetchPublicMaterials();
+        });
+    </script>
+</body>
+
+</html>

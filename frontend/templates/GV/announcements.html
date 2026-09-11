@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo lớp | EduNext Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { 
+                    fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+                    colors: { brand: { primary: '#E11D48', dark: '#0F172A', surface: '#F1F5F9' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f1f5f9; letter-spacing: -0.01em; font-family: 'Inter', sans-serif; }
+        .ai-gradient { background: linear-gradient(135deg, #4F46E5 0%, #E11D48 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        * { font-style: normal !important; }
+        .like-active { color: #E11D48 !important; }
+        .like-active i { color: #E11D48 !important; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-900 bg-brand-surface">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex relative z-30 shadow-sm">
+        <div class="p-8 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+                    <i class="ph-fill ph-circles-four text-2xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-2xl tracking-tighter text-brand-dark uppercase leading-none">Edu<span
+                            class="text-brand-primary">Next</span></span>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-8 overflow-y-auto py-8">
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hệ thống</p>
+                <div class="space-y-1">
+                    <a href="/dashboard_teacher" id="nav-dashboard"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-house-line text-xl"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-brand-primary/60 uppercase tracking-widest">Nghiệp vụ
+                    Chủ nhiệm</p>
+                <div class="space-y-1">
+                    <a href="/teacher/attendance" id="nav-attendance"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Điểm danh lớp
+                    </a>
+                    <a href="/teacher/leave-requests" id="nav-leave"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative group">
+                        <i class="ph-bold ph-envelope-open text-xl"></i> Duyệt đơn xin nghỉ
+                        <span id="badge-leave"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden">0</span>
+                    </a>
+                    <a href="/teacher/announcements" id="nav-announcements"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-brand-primary text-white shadow-lg shadow-rose-200 font-bold text-sm transition-all relative">
+                        <i class="ph-fill ph-megaphone text-xl"></i> Thông báo lớp
+                        <span id="badge-announcements" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-400 text-white text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
+                    </a>
+                    <a href="/teacher/messages" id="nav-messages"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative group">
+                        <i class="ph-bold ph-chat-circle-dots text-xl"></i> Tin nhắn
+                        <span id="badge-messages" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học tập & Tài
+                    nguyên</p>
+                <div class="space-y-1">
+                    <a href="/teacher/schedule" id="nav-schedule"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Thời khóa biểu
+                    </a>
+                    <a href="/teacher/gradebook" id="nav-gradebook"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-notebook text-xl"></i> Sổ điểm & Nề nếp
+                    </a>
+                    <a href="/teacher/resources" id="nav-resources"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-folder-notched-plus text-xl"></i> Kho học liệu
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-6 border-t border-slate-50 space-y-4">
+            <button onclick="window.location.href='/logout'"
+                class="w-full flex items-center gap-3 p-3.5 text-slate-400 hover:text-brand-primary hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm">
+                <i class="ph-bold ph-sign-out text-xl"></i> Đăng xuất
+            </button>
+
+            <!-- PROFILE CARD -->
+            <div class="p-4 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=teacher" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-800 truncate leading-tight">{{ session.get('ho_ten', 'Giáo viên') }}</p>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mt-0.5">Giáo viên CN</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 bg-brand-surface relative overflow-hidden">
+        <header class="h-20 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 px-10 flex items-center justify-between sticky top-0 z-40">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">📢 QUẢN LÝ THÔNG BÁO & SỰ KIỆN</h2>
+            
+            <div class="flex items-center gap-6">
+                <!-- NÚT CHUÔNG THÔNG BÁO -->
+                <div class="relative">
+                    <button id="bell-btn" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-brand-primary transition-all flex items-center justify-center relative shadow-sm">
+                        <i class="ph-bold ph-bell text-xl"></i>
+                        <span id="bell-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white hidden">0</span>
+                    </button>
+                    
+                    <!-- DROPDOWN THÔNG BÁO -->
+                    <div id="notif-dropdown" class="absolute right-0 top-full mt-4 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden hidden transition-all transform origin-top-right scale-95 opacity-0 z-50">
+                        <div class="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                            <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider">Thông báo mới</h3>
+                            <button onclick="markAllRead()" class="text-[10px] text-brand-primary font-bold hover:underline">Đánh dấu đã đọc</button>
+                        </div>
+                        <div id="notif-list" class="max-h-[400px] overflow-y-auto p-2 space-y-1">
+                            <!-- Danh sách thông báo sẽ hiện ở đây -->
+                            <div class="p-8 text-center text-slate-400">
+                                <i class="ph-bold ph-bell-slash text-3xl mb-2 block opacity-20"></i>
+                                <p class="text-xs italic">Không có thông báo mới nào</p>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
+                            <button class="text-[10px] font-bold text-slate-500 hover:text-brand-primary transition-all">Xem tất cả thông báo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 pl-6 border-l border-slate-200">
+                    <div class="text-right">
+                        <p class="text-xs font-black text-slate-700" id="teacher-name">GV. Đang tải...</p>
+                        <p class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Giáo viên chủ nhiệm</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 border-2 border-white shadow-md flex items-center justify-center text-white font-black overflow-hidden">
+                        <img id="teacher-avatar" src="" alt="" class="w-full h-full object-cover hidden">
+                        <span id="teacher-initial">T</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-10 custom-scrollbar">
+            <div class="max-w-4xl mx-auto space-y-10">
+                
+                <!-- TABS SELECTOR -->
+                <div class="sticky -top-10 z-20 py-6 mb-2 bg-brand-surface/90 backdrop-blur-md border-b border-slate-200/40">
+                    <div class="flex p-1.5 bg-slate-200/60 rounded-[2rem] w-fit mx-auto shadow-inner border border-white/50">
+                        <button onclick="switchTab('news')" id="tab-news" class="px-8 py-3 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 bg-white text-brand-primary shadow-sm relative">
+                            📢 Tin tức & Thông báo
+                            <span id="badge-news" class="absolute -top-1 -right-1 w-5 h-5 bg-brand-primary text-white text-[9px] flex items-center justify-center rounded-full hidden border-2 border-white shadow-sm">0</span>
+                        </button>
+                        <button onclick="switchTab('events')" id="tab-events" class="px-8 py-3 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 hover:text-slate-600 relative">
+                            📅 Quản lý Sự kiện
+                            <span id="badge-events" class="absolute -top-1 -right-1 w-5 h-5 bg-brand-primary text-white text-[9px] flex items-center justify-center rounded-full hidden border-2 border-white shadow-sm">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: NEWS (TIN TỨC) -->
+                <div id="section-news" class="space-y-10 animate-in fade-in duration-500">
+                    <!-- Post Section -->
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-black text-slate-800 uppercase italic">Đăng thông báo mới</h3>
+                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                                <button onclick="setScope('Lop')" id="scope-lop" class="scope-btn px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all bg-white text-brand-primary shadow-sm">Cho Lớp</button>
+                                <button onclick="setScope('Truong')" id="scope-truong" class="scope-btn px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all text-slate-400 hover:text-brand-primary">Toàn trường</button>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <input id="ann-title" type="text" placeholder="Tiêu đề thông báo..." class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary">
+                            <textarea id="ann-content" placeholder="Nội dung chi tiết thông báo..." class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary h-32"></textarea>
+                            
+                            <!-- IMAGE UPLOAD FOR ANNOUNCEMENT -->
+                            <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-brand-primary/30 transition-all cursor-pointer relative">
+                                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 group-hover:text-brand-primary transition-colors">
+                                    <i class="ph-bold ph-image text-xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p id="file-status" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600">Chọn ảnh đính kèm (JPG, PNG, GIF)...</p>
+                                </div>
+                                <input type="file" id="ann-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('file-status').innerText = this.files[0].name; document.getElementById('file-status').classList.add('text-brand-primary')">
+                            </div>
+
+                            <div class="flex justify-between items-center pt-2">
+                                <span id="scope-desc" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Thông báo sẽ được gửi đến tất cả HS & PH trong lớp.</span>
+                                <div class="flex items-center gap-3">
+                                    <button id="cancel-edit-btn" onclick="closeAnnModal()" class="px-6 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-all hidden">
+                                        Hủy
+                                    </button>
+                                    <button id="post-ann-btn" onclick="postAnnouncement()" class="px-10 py-4 ai-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all flex items-center gap-2">
+                                        <i class="ph-fill ph-paper-plane-tilt"></i> <span id="post-btn-text">Gửi thông báo</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Section -->
+                    <div class="space-y-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
+                            <h3 class="text-lg font-black text-slate-800 uppercase italic">Lịch sử thông báo</h3>
+                            
+                            <!-- BỘ LỌC NGÀY -->
+                            <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
+                                <i class="ph-bold ph-calendar text-brand-primary"></i>
+                                <input type="date" id="ann-filter-date" onchange="filterAnnouncementsByDate()" class="bg-transparent border-none text-[10px] font-black uppercase outline-none text-slate-500">
+                                <button onclick="resetAnnFilter()" class="text-slate-300 hover:text-brand-primary transition-colors">
+                                    <i class="ph-bold ph-arrows-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="ann-list" class="space-y-4">
+                            <div class="p-10 text-center text-slate-400 italic">Đang tải lịch sử...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: EVENTS (SỰ KIỆN) -->
+                <div id="section-events" class="hidden space-y-10 animate-in fade-in duration-500">
+                    <!-- Create Event Form -->
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h3 class="text-lg font-black text-slate-800 uppercase italic mb-6">Tổ chức sự kiện mới</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tên sự kiện</label>
+                                    <input type="text" id="event-title" placeholder="Ví dụ: Hội diễn văn nghệ..." class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Địa điểm</label>
+                                    <input type="text" id="event-location" placeholder="Sân trường / Hội trường..." class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mô tả hoạt động</label>
+                                <textarea id="event-content" rows="3" placeholder="Chi tiết về hoạt động, nội dung chương trình..." class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all resize-none"></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Thời gian diễn ra</label>
+                                    <input type="datetime-local" id="event-start" class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Hạn chót đăng ký</label>
+                                    <input type="datetime-local" id="event-deadline" class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all">
+                                </div>
+                            </div>
+                            
+                            <!-- IMAGE UPLOAD FOR EVENT -->
+                            <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 group hover:border-brand-primary/30 transition-all cursor-pointer relative">
+                                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 group-hover:text-brand-primary transition-colors">
+                                    <i class="ph-bold ph-image text-xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p id="event-file-status" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600">Đính kèm ảnh/poster sự kiện...</p>
+                                    <p class="text-[8px] font-bold text-slate-300 uppercase">JPG, PNG, GIF (Tối đa 5MB)</p>
+                                </div>
+                                <input type="file" id="event-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('event-file-status').innerText = this.files[0].name; document.getElementById('event-file-status').classList.add('text-brand-primary')">
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2">
+                                <div class="flex flex-col">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Đối tượng tham gia</label>
+                                    <select id="event-scope" class="bg-transparent border-none text-[10px] font-black text-brand-primary uppercase outline-none cursor-pointer">
+                                        <option value="0">Công khai (Tất cả & Khách)</option>
+                                        <option value="1">Toàn trường</option>
+                                        <option value="2">Khối lớp của tôi</option>
+                                        <option value="3" selected>Chỉ lớp của tôi</option>
+                                    </select>
+                                </div>
+                                <button onclick="submitNewEvent()" class="px-10 py-3.5 bg-brand-primary text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-rose-200 hover:scale-105 active:scale-95 transition-all">Tạo sự kiện ngay</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
+                            <h3 class="text-lg font-black text-slate-800 uppercase italic">Danh sách sự kiện</h3>
+                            
+                            <!-- BỘ LỌC NGÀY SỰ KIỆN -->
+                            <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
+                                <i class="ph-bold ph-calendar-star text-emerald-500"></i>
+                                <input type="date" id="event-filter-date" onchange="filterEventsByDate()" class="bg-transparent border-none text-[10px] font-black uppercase outline-none text-slate-500">
+                                <button onclick="resetEventFilter()" class="text-slate-300 hover:text-brand-primary transition-colors">
+                                    <i class="ph-bold ph-arrows-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="event-list" class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                            <!-- Event list load here -->
+                        </div>
+                    </div>
+                </div>
+        </div>
+        
+        <!-- REGISTRATION LIST MODAL -->
+        <div id="reg-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 hidden">
+            <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <div class="p-8 border-b border-slate-50 flex items-center justify-between ai-gradient text-white">
+                    <div>
+                        <h3 class="text-xl font-black italic uppercase">Báo cáo đăng ký</h3>
+                        <p id="reg-stats" class="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Đang thống kê dữ liệu...</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportToCSV()" class="px-4 py-2 bg-white/20 rounded-xl text-[10px] font-black uppercase hover:bg-white/30 transition-all flex items-center gap-2">
+                            <i class="ph-bold ph-file-csv"></i> Xuất Excel
+                        </button>
+                        <button onclick="closeRegModal()" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors">
+                            <i class="ph-bold ph-x text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-8 overflow-y-auto custom-scrollbar bg-slate-50/30 flex-1">
+                    <!-- EVENT INFO SUMMARY -->
+                    <div id="event-info-box" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-6 hidden">
+                        <!-- Event details will load here -->
+                    </div>
+
+                    <table class="w-full text-left border-separate border-spacing-y-3">
+                        <thead>
+                            <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <th class="px-4 pb-2">Người đăng ký</th>
+                                <th class="px-4 pb-2">Lớp / Vai trò</th>
+                                <th class="px-4 pb-2">Số điện thoại</th>
+                                <th class="px-4 pb-2">Ngày đăng ký</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reg-table-body">
+                            <!-- Rows load here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentTab = 'news';
+        let allAnnouncements = []; // Lưu trữ để lọc
+        let allEvents = [];
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const newsBtn = document.getElementById('tab-news');
+            const eventsBtn = document.getElementById('tab-events');
+            const newsSection = document.getElementById('section-news');
+            const eventsSection = document.getElementById('section-events');
+
+            if (tab === 'news') {
+                newsBtn.className = "px-8 py-3 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 bg-white text-brand-primary shadow-sm relative";
+                eventsBtn.className = "px-8 py-3 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 hover:text-slate-600 relative";
+                newsSection.classList.remove('hidden');
+                eventsSection.classList.add('hidden');
+                document.getElementById('badge-news').classList.add('hidden'); // Đã xem tin tức
+                loadAnnouncements();
+            } else {
+                eventsBtn.className = "px-8 py-3 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 bg-white text-brand-primary shadow-sm relative";
+                newsBtn.className = "px-8 py-3 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-300 text-slate-400 hover:text-slate-600 relative";
+                newsSection.classList.add('hidden');
+                eventsSection.classList.remove('hidden');
+                document.getElementById('badge-events').classList.add('hidden'); // Đã xem sự kiện
+                loadEvents();
+            }
+            updateSidebarBadges(); // Cập nhật lại số tổng ở Sidebar
+        }
+
+        async function loadAnnouncements() {
+            const list = document.getElementById('ann-list');
+            try {
+                const response = await fetch('/api/teacher/announcements');
+                const result = await response.json();
+                if (result.success) {
+                    allAnnouncements = result.data;
+                    renderAnnouncements(allAnnouncements);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function renderAnnouncements(data) {
+            const list = document.getElementById('ann-list');
+            if (data && data.length > 0) {
+                list.innerHTML = data.map(ann => {
+                    return `
+                        <div id="ann-${ann.MaThongBao}" class="bg-white rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group mb-6 transition-all duration-500">
+                            ${ann.HinhAnh ? `<img src="${ann.HinhAnh}" class="w-full h-48 object-cover border-b border-slate-50">` : ''}
+                            <div class="p-6 relative z-10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-3 py-1 bg-rose-50 text-brand-primary text-[9px] font-black rounded-full uppercase italic">${formatDateVN(ann.NgayGui)}</span>
+                                        <span class="px-3 py-1 ${ann.PhamVi === 'Truong' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'} text-[9px] font-black rounded-full uppercase italic">
+                                            <i class="ph-fill ${ann.PhamVi === 'Truong' ? 'ph-buildings' : 'ph-users'}"></i> ${ann.PhamVi === 'Truong' ? 'Toàn trường' : 'Lớp học'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-black text-slate-800 italic leading-tight">${ann.TieuDe}</h4>
+                                <p class="text-xs text-slate-500 mt-3 font-medium leading-relaxed">${ann.NoiDung}</p>
+                                <div class="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
+                                    <div class="flex items-center gap-6">
+                                        <button onclick="toggleLike('ThongBao', ${ann.MaThongBao}, this)" class="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400 ${ann.IsLiked ? 'text-brand-primary' : ''}">
+                                            <i class="${ann.IsLiked ? 'ph-fill' : 'ph-bold'} ph-heart text-xl"></i> Thích (${ann.LikeCount || 0})
+                                        </button>
+                                        <button onclick="toggleComments(${ann.MaThongBao})" class="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400">
+                                            <i class="ph-fill ph-chat-circle text-xl"></i> Bình luận (${ann.CommentCount || 0})
+                                        </button>
+                                    </div>
+                                        <button onclick="editAnnouncement(${ann.MaThongBao})" class="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-brand-primary hover:text-white transition-all shadow-sm" title="Sửa">
+                                            <i class="ph-bold ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button onclick="deleteAnnouncement(${ann.MaThongBao})" class="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 transition-all shadow-sm" title="Xóa">
+                                            <i class="ph-bold ph-trash text-lg"></i>
+                                        </button>
+                                </div>
+                                <div id="comments-section-${ann.MaThongBao}" class="mt-4 hidden animate-in slide-in-from-top-2 duration-300">
+                                    <div class="space-y-3 mb-4" id="comments-list-${ann.MaThongBao}"></div>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="comment-input-${ann.MaThongBao}" placeholder="Viết bình luận..." class="flex-1 px-4 py-2 bg-slate-50 border-none rounded-xl text-[10px] font-bold outline-none">
+                                        <button onclick="postComment('ThongBao', ${ann.MaThongBao})" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-[10px] font-black uppercase">Gửi</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                } else {
+                    list.innerHTML = '<div class="p-10 text-center text-slate-300 italic font-bold uppercase border-2 border-dashed border-slate-100 rounded-[2rem]">Không tìm thấy thông báo nào phù hợp 🔍</div>';
+            }
+        }
+
+        function filterAnnouncementsByDate() {
+            const filterDate = document.getElementById('ann-filter-date').value;
+            if (!filterDate) {
+                renderAnnouncements(allAnnouncements);
+                return;
+            }
+            
+            // So sánh ngày (YYYY-MM-DD)
+            const filtered = allAnnouncements.filter(ann => {
+                const annDate = new Date(ann.NgayGui).toISOString().split('T')[0];
+                return annDate === filterDate;
+            });
+            renderAnnouncements(filtered);
+        }
+
+        function resetAnnFilter() {
+            document.getElementById('ann-filter-date').value = '';
+            renderAnnouncements(allAnnouncements);
+        }
+
+        function formatDateVN(dateStr) {
+            if (!dateStr || dateStr === "N/A" || dateStr === "null") return "Chưa xác định";
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr;
+
+                return new Intl.DateTimeFormat('vi-VN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(date).replace('lúc', '-');
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        let currentEditEventId = null;
+
+        function editEvent(id) {
+            const ev = allEvents.find(e => e.MaSuKien === id);
+            if (!ev) return;
+            currentEditEventId = id;
+            
+            // Chuyển tab về phần tạo sự kiện và scroll lên form
+            switchTab('events');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            document.getElementById('event-title').value = ev.TieuDe;
+            document.getElementById('event-content').value = ev.NoiDung;
+            document.getElementById('event-location').value = ev.DiaDiem;
+            
+            // Format datetime-local requires YYYY-MM-DDTHH:mm
+            if (ev.ThoiGianBatDau) {
+                const start = new Date(ev.ThoiGianBatDau);
+                start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+                document.getElementById('event-start').value = start.toISOString().slice(0, 16);
+            }
+            if (ev.HanDangKy) {
+                const deadline = new Date(ev.HanDangKy);
+                deadline.setMinutes(deadline.getMinutes() - deadline.getTimezoneOffset());
+                document.getElementById('event-deadline').value = deadline.toISOString().slice(0, 16);
+            }
+            
+            // Đổi button submit text
+            const btn = document.querySelector('button[onclick="submitNewEvent()"]');
+            if (btn) btn.innerText = "Cập nhật sự kiện";
+            
+            // Vô hiệu hóa chọn scope khi sửa
+            document.getElementById('event-scope').disabled = true;
+        }
+
+        async function submitNewEvent() {
+            const title = document.getElementById('event-title').value.trim();
+            const content = document.getElementById('event-content').value.trim();
+            const location = document.getElementById('event-location').value.trim();
+            const start = document.getElementById('event-start').value;
+            const deadline = document.getElementById('event-deadline').value;
+            const scope = document.getElementById('event-scope').value;
+            const fileInput = document.getElementById('event-file');
+
+            if (!title) return alert("Vui lòng nhập tên sự kiện!");
+            if (!start) return alert("Vui lòng nhập thời gian diễn ra!");
+
+            let url = '/api/events/create';
+            let method = 'POST';
+            
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            formData.append('location', location);
+            formData.append('start_time', start);
+            formData.append('deadline', deadline);
+            
+            if (currentEditEventId) {
+                url = '/api/events/update/' + currentEditEventId;
+                method = 'PUT';
+                // PUT method in Flask expects json for the event update route we created
+                // Wait, we created it accepting request.json in update_event!
+            } else {
+                formData.append('scope', scope);
+                let targetId = 0;
+                if (scope == '3') targetId = "{{ session.get('class_id', 0) }}";
+                else if (scope == '2') targetId = "{{ session.get('khoi_id', 0) }}";
+                formData.append('target_id', targetId);
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+            }
+
+            try {
+                let response;
+                if (currentEditEventId) {
+                    // Cập nhật dùng JSON
+                    response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: title, content: content, location: location,
+                            start_time: start, deadline: deadline
+                        })
+                    });
+                } else {
+                    // Tạo mới dùng FormData
+                    response = await fetch(url, {
+                        method: method,
+                        body: formData
+                    });
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(currentEditEventId ? "✨ Đã cập nhật sự kiện!" : "✨ Chúc mừng! Bạn đã tạo sự kiện thành công.");
+                    // Reset form
+                    currentEditEventId = null;
+                    document.getElementById('event-title').value = '';
+                    document.getElementById('event-content').value = '';
+                    document.getElementById('event-location').value = '';
+                    document.getElementById('event-start').value = '';
+                    document.getElementById('event-deadline').value = '';
+                    document.getElementById('event-file').value = '';
+                    document.getElementById('event-file-status').innerText = 'Đính kèm ảnh/poster sự kiện...';
+                    document.getElementById('event-scope').disabled = false;
+                    const btn = document.querySelector('button[onclick="submitNewEvent()"]');
+                    if (btn) btn.innerText = "Tạo sự kiện ngay";
+                    loadEvents(); 
+                } else {
+                    alert("❌ Lỗi: " + result.message);
+                }
+            } catch (err) { alert("Lỗi kết nối!"); }
+        }
+
+        async function loadEvents() {
+            const list = document.getElementById('event-list');
+            list.innerHTML = '<div class="p-10 text-center animate-pulse text-slate-300 font-bold uppercase">Đang tải sự kiện...</div>';
+            try {
+                const response = await fetch('/api/events/list');
+                const result = await response.json();
+                if (result.success) {
+                    allEvents = result.data;
+                    renderEvents(allEvents);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function renderEvents(data) {
+            const list = document.getElementById('event-list');
+            if (data && data.length > 0) {
+                list.innerHTML = data.map(ev => {
+                    // Logic tính toán trạng thái
+                    const now = new Date();
+                    const startTime = new Date(ev.ThoiGianBatDau);
+                    const deadline = new Date(ev.HanDangKy);
+                    
+                    let statusBadge = '';
+                    if (now > startTime) {
+                        statusBadge = `<span class="px-3 py-1 bg-slate-100 text-slate-500 text-[8px] font-black rounded-lg uppercase tracking-widest">Đã kết thúc</span>`;
+                    } else if (now > deadline) {
+                        statusBadge = `<span class="px-3 py-1 bg-amber-50 text-amber-600 text-[8px] font-black rounded-lg uppercase tracking-widest">Hết hạn đăng ký</span>`;
+                    } else {
+                        statusBadge = `<span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded-lg uppercase tracking-widest animate-pulse">Đang mở</span>`;
+                    }
+
+                    return `
+                        <div id="event-${ev.MaSuKien}" class="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-rose-100/50 transition-all duration-500 overflow-hidden flex flex-col h-full border-b-4 border-b-transparent hover:border-b-brand-primary">
+                            <!-- Thumbnail Area -->
+                            <div class="relative h-48 overflow-hidden bg-slate-100">
+                                ${ev.HinhAnh ? 
+                                    `<img src="${ev.HinhAnh}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">` : 
+                                    `<div class="w-full h-full flex flex-col items-center justify-center ai-gradient opacity-10">
+                                        <i class="ph-fill ph-calendar-blank text-6xl text-brand-primary"></i>
+                                    </div>`
+                                }
+                                <div class="absolute top-4 left-4 flex gap-2">
+                                    ${statusBadge}
+                                    <span class="px-3 py-1 bg-white/90 backdrop-blur-md text-brand-primary text-[8px] font-black rounded-lg uppercase tracking-widest shadow-sm border border-brand-primary/10">
+                                        ${ev.RegCount || 0} Đăng ký
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-4 right-4 flex gap-2">
+                                    <button onclick="editEvent(${ev.MaSuKien})" class="w-9 h-9 bg-white/90 backdrop-blur-md text-slate-500 rounded-xl flex items-center justify-center hover:bg-brand-primary hover:text-white transition-all shadow-lg transform hover:-rotate-12" title="Sửa sự kiện">
+                                        <i class="ph-bold ph-pencil-simple text-lg"></i>
+                                    </button>
+                                    <button onclick="deleteEvent(${ev.MaSuKien})" class="w-9 h-9 bg-white/90 backdrop-blur-md text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-lg transform hover:rotate-12" title="Xóa sự kiện">
+                                        <i class="ph-bold ph-trash text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Content Area -->
+                            <div class="p-7 flex-1 flex flex-col">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <i class="ph-fill ph-clock-countdown text-slate-300"></i>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Hạn đăng ký: ${new Date(ev.HanDangKy).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                
+                                <h4 class="text-xl font-black text-slate-800 italic uppercase mb-3 leading-tight group-hover:text-brand-primary transition-colors line-clamp-2">${ev.TieuDe}</h4>
+                                <p class="text-[11px] text-slate-500 mb-6 font-medium leading-relaxed line-clamp-3">${ev.NoiDung}</p>
+                                
+                                <div class="mt-auto space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 transition-colors group-hover:bg-white group-hover:border-rose-100">
+                                            <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Thời gian</p>
+                                            <p class="text-[10px] font-black text-slate-700">${new Date(ev.ThoiGianBatDau).toLocaleDateString('vi-VN')} - ${new Date(ev.ThoiGianBatDau).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                        </div>
+                                        <div class="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 transition-colors group-hover:bg-white group-hover:border-rose-100">
+                                            <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Địa điểm</p>
+                                            <p class="text-[10px] font-black text-slate-700 truncate" title="${ev.DiaDiem}">${ev.DiaDiem}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <button onclick="viewRegistrations(${ev.MaSuKien})" class="flex-1 py-3.5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase shadow-xl hover:bg-brand-dark transition-all flex items-center justify-center gap-2">
+                                            <i class="ph-bold ph-list-magnifying-glass text-base"></i> Báo cáo
+                                        </button>
+                                        <button onclick="window.location.href='/teacher/messages?with_id=${-10000 - ev.MaSuKien}'" class="w-14 h-14 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-100 hover:scale-105 transition-all" title="Nhắn tin nhóm">
+                                            <i class="ph-fill ph-chats-teardrop text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                list.innerHTML = '<div class="col-span-full p-20 text-center text-slate-300 italic font-bold uppercase border-2 border-dashed border-slate-100 rounded-[3rem] bg-white/50">Không tìm thấy sự kiện nào 🔍</div>';
+            }
+        }
+
+        function filterEventsByDate() {
+            const filterDate = document.getElementById('event-filter-date').value;
+            if (!filterDate) {
+                renderEvents(allEvents);
+                return;
+            }
+            
+            // Lọc theo ngày bắt đầu sự kiện
+            const filtered = allEvents.filter(ev => {
+                const evDate = new Date(ev.ThoiGianBatDau).toISOString().split('T')[0];
+                return evDate === filterDate;
+            });
+            renderEvents(filtered);
+        }
+
+        function resetEventFilter() {
+            document.getElementById('event-filter-date').value = '';
+            renderEvents(allEvents);
+        }
+
+        let currentScope = 'Lop';
+
+        function setScope(scope) {
+            currentScope = scope;
+            const lopBtn = document.getElementById('scope-lop');
+            const truongBtn = document.getElementById('scope-truong');
+            const desc = document.getElementById('scope-desc');
+
+            if (scope === 'Lop') {
+                lopBtn.className = "scope-btn px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all bg-white text-brand-primary shadow-sm";
+                truongBtn.className = "scope-btn px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all text-slate-400 hover:text-brand-primary";
+                desc.innerText = "Thông báo sẽ được gửi đến tất cả HS & PH trong lớp.";
+            } else {
+                truongBtn.className = "scope-btn px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all bg-white text-brand-primary shadow-sm";
+                lopBtn.className = "scope-btn px-4 py-2 rounded-lg text-[9px] font-black uppercase transition-all text-slate-400 hover:text-brand-primary";
+                desc.innerText = "✨ Thông báo quan trọng sẽ hiển thị cho toàn bộ Giáo viên, Học sinh & Phụ huynh trong trường.";
+            }
+        }
+
+        let isSubmittingAnn = false;
+        let currentEditAnnId = null;
+
+        function editAnnouncement(id) {
+            const ann = allAnnouncements.find(a => a.MaThongBao === id);
+            if (!ann) return;
+            currentEditAnnId = id;
+            
+            // Cuộn lên form đăng thông báo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('ann-title').value = ann.TieuDe;
+            document.getElementById('ann-content').value = ann.NoiDung;
+            
+            // Hiển thị nút Hủy và đổi chữ nút Gửi
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) cancelBtn.classList.remove('hidden');
+            
+            const postBtnText = document.getElementById('post-btn-text');
+            if (postBtnText) postBtnText.innerText = "Cập nhật thông báo";
+            
+            // Ẩn lựa chọn phạm vi khi sửa (giữ nguyên phạm vi cũ)
+            document.querySelectorAll('.scope-btn').forEach(b => b.classList.add('opacity-50', 'pointer-events-none'));
+        }
+
+        function closeAnnModal() {
+            currentEditAnnId = null;
+            if (document.getElementById('ann-title')) document.getElementById('ann-title').value = '';
+            if (document.getElementById('ann-content')) document.getElementById('ann-content').value = '';
+            if (document.getElementById('ann-file')) document.getElementById('ann-file').value = '';
+            
+            const fileStatus = document.getElementById('file-status');
+            if (fileStatus) {
+                fileStatus.innerText = 'Chọn ảnh đính kèm (JPG, PNG, GIF)...';
+                fileStatus.classList.remove('text-brand-primary');
+            }
+            
+            // Reset UI
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) cancelBtn.classList.add('hidden');
+            
+            const postBtnText = document.getElementById('post-btn-text');
+            if (postBtnText) postBtnText.innerText = "Gửi thông báo";
+            
+            document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('opacity-50', 'pointer-events-none'));
+        }
+
+        async function postAnnouncement() {
+            if (isSubmittingAnn) return;
+
+            const titleInput = document.getElementById('ann-title');
+            const contentInput = document.getElementById('ann-content');
+            if (!titleInput || !contentInput) return;
+
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            const fileInput = document.getElementById('ann-file');
+            const btn = document.getElementById('post-ann-btn');
+            
+            if (!title || !content) return alert("Vui lòng điền đủ thông tin!");
+
+            isSubmittingAnn = true;
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i> Đang gửi...';
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            formData.append('pham_vi', currentScope);
+            
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            try {
+                let url = '/api/teacher/announcements';
+                let method = 'POST';
+                let bodyData = formData;
+
+                if (currentEditAnnId) {
+                    url = '/api/teacher/announcements/update/' + currentEditAnnId;
+                    method = 'PUT';
+                    bodyData = JSON.stringify({
+                        title: title,
+                        content: content
+                    });
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: currentEditAnnId ? { 'Content-Type': 'application/json' } : {},
+                    body: bodyData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(currentEditAnnId ? "✨ Đã cập nhật thành công!" : "✨ Đã đăng thông báo thành công!");
+                    closeAnnModal();
+                    loadAnnouncements();
+                } else {
+                    alert("❌ Lỗi: " + result.message);
+                }
+            } catch (err) { 
+                console.error(err);
+                alert("❌ Lỗi gửi thông báo!"); 
+            } finally {
+                isSubmittingAnn = false;
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        async function toggleLike(type, id, btn) {
+            try {
+                const res = await fetch('/api/social/like', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, id })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    btn.classList.toggle('like-active');
+                    // Cập nhật số lượng Like hiển thị trên nút
+                    let text = btn.innerText;
+                    let count = parseInt(text.match(/\d+/)) || 0;
+                    if (result.action === 'liked') {
+                        btn.innerHTML = `<i class="ph-fill ph-heart text-xl"></i> Thích (${count + 1})`;
+                    } else {
+                        btn.innerHTML = `<i class="ph-fill ph-heart text-xl"></i> Thích (${Math.max(0, count - 1)})`;
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function toggleComments(id) {
+            const section = document.getElementById(`comments-section-${id}`);
+            section.classList.toggle('hidden');
+            if (!section.classList.contains('hidden')) {
+                loadComments('ThongBao', id);
+            }
+        }
+
+        async function loadComments(type, id) {
+            const list = document.getElementById(`comments-list-${id}`);
+            try {
+                const res = await fetch(`/api/social/interactions/${type}/${id}`);
+                const result = await res.json();
+                if (result.success) {
+                    const data = result.data;
+                    let html = '';
+
+                    // 1. Hiển thị danh sách người thích
+                    if (data.liker_names && data.liker_names.length > 0) {
+                        html += `
+                            <div class="flex items-center gap-2 p-2.5 mb-4 bg-rose-50/50 rounded-xl border border-rose-100/30 animate-in fade-in duration-500">
+                                <i class="ph-fill ph-heart text-rose-500 text-sm"></i>
+                                <p class="text-[9px] text-slate-600 font-bold leading-tight">
+                                    <span class="text-rose-600">Được thích bởi:</span> ${data.liker_names.join(', ')}
+                                </p>
+                            </div>
+                        `;
+                    }
+
+                    // 2. Hiển thị danh sách bình luận
+                    if (data.comments && data.comments.length > 0) {
+                        html += data.comments.map(c => `
+                            <div class="flex gap-2 mb-3 last:mb-0">
+                                <img src="${c.AnhDaiDien || 'https://i.pravatar.cc/100'}" class="w-6 h-6 rounded-lg object-cover border border-white shadow-sm">
+                                <div class="flex-1 bg-slate-50 p-2.5 rounded-2xl border border-slate-100/50">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <p class="text-[9px] font-black text-slate-800">${c.HoTen}</p>
+                                        <p class="text-[7px] text-slate-400 font-bold">${c.NgayBinhLuan ? new Date(c.NgayBinhLuan).toLocaleDateString('vi-VN') : ''}</p>
+                                    </div>
+                                    <p class="text-[9px] text-slate-500 font-medium leading-relaxed">${c.NoiDung}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else if (html === '') {
+                        html = '<p class="text-[9px] italic text-slate-400 text-center p-4">Chưa có tương tác nào</p>';
+                    }
+                    
+                    list.innerHTML = html;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function postComment(type, id) {
+            const input = document.getElementById(`comment-input-${id}`);
+            const content = input.value.trim();
+            if (!content) return;
+            try {
+                const res = await fetch('/api/social/comment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, id, content })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    input.value = '';
+                    loadComments(type, id);
+                    
+                    // Cập nhật số lượng bình luận trên nút
+                    const btnComment = document.querySelector(`button[onclick="toggleComments(${id})"]`);
+                    let text = btnComment.innerText;
+                    let count = parseInt(text.match(/\d+/)) || 0;
+                    btnComment.innerHTML = `<i class="ph-fill ph-chat-circle text-xl"></i> Bình luận (${count + 1})`;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        let currentRegData = [];
+        async function viewRegistrations(id) {
+            document.getElementById('reg-modal').classList.remove('hidden');
+            const tbody = document.getElementById('reg-table-body');
+            const stats = document.getElementById('reg-stats');
+            const infoBox = document.getElementById('event-info-box');
+            
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center p-10 animate-pulse text-slate-300 font-bold uppercase">Đang tải danh sách...</td></tr>';
+            infoBox.classList.add('hidden');
+
+            try {
+                const response = await fetch(`/api/events/registrations/${id}`);
+                const result = await response.json();
+                if (result.success) {
+                    // Hiển thị thông tin sự kiện
+                    const ev = result.event;
+                    infoBox.innerHTML = `
+                        <h4 class="text-lg font-black text-slate-800 uppercase italic mb-2">${ev.TieuDe}</h4>
+                        <p class="text-xs text-slate-500 font-medium mb-4">${ev.NoiDung}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-50 pt-4">
+                            <div class="flex items-center gap-2">
+                                <i class="ph-bold ph-calendar text-brand-primary"></i>
+                                <div>
+                                    <p class="text-[8px] font-black text-slate-400 uppercase">Thời gian tổ chức</p>
+                                    <p class="text-[10px] font-bold text-slate-700">${new Date(ev.ThoiGianBatDau).toLocaleString('vi-VN')}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="ph-bold ph-map-pin text-emerald-500"></i>
+                                <div>
+                                    <p class="text-[8px] font-black text-slate-400 uppercase">Địa điểm</p>
+                                    <p class="text-[10px] font-bold text-slate-700">${ev.DiaDiem}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="ph-bold ph-clock-countdown text-amber-500"></i>
+                                <div>
+                                    <p class="text-[8px] font-black text-slate-400 uppercase">Hạn đăng ký</p>
+                                    <p class="text-[10px] font-bold text-slate-700">${new Date(ev.HanDangKy).toLocaleString('vi-VN')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    infoBox.classList.remove('hidden');
+
+                    // Hiển thị danh sách đăng ký
+                    currentRegData = result.data;
+                    const hsCount = currentRegData.filter(r => r.VaiTro === 'HocSinh').length;
+                    const phCount = currentRegData.length - hsCount;
+                    stats.innerText = `Tổng cộng: ${currentRegData.length} người tham gia (${hsCount} Học sinh, ${phCount} Phụ huynh)`;
+
+                    if (currentRegData.length > 0) {
+                        tbody.innerHTML = result.data.map(r => `
+                            <tr class="bg-white rounded-xl shadow-sm overflow-hidden">
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 font-black text-xs">
+                                            ${r.HoTen.charAt(0)}
+                                        </div>
+                                        <span class="text-xs font-black text-slate-700">${r.HoTen}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">${r.TenLop || (r.VaiTro === 'HocSinh' ? 'Học sinh' : 'Phụ huynh')}</td>
+                                <td class="px-4 py-4 text-xs font-bold text-brand-primary">${r.SoDienThoai || 'N/A'}</td>
+                                <td class="px-4 py-4 text-[10px] font-bold text-slate-400 italic">${new Date(r.NgayDangKy).toLocaleString('vi-VN')}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-10 text-slate-300 italic font-bold">Danh sách đang trống</td></tr>';
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function exportToCSV() {
+            if (currentRegData.length === 0) return alert("Không có dữ liệu để xuất!");
+            let csv = "Ho ten,Lop/Vai tro,So dien thoai,Ngay dang ky\n";
+            currentRegData.forEach(r => {
+                csv += `${r.HoTen},${r.TenLop || r.VaiTro},${r.SoDienThoai || ''},${new Date(r.NgayDangKy).toLocaleString('vi-VN')}\n`;
+            });
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", "Danh_sach_dang_ky_su_kien.csv");
+            link.click();
+        }
+
+        async function deleteEvent(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa sự kiện này? Tất cả dữ liệu đăng ký sẽ bị mất!")) return;
+            try {
+                const res = await fetch(`/api/events/delete/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    alert("✨ Đã xóa sự kiện!");
+                    loadEvents();
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (err) { alert("Lỗi kết nối máy chủ!"); }
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa thông báo này?")) return;
+            try {
+                const res = await fetch(`/api/teacher/announcements/delete/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    alert("✨ Đã xóa thông báo!");
+                    loadAnnouncements();
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch (err) { alert("Lỗi kết nối máy chủ!"); }
+        }
+
+        function closeRegModal() {
+            document.getElementById('reg-modal').classList.add('hidden');
+        }
+
+        async function checkNewItems() {
+            try {
+                // Kiểm tra tin tức mới
+                const resAnn = await fetch('/api/teacher/announcements');
+                const resultAnn = await resAnn.json();
+                if (resultAnn.success && resultAnn.data.length > 0) {
+                    const lastId = localStorage.getItem('last_seen_ann_id') || 0;
+                    const newCount = resultAnn.data.filter(ann => ann.MaThongBao > lastId).length;
+                    
+                    const badgeNews = document.getElementById('badge-news');
+                    if (newCount > 0 && currentTab !== 'news') {
+                        badgeNews.innerText = newCount;
+                        badgeNews.classList.remove('hidden');
+                    } else {
+                        badgeNews.classList.add('hidden');
+                    }
+                    // Cập nhật last_seen khi ở trong tab
+                    if (currentTab === 'news') localStorage.setItem('last_seen_ann_id', resultAnn.data[0].MaThongBao);
+                }
+
+                // Kiểm tra sự kiện mới
+                const resEv = await fetch('/api/events/list');
+                const resultEv = await resEv.json();
+                if (resultEv.success && resultEv.data.length > 0) {
+                    const lastId = localStorage.getItem('last_seen_event_id') || 0;
+                    const newCount = resultEv.data.filter(ev => ev.MaSuKien > lastId).length;
+                    
+                    const badgeEvents = document.getElementById('badge-events');
+                    if (newCount > 0 && currentTab !== 'events') {
+                        badgeEvents.innerText = newCount;
+                        badgeEvents.classList.remove('hidden');
+                    } else {
+                        badgeEvents.classList.add('hidden');
+                    }
+                    if (currentTab === 'events') localStorage.setItem('last_seen_event_id', resultEv.data[0].MaSuKien);
+                }
+                updateSidebarBadges(); // Cập nhật tổng số lên Sidebar
+            } catch(e) { console.error(e); }
+        }
+
+        async function updateSidebarBadges() {
+            try {
+                // 1. Đếm đơn xin nghỉ
+                const resL = await fetch('/api/teacher/pending-leaves-count');
+                const resultL = await resL.json();
+                const badgeL = document.getElementById('badge-leave');
+                if (badgeL) {
+                    if (resultL.success && resultL.count > 0) {
+                        badgeL.innerText = resultL.count;
+                        badgeL.classList.remove('hidden');
+                    } else { badgeL.classList.add('hidden'); }
+                }
+
+                // 2. Đếm tin nhắn chưa đọc
+                const resM = await fetch('/api/messages/unread-count');
+                const resultM = await resM.json();
+                const badgeM = document.getElementById('badge-messages');
+                if (badgeM) {
+                    if (resultM.success && resultM.count > 0) {
+                        badgeM.innerText = resultM.count;
+                        badgeM.classList.remove('hidden');
+                    } else { badgeM.classList.add('hidden'); }
+                }
+
+                // 3. Đếm thông báo mới (Tổng từ 2 tab)
+                const badgeNews = document.getElementById('badge-news');
+                const badgeEvents = document.getElementById('badge-events');
+                const countN = badgeNews && !badgeNews.classList.contains('hidden') ? parseInt(badgeNews.innerText) : 0;
+                const countE = badgeEvents && !badgeEvents.classList.contains('hidden') ? parseInt(badgeEvents.innerText) : 0;
+                const totalAnn = countN + countE;
+                
+                const badgeAnn = document.getElementById('badge-announcements');
+                if (badgeAnn) {
+                    if (totalAnn > 0) {
+                        badgeAnn.innerText = totalAnn;
+                        badgeAnn.classList.remove('hidden');
+                    } else { badgeAnn.classList.add('hidden'); }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // --- NOTIFICATION BELL SYSTEM ---
+        const bellBtn = document.getElementById('bell-btn');
+        const notifDropdown = document.getElementById('notif-dropdown');
+        const notifList = document.getElementById('notif-list');
+        const bellBadge = document.getElementById('bell-badge');
+
+        bellBtn.onclick = (e) => {
+            e.stopPropagation();
+            const isHidden = notifDropdown.classList.contains('hidden');
+            if (isHidden) {
+                notifDropdown.classList.remove('hidden');
+                setTimeout(() => {
+                    notifDropdown.classList.remove('scale-95', 'opacity-0');
+                    notifDropdown.classList.add('scale-100', 'opacity-100');
+                }, 10);
+                loadNotifications();
+            } else {
+                hideNotifDropdown();
+            }
+        };
+
+        function hideNotifDropdown() {
+            notifDropdown.classList.remove('scale-100', 'opacity-100');
+            notifDropdown.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => notifDropdown.classList.add('hidden'), 200);
+        }
+
+        document.onclick = () => hideNotifDropdown();
+        notifDropdown.onclick = (e) => e.stopPropagation();
+
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/api/social/notifications');
+                const result = await res.json();
+                if (result.success && result.data.length > 0) {
+                    const lastSeenId = parseInt(localStorage.getItem('last_seen_notif_id') || 0);
+                    // Chỉ đếm những cái có ID lớn hơn ID cuối cùng đã xem
+                    const newCount = result.data.filter(n => n.SortID > lastSeenId).length;
+                    
+                    if (newCount > 0) {
+                        bellBadge.innerText = newCount;
+                        bellBadge.classList.remove('hidden');
+                    } else {
+                        bellBadge.classList.add('hidden');
+                    }
+                    
+                    notifList.innerHTML = result.data.map(n => `
+                        <div onclick="goToObject('${n.ObjectType}', ${n.ObjectID})" class="flex items-center gap-3 p-3 rounded-xl hover:bg-rose-50 cursor-pointer transition-all border-b border-slate-50 last:border-0 group ${n.SortID > lastSeenId ? 'bg-rose-50/30' : ''}">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
+                                ${n.AnhDaiDien ? `<img src="${n.AnhDaiDien}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-rose-500 text-white text-xs font-black">${n.HoTen.charAt(0)}</div>`}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[11px] text-slate-700 leading-snug">
+                                    <span class="font-black">${n.HoTen}</span> 
+                                    ${n.Action === 'liked' ? 'đã thích' : 'đã bình luận vào'} 
+                                    ${n.ObjectType === 'ThongBao' ? 'thông báo' : 'sự kiện'} 
+                                    <span class="font-bold text-brand-primary">"${n.ObjectTitle}"</span>
+                                </p>
+                                <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
+                                    <i class="ph-bold ph-clock"></i> ${new Date(n.Time).toLocaleString('vi-VN')}
+                                </p>
+                            </div>
+                            ${n.SortID > lastSeenId ? '<div class="w-2 h-2 rounded-full bg-rose-500"></div>' : ''}
+                        </div>
+                    `).join('');
+
+                    // Nếu đang mở dropdown thì đánh dấu là đã xem hết
+                    if (!notifDropdown.classList.contains('hidden')) {
+                        localStorage.setItem('last_seen_notif_id', result.data[0].SortID);
+                        // Đợi 2s rồi ẩn badge cho mượt
+                        setTimeout(() => bellBadge.classList.add('hidden'), 2000);
+                    }
+                } else {
+                    bellBadge.classList.add('hidden');
+                    notifList.innerHTML = `<div class="p-8 text-center text-slate-400"><p class="text-xs italic">Không có thông báo mới nào</p></div>`;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function goToObject(type, id) {
+            const tab = type === 'ThongBao' ? 'news' : 'events';
+            const elementId = type === 'ThongBao' ? `ann-${id}` : `event-${id}`;
+            
+            // Chuyển tab trước nếu cần
+            if (currentTab !== tab) {
+                switchTab(tab);
+            }
+            
+            // Đợi dữ liệu load và UI render xong
+            setTimeout(() => {
+                const el = document.getElementById(elementId);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Hiệu ứng "Lấp lánh" cực mạnh để thu hút sự chú ý
+                    el.classList.add('ring-8', 'ring-rose-500/30', 'ring-offset-4', 'shadow-2xl', 'scale-[1.02]');
+                    setTimeout(() => {
+                        el.classList.remove('ring-8', 'ring-rose-500/30', 'ring-offset-4', 'scale-[1.02]');
+                    }, 4000);
+                } else {
+                    console.warn("Không tìm thấy phần tử:", elementId);
+                }
+                hideNotifDropdown();
+            }, 800);
+        }
+
+        function markAllRead() {
+            bellBadge.classList.add('hidden');
+            hideNotifDropdown();
+        }
+
+        // Tự động kiểm tra thông báo mới
+        setInterval(loadNotifications, 45000);
+
+        window.onload = () => {
+            loadAnnouncements();
+            checkNewItems();
+            loadNotifications();
+            setInterval(checkNewItems, 30000);
+        };
+    </script>
+</body>
+</html>

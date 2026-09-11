@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký | EduNext Hệ Thống Lớp Học Số</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { 
+                        brand: { 
+                            50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' 
+                        } 
+                    },
+                    animation: { 'blob': 'blob 7s infinite' },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        input:focus + i { color: #2563eb !important; }
+    </style>
+</head>
+<body class="bg-white lg:bg-slate-50 text-slate-800 font-sans min-h-screen selection:bg-brand-500 selection:text-white">
+
+    <div class="grid lg:grid-cols-12 min-h-screen items-start">
+        
+        <div class="lg:col-span-5 xl:col-span-4 flex flex-col bg-white shadow-[10px_0_30px_rgba(0,0,0,0.05)] z-20 relative min-h-full">
+            
+            <div class="px-8 sm:px-16 lg:px-12 xl:px-16 py-10">
+                
+                <div class="mb-8">
+                    <a href="/" class="inline-flex items-center gap-2 text-slate-500 hover:text-brand-500 font-semibold text-sm transition-all group">
+                        <i class="ph-bold ph-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                        Quay về trang chủ
+                    </a>
+                </div>
+
+                <div class="lg:hidden flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-800 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                        <i class="ph-bold ph-graduation-cap text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl text-slate-800 tracking-tight">EduNext</span>
+                </div>
+
+                <div class="mb-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-500 text-sm font-semibold mb-4 border border-brand-100">
+                        <i class="ph-fill ph-rocket-launch"></i> Bắt đầu ngay
+                    </div>
+                    <h1 class="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Tạo tài khoản mới</h1>
+                    <p class="text-slate-500 font-medium leading-relaxed">Tham gia hệ sinh thái giáo dục số thông minh.</p>
+                </div>
+
+                <form onsubmit="handleRegister(event)" class="space-y-5">
+                    <div class="group">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Họ và tên</label>
+                        <div class="relative">
+                            <input type="text" id="fullname" placeholder="Nguyễn Văn A" class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all duration-300 font-medium text-slate-700" required>
+                            <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl transition-colors"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3">Bạn tham gia với vai trò?</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="cursor-pointer group relative">
+                                <input type="radio" name="role" value="Student" class="peer sr-only" checked>
+                                <div class="flex flex-col items-center justify-center p-5 rounded-xl border-2 border-slate-100 bg-white peer-checked:border-brand-500 peer-checked:bg-brand-50 text-slate-400 peer-checked:text-brand-600 transition-all duration-300">
+                                    <i class="ph-fill ph-student text-4xl mb-2"></i>
+                                    <span class="text-xs font-bold uppercase">Học sinh</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group relative">
+                                <input type="radio" name="role" value="Parent" class="peer sr-only">
+                                <div class="flex flex-col items-center justify-center p-5 rounded-xl border-2 border-slate-100 bg-white peer-checked:border-brand-500 peer-checked:bg-brand-50 text-slate-400 peer-checked:text-brand-600 transition-all duration-300">
+                                    <i class="ph-fill ph-users text-4xl mb-2"></i>
+                                    <span class="text-xs font-bold uppercase">Phụ huynh</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tài khoản Email</label>
+                        <div class="relative">
+                            <input type="email" id="email" placeholder="email@example.com" class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all duration-300 font-medium text-slate-700" required>
+                            <i class="ph ph-envelope-simple absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Mật khẩu</label>
+                        <div class="relative">
+                            <input type="password" id="password" placeholder="••••••••" class="w-full pl-12 pr-12 py-3.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all duration-300 font-medium text-slate-700" required>
+                            <i class="ph ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl"></i>
+                            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-500 transition-colors">
+                                <i id="eye-icon" class="ph-bold ph-eye text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3 pt-2">
+                        <input type="checkbox" id="terms" class="w-5 h-5 rounded border-slate-300 text-brand-500 focus:ring-brand-500 cursor-pointer mt-1" required>
+                        <label for="terms" class="text-sm font-medium text-slate-600 leading-relaxed cursor-pointer select-none">
+                            Tôi đồng ý với <a href="#" class="text-brand-500 hover:underline font-semibold">Điều khoản</a> & <a href="#" class="text-brand-500 hover:underline font-semibold">Chính sách</a>.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-register w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+                        Xác nhận đăng ký <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                    <p class="text-sm text-slate-500 font-medium">
+                        Đã có tài khoản? <a href="/login" class="text-brand-500 font-bold hover:underline ml-1">Đăng nhập ngay</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden lg:block lg:col-span-7 xl:col-span-8 lg:sticky lg:top-0 lg:h-screen relative bg-slate-900 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1577896332579-a985a3d19856?q=80&w=1935&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity" alt="Classroom">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-blue-900/80 to-indigo-900/90 backdrop-blur-[2px]"></div>
+            
+            <div class="relative h-full flex flex-col items-center justify-center text-center px-12 z-10">
+                 <div class="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center mb-8 border border-white/20">
+                    <i class="ph-fill ph-users-three text-4xl text-white"></i>
+                </div>
+                <h2 class="text-4xl xl:text-5xl font-bold leading-tight mb-6 text-white">
+                    Kết nối chặt chẽ <br /> <span class="text-blue-300">Nhà trường & Gia đình</span>
+                </h2>
+                <p class="text-lg text-slate-300 max-w-lg">
+                    EduNext giúp phụ huynh theo sát hành trình học tập và hỗ trợ giáo viên chủ nhiệm tối ưu hóa quản lý lớp học.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.replace('ph-eye', 'ph-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.replace('ph-eye-slash', 'ph-eye');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btnRegister = document.querySelector('.btn-register');
+            const originalText = btnRegister.innerHTML;
+            btnRegister.innerHTML = '<i class="ph-bold ph-spinner ph-spin text-xl"></i> Đang xử lý...';
+            btnRegister.disabled = true;
+            setTimeout(() => {
+                alert("Đăng ký thành công!");
+                btnRegister.innerHTML = originalText;
+                btnRegister.disabled = false;
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

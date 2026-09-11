@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer API Hub | EduNext Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+        
+        body { 
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .code-font { font-family: 'Fira Code', monospace; }
+
+        .aurora-border {
+            position: relative;
+            background: #1e293b;
+            border-radius: 24px;
+        }
+
+        .aurora-border::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, #6366f1, #a855f7, #ec4899);
+            border-radius: 26px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .endpoint-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .endpoint-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .method-get { color: #10b981; }
+        .method-post { color: #3b82f6; }
+
+        pre {
+            background: #020617;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 11px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="selection:bg-indigo-500/30">
+
+    <nav class="fixed top-0 w-full border-b border-white/5 bg-slate-900/80 backdrop-blur-md z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
+                    <i class="ph-fill ph-brackets-curly text-xl"></i>
+                </div>
+                <span class="text-xl font-black text-white tracking-tighter">Edu<span class="text-indigo-400">Next</span> <span class="text-xs font-bold text-slate-500 ml-2 uppercase tracking-widest">Developers</span></span>
+            </a>
+            <div class="flex items-center gap-6">
+                <span class="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span> API Status: Stable
+                </span>
+                <a href="/" class="text-sm font-bold text-slate-400 hover:text-white transition-colors">Trở về Trang chủ</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6 pt-32 pb-20">
+        <div class="mb-16">
+            <h1 class="text-5xl font-black mb-6 bg-gradient-to-r from-white to-slate-500 bg-clip-text text-transparent italic">
+                Cầu nối Dữ liệu Mở (API Hub)
+            </h1>
+            <p class="text-lg text-slate-400 font-medium leading-relaxed max-w-3xl">
+                Chào mừng các đối tác công nghệ và nhà phát triển. EduNext cung cấp bộ giao diện lập trình ứng dụng (API) mạnh mẽ để bạn có thể truy xuất dữ liệu học liệu, thống kê giáo dục và tích hợp các giải pháp học thuật vào hệ sinh thái của mình.
+            </p>
+        </div>
+
+        <div class="grid gap-8">
+            <!-- Documentation Section 1 -->
+            <div class="aurora-border p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-3">
+                    <i class="ph-fill ph-info text-indigo-400"></i> Xác thực (Authentication)
+                </h3>
+                <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+                    Hệ thống sử dụng Bearer Token để xác thực các yêu cầu API. Đối với các dữ liệu công khai (Public Data), bạn không cần cung cấp token.
+                </p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-white/5">
+                    <code class="text-xs text-indigo-300">Authorization: Bearer YOUR_API_KEY</code>
+                </div>
+            </div>
+
+            <!-- Endpoint List -->
+            <h2 class="text-2xl font-black mt-12 mb-6 italic uppercase tracking-widest text-slate-500">Endpoints Phổ biến</h2>
+
+            <!-- Endpoint 1 -->
+            <div class="endpoint-card p-6 rounded-3xl">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="method-get font-black text-xs uppercase bg-emerald-500/10 px-3 py-1 rounded-lg">GET</span>
+                        <code class="code-font text-sm text-white">/api/platform/highlights</code>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Public Access</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-6">Lấy dữ liệu thống kê tổng quát và các học liệu nổi bật trên nền tảng EduNext.</p>
+                
+                <h5 class="text-[10px] font-black text-slate-500 uppercase mb-3 tracking-widest">Response Example (JSON)</h5>
+                <pre class="code-font text-indigo-400">
+{
+  "success": true,
+  "stats": {
+    "students": 1504,
+    "teachers": 82,
+    "materials": 258
+  },
+  "materials": [
+    { "MaTaiLieu": 1, "TenTaiLieu": "Giải tích 12 cơ bản", "TenGiaoVien": "Hệ thống" }
+  ]
+}</pre>
+            </div>
+
+            <!-- Endpoint 2 -->
+            <div class="endpoint-card p-6 rounded-3xl">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="method-get font-black text-xs uppercase bg-emerald-500/10 px-3 py-1 rounded-lg">GET</span>
+                        <code class="code-font text-sm text-white">/api/resources</code>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Scoped Access</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-6">Truy vấn kho học liệu theo khối lớp hoặc môn học. Hỗ trợ lọc theo trạng thái Công khai/Nội bộ.</p>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h5 class="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Parameters</h5>
+                        <ul class="text-[10px] space-y-1 text-slate-400">
+                            <li><code class="text-indigo-400">class_id</code>: ID của khối lớp (0-9)</li>
+                            <li><code class="text-indigo-400">type</code>: Định dạng file (PDF/VIDEO)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Response Status</h5>
+                        <p class="text-[10px] text-emerald-400 font-bold">200 OK / 401 Unauthorized</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoint 3 -->
+            <div class="endpoint-card p-6 rounded-3xl opacity-60">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="method-post font-black text-xs uppercase bg-blue-500/10 px-3 py-1 rounded-lg">POST</span>
+                        <code class="code-font text-sm text-white">/api/v1/webhook/events</code>
+                    </div>
+                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Coming Soon</span>
+                </div>
+                <p class="text-xs text-slate-400">Đăng ký nhận thông báo thời gian thực khi có sự thay đổi dữ liệu trên hệ thống (Webhooks).</p>
+            </div>
+        </div>
+
+        <div class="mt-20 pt-12 border-t border-white/5 text-center">
+            <h4 class="text-white font-bold mb-4 uppercase italic">Sẵn sàng tích hợp?</h4>
+            <button onclick="alert('Đang tạo API Key cho bạn...')" class="px-8 py-3 bg-white text-slate-900 font-black rounded-xl hover:scale-105 transition-all shadow-xl shadow-white/5">
+                Đăng ký API Key ngay
+            </button>
+        </div>
+    </main>
+
+</body>
+</html>

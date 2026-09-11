@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Khối & Lớp - EduNext Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c' },
+                        darkbg: '#0f172a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- 1. SIDEBAR -->
+    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+        <div>
+            <div class="flex items-center gap-3 px-3 py-3 mb-6">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="text-xl font-bold text-white">Edu<span class="text-primary-500">Admin</span></span>
+            </div>
+            <nav class="space-y-4">
+                <a href="/admin/tong-quan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium transition-all">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> <span>Tổng quan trường</span>
+                </a>
+                <a href="/admin/quan-ly-lop" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-600/15 text-primary-500 font-medium border-l-4 border-primary-500 transition-all">
+                    <i class="fa-solid fa-sitemap w-5 text-center"></i> <span>Quản lý Khối & Lớp</span>
+                </a>
+                <a href="/admin/quan-ly-tai-khoan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium transition-all">
+                    <i class="fa-solid fa-user-gear w-5 text-center"></i> <span>Quản lý Tài khoản</span>
+                </a>
+                <a href="/admin/nhat-ky-he-thong" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium transition-all">
+                    <i class="fa-solid fa-receipt w-5 text-center"></i> <span>Nhật ký Hệ thống</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+            <p class="text-xs text-slate-400">EduNext Structure</p>
+            <p class="text-[11px] text-emerald-400 font-medium mt-0.5"><i class="fa-solid fa-circle text-[7px] mr-1"></i>Hệ thống 4 Khối Chuẩn</p>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- HEADER -->
+        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
+            <h1 class="text-lg font-bold text-slate-800">Quản Lý Khối & Lớp Học</h1>
+            <button onclick="openCreateClassModal()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-semibold shadow-md transition-all flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Tạo Lớp Học Mới
+            </button>
+        </header>
+
+        <!-- BODY -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            
+            <!-- THANH TỔNG HỢP & BỘ LỌC KHỐI -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                <div class="flex gap-2">
+                    <button onclick="filterGrade('all')" id="tab-grade-all" class="px-4 py-2 rounded-xl font-bold text-xs bg-primary-600 text-white transition-all shadow-sm">
+                        Tất cả (<span id="count-all">0</span>)
+                    </button>
+                    <button onclick="filterGrade(1)" id="tab-grade-1" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all">
+                        Khối 6 (<span id="count-k6">0</span>)
+                    </button>
+                    <button onclick="filterGrade(2)" id="tab-grade-2" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all">
+                        Khối 7 (<span id="count-k7">0</span>)
+                    </button>
+                    <button onclick="filterGrade(3)" id="tab-grade-3" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all">
+                        Khối 8 (<span id="count-k8">0</span>)
+                    </button>
+                    <button onclick="filterGrade(4)" id="tab-grade-4" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all">
+                        Khối 9 (<span id="count-k9">0</span>)
+                    </button>
+                </div>
+
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-class" oninput="filterSearchClasses()" placeholder="Tìm tên lớp, GVCN..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary-500/50">
+                </div>
+            </div>
+
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Danh mục Lớp học trực thuộc</h3>
+                        <p class="text-xs text-slate-400">Nhấp vào thẻ lớp để xem danh sách học sinh chi tiết</p>
+                    </div>
+                    <button onclick="loadClasses()" class="text-xs text-primary-600 font-semibold hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i> Làm mới
+                    </button>
+                </div>
+
+                <!-- GRID LỚP HỌC -->
+                <div id="classes-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div class="p-10 text-center col-span-full text-slate-400 text-xs font-medium">
+                        <i class="fa-solid fa-spinner animate-spin mr-2"></i> Đang nạp danh sách lớp học...
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: TẠO LỚP HỌC MỚI -->
+    <div id="create-class-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="p-6 bg-gradient-to-r from-primary-600 to-rose-500 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                        <i class="fa-solid fa-door-open text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base">Tạo Lớp Học Mới</h3>
+                        <p class="text-[10px] text-white/80">Khởi tạo lớp và phân công Giáo viên Chủ nhiệm</p>
+                    </div>
+                </div>
+                <button onclick="closeCreateClassModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Khối lớp <span class="text-rose-500">*</span></label>
+                    <select id="modal-class-khoi" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="1">Khối 6</option>
+                        <option value="2">Khối 7</option>
+                        <option value="3" selected>Khối 8</option>
+                        <option value="4">Khối 9</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tên lớp học <span class="text-rose-500">*</span></label>
+                    <input type="text" id="modal-class-name" placeholder="Ví dụ: 8A4" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Giáo viên chủ nhiệm (GVCN)</label>
+                    <select id="modal-class-gvcn" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="">--- Chưa phân công GVCN ---</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                <button onclick="closeCreateClassModal()" class="px-4 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs uppercase hover:bg-slate-300 transition-all">Hủy</button>
+                <button onclick="submitCreateClass()" id="btn-submit-class" class="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs uppercase shadow-md transition-all">
+                    Tạo Lớp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: XEM DANH SÁCH HỌC SINH CỦA LỚP -->
+    <div id="class-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="p-6 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base flex items-center gap-2" id="detail-class-title">
+                        <i class="fa-solid fa-users-viewfinder text-rose-400"></i> Danh sách học sinh
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5" id="detail-class-subtitle">Sĩ số: ... • GVCN: ...</p>
+                </div>
+                <button onclick="closeClassDetailModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto custom-scrollbar flex-1">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase">
+                            <th class="py-2.5 px-4 w-12 text-center">STT</th>
+                            <th class="py-2.5 px-4">Họ và tên</th>
+                            <th class="py-2.5 px-4">Email / Tài khoản</th>
+                            <th class="py-2.5 px-4 text-center">Điểm XP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="class-students-body" class="divide-y divide-slate-100">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button onclick="closeClassDetailModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl uppercase">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT SYSTEM -->
+    <script>
+        let rawClasses = [];
+        let currentFilterGrade = 'all';
+
+        async function loadClasses() {
+            const container = document.getElementById('classes-container');
+            container.innerHTML = '<div class="p-10 text-center col-span-full text-slate-400 text-xs font-medium"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Đang tải danh sách lớp học...</div>';
+
+            try {
+                const res = await fetch('/api/admin/classes');
+                const result = await res.json();
+                
+                if (result.success) {
+                    rawClasses = result.data || [];
+                    updateGradeCounters();
+                    renderClassGrid(rawClasses);
+                }
+            } catch(e) { 
+                console.error(e);
+                container.innerHTML = `<div class="p-8 text-center col-span-full text-rose-500 text-xs">Lỗi kết nối API máy chủ!</div>`; 
+            }
+        }
+
+        function updateGradeCounters() {
+            document.getElementById('count-all').innerText = rawClasses.length;
+            document.getElementById('count-k6').innerText = rawClasses.filter(c => (c.TenLop || '').startsWith('6')).length;
+            document.getElementById('count-k7').innerText = rawClasses.filter(c => (c.TenLop || '').startsWith('7')).length;
+            document.getElementById('count-k8').innerText = rawClasses.filter(c => (c.TenLop || '').startsWith('8')).length;
+            document.getElementById('count-k9').innerText = rawClasses.filter(c => (c.TenLop || '').startsWith('9')).length;
+        }
+
+        function renderClassGrid(list) {
+            const container = document.getElementById('classes-container');
+            if (!list || list.length === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center col-span-full text-slate-400 text-xs">
+                        <i class="fa-solid fa-door-closed text-3xl mb-2 text-slate-300"></i>
+                        <p>Không tìm thấy lớp học nào</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(cls => `
+                <div onclick="viewClassDetail(${cls.MaLop}, '${cls.TenLop}', '${cls.GVCN || 'Chưa phân công'}', ${cls.StudentCount})" class="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 hover:border-primary-500 hover:shadow-lg hover:-translate-y-0.5 transition-all group relative flex flex-col justify-between cursor-pointer">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary-600 shadow-sm group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-door-open text-base"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">Hoạt động</span>
+                        </div>
+                        <h4 class="text-base font-bold text-slate-800">Lớp ${cls.TenLop}</h4>
+                        <p class="text-xs text-slate-500 mt-1 font-medium flex items-center gap-1.5 truncate">
+                            <i class="fa-solid fa-user-tie text-slate-400 text-[11px]"></i>
+                            <span>GVCN: <b>${cls.GVCN || 'Chưa phân công'}</b></span>
+                        </p>
+                    </div>
+
+                    <div class="mt-5 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-[10px] font-bold">
+                                <i class="fa-solid fa-user-graduate"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-700">${cls.StudentCount}</span>
+                            <span class="text-[11px] text-slate-400">Học sinh</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-primary-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                            Xem chi tiết <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterGrade(grade) {
+            currentFilterGrade = grade;
+            ['all', 1, 2, 3, 4].forEach(g => {
+                const btn = document.getElementById(g === 'all' ? 'tab-grade-all' : `tab-grade-${g}`);
+                if (btn) {
+                    if (g === grade) btn.className = "px-4 py-2 rounded-xl font-bold text-xs bg-primary-600 text-white transition-all shadow-sm";
+                    else btn.className = "px-4 py-2 rounded-xl font-bold text-xs bg-white text-slate-500 hover:bg-slate-100 transition-all";
+                }
+            });
+
+            if (grade === 'all') renderClassGrid(rawClasses);
+            else {
+                const prefix = grade === 1 ? '6' : (grade === 2 ? '7' : (grade === 3 ? '8' : '9'));
+                const filtered = rawClasses.filter(c => (c.TenLop || '').startsWith(prefix));
+                renderClassGrid(filtered);
+            }
+        }
+
+        function filterSearchClasses() {
+            const kw = document.getElementById('search-class').value.toLowerCase().trim();
+            const filtered = rawClasses.filter(c => 
+                (c.TenLop && c.TenLop.toLowerCase().includes(kw)) ||
+                (c.GVCN && c.GVCN.toLowerCase().includes(kw))
+            );
+            renderClassGrid(filtered);
+        }
+
+        async function openCreateClassModal() {
+            document.getElementById('create-class-modal').classList.remove('hidden');
+            // Tải danh sách giáo viên để gán GVCN
+            try {
+                const res = await fetch('/api/admin/users/teachers');
+                const result = await res.json();
+                if (result.success) {
+                    const select = document.getElementById('modal-class-gvcn');
+                    select.innerHTML = '<option value="">--- Chưa phân công GVCN ---</option>' + 
+                        result.data.map(t => `<option value="${t.MaNguoiDung}">${t.HoTen} (${t.Email})</option>`).join('');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function closeCreateClassModal() {
+            document.getElementById('create-class-modal').classList.add('hidden');
+            document.getElementById('modal-class-name').value = '';
+        }
+
+        async function submitCreateClass() {
+            const khoi = document.getElementById('modal-class-khoi').value;
+            const name = document.getElementById('modal-class-name').value.trim();
+            const gvcnId = document.getElementById('modal-class-gvcn').value;
+
+            if (!name) {
+                alert("Vui lòng nhập tên lớp học (ví dụ: 8A4)!");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-class');
+            btn.disabled = true;
+            btn.innerText = "Đang tạo...";
+
+            try {
+                const res = await fetch('/api/admin/classes/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ten_lop: name,
+                        ma_khoi: khoi,
+                        ma_gvcn: gvcnId ? parseInt(gvcnId) : null
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert("✨ " + result.message);
+                    closeCreateClassModal();
+                    loadClasses();
+                } else {
+                    alert("Lỗi: " + result.message);
+                }
+            } catch(e) { alert("Lỗi kết nối máy chủ!"); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = "Tạo Lớp";
+            }
+        }
+
+        async function viewClassDetail(classId, className, gvcn, studentCount) {
+            document.getElementById('detail-class-title').innerHTML = `<i class="fa-solid fa-users-viewfinder text-rose-400"></i> Danh sách Học sinh - Lớp ${className}`;
+            document.getElementById('detail-class-subtitle').innerText = `Sĩ số: ${studentCount} học sinh • GVCN: ${gvcn}`;
+            
+            const tbody = document.getElementById('class-students-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Đang tải danh sách học sinh...</td></tr>';
+            
+            document.getElementById('class-detail-modal').classList.remove('hidden');
+
+            try {
+                const res = await fetch(`/api/admin/classes/${classId}/students`);
+                const result = await res.json();
+                if (result.success) {
+                    if (!result.data || result.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Lớp học này hiện chưa có học sinh nào.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = result.data.map((st, idx) => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-2.5 px-4 text-center text-slate-400 font-bold">${idx + 1}</td>
+                            <td class="py-2.5 px-4 font-bold text-slate-800">${st.HoTen}</td>
+                            <td class="py-2.5 px-4 text-slate-500">${st.Email || '---'}</td>
+                            <td class="py-2.5 px-4 text-center">
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-black ${st.TongXP >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                                    ${st.TongXP > 0 ? '+' : ''}${st.TongXP} XP
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-rose-500">Lỗi kết nối máy chủ!</td></tr>';
+            }
+        }
+
+        function closeClassDetailModal() {
+            document.getElementById('class-detail-modal').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadClasses);
+    </script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tin nhắn | EduNext Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+                    colors: { brand: { primary: '#E11D48', dark: '#0F172A', surface: '#F1F5F9' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f1f5f9;
+            letter-spacing: -0.01em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ai-gradient {
+            background: linear-gradient(135deg, #4F46E5 0%, #E11D48 100%);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E2E8F0;
+            border-radius: 10px;
+        }
+
+        * {
+            font-style: normal !important;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden text-slate-900 bg-brand-surface">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex relative z-30 shadow-sm">
+        <div class="p-8 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+                    <i class="ph-fill ph-circles-four text-2xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-2xl tracking-tighter text-brand-dark uppercase leading-none">Edu<span
+                            class="text-brand-primary">Next</span></span>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-8 overflow-y-auto py-8">
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hệ thống</p>
+                <div class="space-y-1">
+                    <a href="/dashboard_teacher" id="nav-dashboard"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-house-line text-xl"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-brand-primary/60 uppercase tracking-widest">Nghiệp vụ
+                    Chủ nhiệm</p>
+                <div class="space-y-1">
+                    <a href="/teacher/attendance" id="nav-attendance"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Điểm danh lớp
+                    </a>
+                    <a href="/teacher/leave-requests" id="nav-leave"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative group">
+                        <i class="ph-bold ph-envelope-open text-xl"></i> Duyệt đơn xin nghỉ
+                        <span id="badge-leave"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden">0</span>
+                    </a>
+                    <a href="/teacher/announcements" id="nav-announcements"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative">
+                        <i class="ph-bold ph-megaphone text-xl"></i> Thông báo lớp
+                        <span id="badge-announcements" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-400 text-white text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
+                    </a>
+                    <a href="/teacher/messages" id="nav-messages"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-brand-primary text-white shadow-lg shadow-rose-200 font-bold text-sm relative transition-all">
+                        <i class="ph-fill ph-chat-circle-dots text-xl"></i> Tin nhắn
+                        <span id="badge-messages" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-white text-brand-primary text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học tập & Tài
+                    nguyên</p>
+                <div class="space-y-1">
+                    <a href="/teacher/schedule" id="nav-schedule"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Thời khóa biểu
+                    </a>
+                    <a href="/teacher/gradebook" id="nav-gradebook"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-notebook text-xl"></i> Sổ điểm & Nề nếp
+                    </a>
+                    <a href="/teacher/resources" id="nav-resources"
+                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
+                        <i class="ph-bold ph-folder-notched-plus text-xl"></i> Kho học liệu
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-6 border-t border-slate-50 space-y-4">
+            <button onclick="window.location.href='/logout'"
+                class="w-full flex items-center gap-3 p-3.5 text-slate-400 hover:text-brand-primary hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm">
+                <i class="ph-bold ph-sign-out text-xl"></i> Đăng xuất
+            </button>
+
+            <!-- PROFILE CARD -->
+            <div class="p-4 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=teacher" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-800 truncate leading-tight">{{ session.get('ho_ten', 'Giáo viên') }}</p>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mt-0.5">Giáo viên CN</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 bg-brand-surface relative overflow-hidden">
+        <header
+            class="h-20 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 px-10 flex items-center justify-between sticky top-0 z-20">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Quản lý lớp / <span
+                    id="chat-header-name" class="text-brand-dark">Tin nhắn</span></h2>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden">
+            <!-- CONTACT LIST -->
+            <div class="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
+                <div class="p-6 border-b border-slate-50">
+                    <div class="relative">
+                        <i
+                            class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" placeholder="Tìm liên hệ..."
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl text-xs font-bold outline-none border-none">
+                    </div>
+                </div>
+                <div id="contact-list" class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-8 text-center text-slate-400 text-xs italic">Đang tải danh sách...</div>
+                </div>
+            </div>
+
+            <!-- CHAT CONTENT -->
+            <div class="flex-1 flex flex-col bg-slate-50/50">
+                <div id="chat-header"
+                    class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="chat-avatar"
+                            class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-brand-primary font-black">
+                            ?</div>
+                        <p id="chat-name" class="font-black text-slate-800 text-sm italic">Chọn một liên hệ để bắt đầu
+                        </p>
+                    </div>
+                </div>
+
+                <div id="message-container" class="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar flex flex-col">
+                    <div class="m-auto text-center opacity-20">
+                        <i class="ph-fill ph-chat-circle-dots text-[100px] text-slate-300"></i>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white border-t border-slate-200">
+                    <div class="flex gap-4">
+                        <input id="msg-input" type="text" placeholder="Nhập tin nhắn..."
+                            class="flex-1 px-6 py-4 bg-slate-50 rounded-2xl text-xs font-bold outline-none border-none"
+                            onkeypress="if(event.key === 'Enter') sendMessage()">
+                        <button onclick="sendMessage()"
+                            class="w-14 h-14 bg-brand-primary text-white rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-all">
+                            <i class="ph-fill ph-paper-plane-tilt text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentReceiverId = null;
+        let pollInterval = null;
+
+        async function loadContacts() {
+            try {
+                const response = await fetch('/api/teacher/chat-contacts');
+                const result = await response.json();
+                if (result.success) {
+                    const list = document.getElementById('contact-list');
+                    list.innerHTML = result.data.map(con => {
+                        const icon = con.IsGroup ? 'ph-users-three' : 'ph-user';
+                        const bgColor = con.IsGroup ? 'bg-brand-surface' : 'bg-slate-100';
+                        const label = con.TenCon || (con.IsGroup ? 'NHÓM CHUNG' : 'Phụ huynh');
+
+                        const unreadBadge = con.UnreadCount > 0 ? `<span class="bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm animate-bounce">${con.UnreadCount}</span>` : '';
+
+                        return `
+                            <div onclick="selectUser(${con.MaNguoiDung}, '${con.HoTen}', '${label}', ${con.IsGroup})" class="p-4 hover:bg-rose-50 cursor-pointer transition-all border-b border-slate-50 flex items-center gap-3 group">
+                                <div class="w-12 h-12 ${bgColor} rounded-2xl flex items-center justify-center text-brand-primary font-black group-hover:bg-white relative">
+                                    <i class="ph-fill ${icon} text-lg"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <p class="font-bold text-slate-800 text-xs">${con.HoTen}</p>
+                                        ${unreadBadge}
+                                    </div>
+                                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mt-0.5">${label}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteMsg(id) {
+            if (!confirm("Bạn chắc chắn muốn xóa tin nhắn này?")) return;
+            try {
+                const res = await fetch(`/api/messages/delete/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    loadChatHistory();
+                } else {
+                    alert(result.message);
+                }
+            } catch (e) { alert("Lỗi kết nối!"); }
+        }
+
+        async function loadChatHistory() {
+            if (!currentReceiverId) return;
+            try {
+                const response = await fetch(`/api/messages/history?with_user_id=${currentReceiverId}`);
+                const result = await response.json();
+                if (result.success) {
+                    const container = document.getElementById('message-container');
+                    const currentUserId = Number(result.current_user_id);
+
+                    container.innerHTML = result.data.map(msg => {
+                        const isMe = Number(msg.MaNguoiGui) === currentUserId;
+                        const senderNameHtml = (!isMe && currentIsGroup) ? `<p class="text-[9px] font-black text-brand-primary mb-1 uppercase tracking-tighter">${msg.TenNguoiGui || 'Ẩn danh'}</p>` : '';
+
+                        // Hàm nhận diện link và xuống dòng
+                        const formattedContent = msg.NoiDung
+                            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="underline text-white/80 hover:text-white transition-colors">$1</a>')
+                            .replace(/\/kho-hoc-lieu\?id=(\d+)/g, '<a href="/kho-hoc-lieu?id=$1" class="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-white text-brand-primary rounded-xl text-[10px] font-black uppercase shadow-sm hover:bg-rose-50 transition-all">👉 Đi tới tài liệu</a>')
+                            .replace(/(\/uploads\/[^\s]+)/g, '<a href="$1" target="_blank" class="block mt-2 underline text-white/80 hover:text-white transition-colors italic">📎 Tải tệp trực tiếp</a>')
+                            .replace(/\n/g, '<br>');
+
+                        const deleteBtn = isMe ? `
+                            <button onclick="deleteMsg(${msg.MaTraoDoi})" class="absolute -left-8 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all" title="Xóa tin nhắn">
+                                <i class="ph-bold ph-trash text-[10px]"></i>
+                            </button>
+                        ` : '';
+
+                        return `
+                            <div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full group">
+                                <div class="max-w-[70%] relative px-5 py-3 rounded-2xl text-xs font-bold leading-relaxed ${isMe ? 'bg-brand-primary text-white rounded-br-none shadow-lg' : 'bg-slate-100 text-slate-700 rounded-bl-none'}">
+                                    ${deleteBtn}
+                                    ${senderNameHtml}
+                                    <div class="whitespace-pre-wrap">${formattedContent}</div>
+                                    <p class="text-[8px] mt-1 ${isMe ? 'text-white/60 text-right' : 'text-slate-400'} uppercase font-black tracking-widest">
+                                        ${new Date(msg.NgayGui).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        let currentIsGroup = false;
+
+        async function selectUser(id, name, subLabel, isGroup = false) {
+            currentReceiverId = id;
+            currentIsGroup = isGroup;
+            document.getElementById('chat-name').innerHTML = `${name} <span class="text-[10px] font-bold text-slate-400 ml-2">(${subLabel})</span>`;
+            document.getElementById('chat-avatar').innerHTML = `<i class="ph-fill ${isGroup ? 'ph-users-three' : 'ph-user'}"></i>`;
+            loadChatHistory();
+            loadContacts(); // Tải lại danh sách để xóa badge số tin nhắn vừa đọc
+            updateSidebarBadges(); // Cập nhật tổng số trên sidebar
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(loadChatHistory, 3000);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const content = input.value.trim();
+            if (!content || !currentReceiverId) return;
+
+            try {
+                const response = await fetch('/api/messages/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiver_id: currentReceiverId, content })
+                });
+                if (response.ok) {
+                    input.value = '';
+                    loadChatHistory();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function updateSidebarBadges() {
+            try {
+                // 1. Đếm đơn xin nghỉ
+                const resL = await fetch('/api/teacher/pending-leaves-count');
+                const resultL = await resL.json();
+                const badgeL = document.getElementById('badge-leave');
+                if (badgeL) {
+                    if (resultL.success && resultL.count > 0) {
+                        badgeL.innerText = resultL.count;
+                        badgeL.classList.remove('hidden');
+                    } else { badgeL.classList.add('hidden'); }
+                }
+
+                // 2. Đếm tin nhắn chưa đọc
+                const resM = await fetch('/api/messages/unread-count');
+                const resultM = await resM.json();
+                const badgeM = document.getElementById('badge-messages');
+                if (badgeM) {
+                    if (resultM.success && resultM.count > 0) {
+                        badgeM.innerText = resultM.count;
+                        badgeM.classList.remove('hidden');
+                    } else { badgeM.classList.add('hidden'); }
+                }
+
+                // 3. Đếm thông báo mới
+                const resAnn = await fetch('/api/teacher/announcements');
+                const resEv = await fetch('/api/events/list');
+                const [ann, ev] = await Promise.all([resAnn.json(), resEv.json()]);
+                
+                let totalNew = 0;
+                if (ann.success) {
+                    const lastAnnId = localStorage.getItem('last_seen_ann_id') || 0;
+                    totalNew += ann.data.filter(a => a.MaThongBao > lastAnnId).length;
+                }
+                if (ev.success) {
+                    const lastEvId = localStorage.getItem('last_seen_event_id') || 0;
+                    totalNew += ev.data.filter(e => e.MaSuKien > lastEvId).length;
+                }
+
+                const badgeA = document.getElementById('badge-announcements');
+                if (badgeA) {
+                    if (totalNew > 0) {
+                        badgeA.innerText = totalNew;
+                        badgeA.classList.remove('hidden');
+                    } else { badgeA.classList.add('hidden'); }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        window.onload = async () => {
+            await loadContacts();
+            updateSidebarBadges();
+            setInterval(updateSidebarBadges, 30000);
+            
+            // Tự động chọn người dùng nếu có with_id trên URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const withId = urlParams.get('with_id');
+            if (withId) {
+                // Đợi một chút để danh sách liên lạc render xong
+                setTimeout(() => {
+                    const contacts = document.querySelectorAll('#contact-list > div');
+                    contacts.forEach(el => {
+                        // Trích xuất ID từ hàm onclick (selectUser(id, ...))
+                        if (el.getAttribute('onclick').includes(`selectUser(${withId}`)) {
+                            el.click();
+                        }
+                    });
+                }, 500);
+            }
+        };
+    </script>
+</body>
+
+</html>

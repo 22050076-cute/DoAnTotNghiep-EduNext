@@ -1,0 +1,571 @@
+{% extends "HS/layout.html" %}
+
+{% set active_page = 'baitap' %}
+
+{% block title %}Bài tập & Kiểm tra{% endblock %}
+
+{% block header_title %}Bài tập của tôi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-card { transition: all 0.3s ease; border: 1px solid transparent; }
+    .task-card:hover { transform: translateY(-3px); border-color: #fee2e2; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05); }
+    
+    .stat-card { cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; }
+    .stat-card:hover { transform: translateY(-2px); background-color: white; }
+    .stat-card.active-filter { border-color: #ee0033; background-color: white; box-shadow: 0 10px 15px -3px rgba(238, 0, 51, 0.1); }
+    
+    .timer-badge { font-variant-numeric: tabular-nums; }
+    .timer-urgent { background-color: #fee2e2; color: #ef4444; border: 1px solid #fecaca; font-weight: 800; }
+    
+    .dropzone {
+        transition: all 0.2s ease-in-out;
+        border: 2px dashed #cbd5e1;
+    }
+    .dropzone.dragover {
+        border-color: #ee0033;
+        background-color: #fff1f2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex justify-end mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
+    <div class="flex bg-slate-100 p-1 rounded-xl">
+        <button onclick="filterTasks('all')" id="btn-filter-all" class="px-4 py-1.5 text-xs font-bold bg-white text-edunext-primary rounded-lg shadow-sm transition-all">Tất cả</button>
+        <button onclick="filterTasks('coming')" id="btn-filter-coming" class="px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 transition-all">Đang chờ</button>
+        <button onclick="filterTasks('completed')" id="btn-filter-completed" class="px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 transition-all">Đã nộp</button>
+    </div>
+</div>
+
+<div class="flex-1 overflow-y-auto space-y-6 animate-in fade-in duration-700">
+    <!-- THỐNG KÊ NHANH -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div id="stat-coming" onclick="filterTasks('coming')" class="stat-card bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="ph-fill ph-clock"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Sắp đến hạn</p>
+                <p id="count-coming" class="text-xl font-black text-slate-800">0 bài</p>
+            </div>
+        </div>
+
+        <div id="stat-pending" onclick="filterTasks('pending')" class="stat-card bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-rose-50 text-edunext-primary rounded-2xl flex items-center justify-center text-2xl">
+                <i class="ph-fill ph-warning-circle"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Chưa hoàn thành</p>
+                <p id="count-pending" class="text-xl font-black text-slate-800">0 bài</p>
+            </div>
+        </div>
+
+        <div id="stat-completed" onclick="filterTasks('completed')" class="stat-card bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="ph-fill ph-check-circle"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Đã hoàn thành</p>
+                <p id="count-completed" class="text-xl font-black text-slate-800">0 bài</p>
+            </div>
+        </div>
+    </div>
+
+    <h3 id="filter-title" class="text-sm font-black text-slate-400 uppercase tracking-widest px-2">Tất cả bài tập</h3>
+
+    <!-- DANH SÁCH BÀI TẬP -->
+    <div id="taskList" class="grid grid-cols-1 gap-4 pb-10"></div>
+</div>
+
+<!-- MODAL NỘP BÀI GỌN ĐẸP -->
+<div id="submitModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <!-- HEADER -->
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-rose-600 to-red-500 text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                    <i class="ph-bold ph-paper-plane-tilt text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-lg uppercase italic">Nộp bài tập</h3>
+                    <p id="modal-task-title" class="text-[11px] font-bold opacity-90 truncate max-w-xs">Tên bài tập</p>
+                </div>
+            </div>
+            <button onclick="toggleSubmitModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all">
+                <i class="ph-bold ph-x font-bold"></i>
+            </button>
+        </div>
+
+        <div class="p-6 md:p-8 space-y-5">
+            <!-- Ô NHẬP LỜI NHẮN -->
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Lời nhắn gửi thầy/cô (Không bắt buộc)</label>
+                <textarea id="submitContent" rows="2" placeholder="Ví dụ: Em gửi bài tập về nhà môn Tin học ạ..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-200 focus:bg-white outline-none transition-all font-medium resize-none text-xs"></textarea>
+            </div>
+            
+            <!-- KHUNG TẢI TỆP HỢP NHẤT (ẢNH HOẶC TÀI LIỆU) -->
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tệp bài làm đính kèm (Ảnh chụp, PDF, Word, Zip...) <span class="text-rose-500">*</span></label>
+                
+                <div id="dropzone-box" class="dropzone p-6 bg-slate-50/80 rounded-2xl text-center cursor-pointer hover:bg-slate-50 transition-all group relative">
+                    <input id="singleSubmissionFile" type="file" accept="image/*,.pdf,.doc,.docx,.zip,.rar,.txt,.xlsx,.pptx" class="hidden" onchange="handleSingleFileChange(this)">
+                    
+                    <!-- Giao diện khi chưa chọn file -->
+                    <div id="upload-prompt" class="space-y-2">
+                        <div class="w-12 h-12 bg-white rounded-2xl mx-auto flex items-center justify-center text-slate-400 group-hover:text-edunext-primary shadow-sm group-hover:scale-110 transition-all">
+                            <i class="ph-bold ph-cloud-arrow-up text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-700">Nhấn để chọn tệp hoặc kéo thả vào đây</p>
+                            <p class="text-[10px] font-bold text-slate-400 mt-0.5">Hỗ trợ JPG, PNG, PDF, Word, Excel, PowerPoint, ZIP (Tối đa 25MB)</p>
+                        </div>
+                    </div>
+
+                    <!-- Giao diện xem trước khi đã chọn file -->
+                    <div id="upload-preview" class="hidden items-center justify-between p-3 bg-white rounded-xl border border-slate-200 shadow-sm text-left">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div id="file-icon-wrapper" class="w-10 h-10 rounded-xl bg-rose-50 text-edunext-primary flex items-center justify-center shrink-0 text-xl font-bold">
+                                <i id="preview-icon" class="ph-bold ph-file"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p id="preview-filename" class="text-xs font-black text-slate-800 truncate">ten_tep_tin.docx</p>
+                                <p id="preview-filesize" class="text-[9px] font-bold text-slate-400">0 KB</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="removeSelectedFile(event)" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all">
+                            <i class="ph-bold ph-trash text-base"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NÚT GỬI BÀI -->
+            <button onclick="submitWork()" id="btnSubmitWork" class="w-full bg-edunext-primary text-white py-4 rounded-2xl font-black uppercase text-xs shadow-xl shadow-rose-200 hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="ph-fill ph-paper-plane-tilt text-base"></i> Xác nhận nộp bài
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allTasks = [];
+let currentTaskId = null;
+
+// Khởi tạo kéo thả file (Drag & Drop)
+document.addEventListener('DOMContentLoaded', () => {
+    const dropzone = document.getElementById('dropzone-box');
+    const fileInput = document.getElementById('singleSubmissionFile');
+
+    if (dropzone) {
+        dropzone.addEventListener('click', (e) => {
+            if (!e.target.closest('button')) fileInput.click();
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleSingleFileChange(fileInput);
+            }
+        });
+    }
+});
+
+function toggleSubmitModal(taskId = null, taskTitle = '') {
+    const modal = document.getElementById('submitModal');
+    if (taskId) {
+        currentTaskId = taskId;
+        document.getElementById('modal-task-title').innerText = taskTitle;
+        removeSelectedFile();
+        document.getElementById('submitContent').value = '';
+    }
+    modal.classList.toggle('hidden');
+    modal.classList.toggle('flex');
+}
+
+function handleSingleFileChange(input) {
+    const prompt = document.getElementById('upload-prompt');
+    const preview = document.getElementById('upload-preview');
+    const nameEl = document.getElementById('preview-filename');
+    const sizeEl = document.getElementById('preview-filesize');
+    const iconEl = document.getElementById('preview-icon');
+
+    if (input.files && input.files.length > 0) {
+        const file = input.files[0];
+        nameEl.innerText = file.name;
+        sizeEl.innerText = (file.size / 1024).toFixed(1) + " KB";
+
+        // Chọn icon tương ứng với loại file
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
+            iconEl.className = 'ph-bold ph-image';
+        } else if (['pdf'].includes(ext)) {
+            iconEl.className = 'ph-bold ph-file-pdf';
+        } else if (['doc', 'docx'].includes(ext)) {
+            iconEl.className = 'ph-bold ph-file-doc';
+        } else if (['zip', 'rar'].includes(ext)) {
+            iconEl.className = 'ph-bold ph-file-zip';
+        } else {
+            iconEl.className = 'ph-bold ph-file-text';
+        }
+
+        prompt.classList.add('hidden');
+        preview.classList.remove('hidden');
+        preview.classList.add('flex');
+    }
+}
+
+function removeSelectedFile(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const input = document.getElementById('singleSubmissionFile');
+    const prompt = document.getElementById('upload-prompt');
+    const preview = document.getElementById('upload-preview');
+
+    input.value = '';
+    preview.classList.add('hidden');
+    preview.classList.remove('flex');
+    prompt.classList.remove('hidden');
+}
+
+function getTaskDeadline(task) {
+    return task.deadline_iso || task.deadline || task.HanNop || task.han_nop || null;
+}
+
+function parseCustomDate(dateStr) {
+    if (!dateStr) return null;
+    let d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d;
+
+    const cleaned = dateStr.trim().replace('T', ' ');
+    const parts = cleaned.split(' ');
+    const dateParts = parts[0].split(/[\/\-]/);
+    const timeParts = parts[1] ? parts[1].split(':') : [0, 0, 0];
+
+    if (dateParts.length === 3) {
+        if (dateParts[0].length === 4) {
+            return new Date(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0] || 0, timeParts[1] || 0, timeParts[2] || 0);
+        } else {
+            return new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0] || 0, timeParts[1] || 0, timeParts[2] || 0);
+        }
+    }
+    return null;
+}
+
+async function fetchRealTasks() {
+    try {
+        const response = await fetch('/api/student/dashboard/summary');
+        const result = await response.json();
+        
+        if (result.success) {
+            allTasks = result.data.tasks || [];
+            updateStats(allTasks);
+            renderTasks(allTasks); 
+        }
+    } catch (error) { console.error("Lỗi lấy bài tập:", error); }
+}
+
+function updateStats(tasks) {
+    const now = new Date();
+    const completedTasks = tasks.filter(t => t.is_submitted);
+    const pendingTasks = tasks.filter(t => !t.is_submitted);
+    const comingTasks = tasks.filter(t => {
+        const dl = parseCustomDate(getTaskDeadline(t));
+        if (t.is_submitted || !dl) return false;
+        return dl > now;
+    });
+
+    document.getElementById('count-coming').innerText = comingTasks.length + " bài";
+    document.getElementById('count-pending').innerText = pendingTasks.length + " bài";
+    document.getElementById('count-completed').innerText = completedTasks.length + " bài";
+}
+
+function filterTasks(type) {
+    let filtered = [];
+    let title = "Tất cả bài tập";
+    const now = new Date();
+    
+    document.querySelectorAll('[id^="btn-filter-"]').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-edunext-primary', 'shadow-sm');
+        btn.classList.add('text-slate-500');
+    });
+    
+    const activeBtn = document.getElementById(`btn-filter-${type}`);
+    if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-edunext-primary', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-500');
+    }
+    
+    if (type === 'all') { 
+        filtered = allTasks; 
+        title = "Tất cả bài tập"; 
+    } else if (type === 'coming') { 
+        filtered = allTasks.filter(t => {
+            const dl = parseCustomDate(getTaskDeadline(t));
+            return !t.is_submitted && dl && dl > now;
+        }); 
+        title = "Bài tập sắp đến hạn"; 
+    } else if (type === 'pending') { 
+        filtered = allTasks.filter(t => !t.is_submitted); 
+        title = "Bài tập chưa nộp"; 
+    } else if (type === 'completed') { 
+        filtered = allTasks.filter(t => t.is_submitted); 
+        title = "Bài tập đã hoàn thành"; 
+    }
+    
+    document.getElementById('filter-title').innerText = title;
+    renderTasks(filtered);
+}
+
+function formatDeadline(isoString) {
+    const d = parseCustomDate(isoString);
+    if (!d) return 'Không có hạn nộp';
+    const dateStr = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    return `${dateStr} ${timeStr}`;
+}
+
+function renderTasks(tasks) {
+    const container = document.getElementById("taskList");
+    
+    if (tasks.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                <i class="ph-duotone ph-clipboard-text text-6xl text-slate-200 mb-4"></i>
+                <p class="text-slate-400 font-medium">Không có bài tập nào trong mục này.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = tasks.map(task => {
+        const safeTitle = (task.title || '').replace(/'/g, "\\'");
+        const rawDeadline = getTaskDeadline(task);
+        const deadlineFormatted = formatDeadline(rawDeadline);
+        const fileUrl = task.file_tap || task.FileDinhKem || task.file_dinh_kem || null;
+        const isImg = fileUrl ? fileUrl.toLowerCase().endsWith('.png') || fileUrl.toLowerCase().endsWith('.jpg') || fileUrl.toLowerCase().endsWith('.jpeg') || fileUrl.toLowerCase().endsWith('.webp') : false;
+
+        const subFile = task.submitted_file || null;
+        const isSubImg = subFile ? subFile.toLowerCase().endsWith('.png') || subFile.toLowerCase().endsWith('.jpg') || subFile.toLowerCase().endsWith('.jpeg') || subFile.toLowerCase().endsWith('.webp') : false;
+
+        return `
+        <div class="bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 transition-all border border-slate-100 rounded-3xl shadow-sm hover:border-red-100 hover:-translate-y-1">
+            <div class="flex items-center gap-5 flex-1 min-w-0">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center ${task.is_submitted ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'} shrink-0 text-2xl shadow-inner">
+                    <i class="ph-fill ${task.is_submitted ? 'ph-check-circle' : (task.icon || 'ph-notebook')}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-black uppercase ${task.is_submitted ? 'text-emerald-500' : 'text-slate-400'} tracking-widest">
+                            ${task.is_submitted ? 'Đã hoàn thành' : 'Chưa nộp'}
+                        </span>
+                        ${task.score !== undefined && task.score !== null ? `
+                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-black rounded-lg">
+                                Điểm: ${task.score}đ
+                            </span>
+                        ` : ''}
+                    </div>
+                    <h3 class="font-black text-slate-800 text-lg truncate mb-1">${task.title}</h3>
+                    <p class="text-xs text-slate-400 font-bold mb-3 italic">${task.description || 'Không có mô tả chi tiết.'}</p>
+                    
+                    <!-- THỜI HẠN & ĐỒNG HỒ ĐẾM NGƯỢC -->
+                    <div class="mb-4 flex flex-wrap items-center gap-3">
+                        <div class="px-3 py-1 bg-rose-50 text-brand-primary rounded-lg text-[11px] font-black flex items-center gap-1.5 border border-rose-100">
+                            <i class="ph-bold ph-calendar-blank"></i>
+                            <span>Hạn nộp: ${deadlineFormatted}</span>
+                        </div>
+
+                        ${!task.is_submitted && rawDeadline ? `
+                            <div id="timer-${task.id}" data-deadline="${rawDeadline}" class="timer-badge px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-black flex items-center gap-1.5 shadow-sm border border-slate-200">
+                                <i class="ph-bold ph-clock"></i>
+                                <span>Tính hạn...</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${fileUrl ? `
+                        <div class="mb-3">
+                            <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Đề bài từ giáo viên:</p>
+                            ${isImg ? 
+                                `<img src="${fileUrl}" class="w-32 h-20 object-cover rounded-xl border border-slate-100 shadow-sm hover:scale-105 transition-all cursor-zoom-in" onclick="window.open('${fileUrl}')">` :
+                                `<a href="${fileUrl}" target="_blank" class="text-xs font-bold text-blue-600 underline break-all italic"><i class="ph-bold ph-file-arrow-down"></i> ${fileUrl.split('/').pop()}</a>`
+                            }
+                        </div>
+                    ` : ''}
+
+                    <!-- THÔNG TIN BÀI ĐÃ NỘP -->
+                    ${task.is_submitted ? `
+                        <div class="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Chi tiết bài làm đã nộp:</p>
+                            <p class="text-xs text-slate-700 italic font-semibold">${task.submitted_content || 'Không có lời nhắn.'}</p>
+                            
+                            ${task.comment ? `
+                                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-100 text-amber-800 text-xs font-semibold">
+                                    💬 Lời phê của GV: "${task.comment}"
+                                </div>
+                            ` : ''}
+
+                            ${subFile ? `
+                                <div class="pt-1">
+                                    ${isSubImg ? `
+                                        <div>
+                                            <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Ảnh bài nộp:</p>
+                                            <img src="${subFile}" class="w-28 h-20 object-cover rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:scale-105 transition-all" onclick="window.open('${subFile}')">
+                                        </div>
+                                    ` : `
+                                        <a href="${subFile}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-blue-600 hover:underline">
+                                            <i class="ph-bold ph-file"></i> Tải về tệp bài làm: ${subFile.split('/').pop()}
+                                        </a>
+                                    `}
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <!-- NÚT HÀNH ĐỘNG -->
+            <div class="flex shrink-0 w-full sm:w-auto">
+                ${task.is_submitted ? `
+                    <div class="flex flex-col sm:flex-row items-center gap-2">
+                        <div class="px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs border border-emerald-100 flex items-center gap-1">
+                            <i class="ph-bold ph-check"></i> Đã nộp
+                        </div>
+                        <button onclick="unsubmitWork(${task.id})" class="px-4 py-2.5 bg-rose-50 text-brand-primary hover:bg-rose-100 rounded-xl font-black text-xs transition-all border border-rose-100 uppercase flex items-center gap-1">
+                            <i class="ph-bold ph-arrow-counter-clockwise"></i> Hủy nộp & Sửa
+                        </button>
+                    </div>
+                ` : `
+                    <button onclick="toggleSubmitModal(${task.id}, '${safeTitle}')" class="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs shadow-xl animate-pulse cursor-pointer hover:bg-edunext-primary transition-all">
+                        Nộp bài ngay
+                    </button>
+                `}
+            </div>
+        </div>`}).join('');
+}
+
+async function submitWork() {
+    const content = document.getElementById('submitContent').value.trim();
+    const fileInput = document.getElementById('singleSubmissionFile');
+    const btn = document.getElementById('btnSubmitWork');
+
+    if (!content && fileInput.files.length === 0) {
+        alert("Vui lòng đính kèm tệp bài làm hoặc nhập lời nhắn nộp bài!");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i> Đang nộp...';
+
+    const formData = new FormData();
+    formData.append('assignment_id', currentTaskId);
+    formData.append('content', content);
+    
+    if (fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+    }
+
+    try {
+        const response = await fetch('/api/assignment/submit', { method: 'POST', body: formData });
+        const result = await response.json();
+        if (result.success) {
+            alert("✨ Đã nộp bài tập thành công!");
+            toggleSubmitModal();
+            fetchRealTasks();
+        } else {
+            alert("Lỗi: " + result.message);
+        }
+    } catch (error) { 
+        alert("Lỗi kết nối máy chủ!"); 
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph-fill ph-paper-plane-tilt text-base"></i> Xác nhận nộp bài';
+    }
+}
+
+async function unsubmitWork(taskId) {
+    if (!confirm("Bạn có chắc chắn muốn hủy nộp bài tập này để chỉnh sửa lại bài làm không?")) return;
+
+    try {
+        const res = await fetch('/api/assignment/unsubmit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assignment_id: taskId })
+        });
+        const result = await res.json();
+        if (result.success) {
+            alert("✨ Đã hủy nộp bài! Bây giờ bạn có thể nộp lại bài làm mới.");
+            fetchRealTasks();
+        } else {
+            alert("Lỗi: " + result.message);
+        }
+    } catch (e) {
+        alert("Lỗi kết nối máy chủ!");
+    }
+}
+
+function updateCountdowns() {
+    const now = new Date();
+    document.querySelectorAll('[id^="timer-"]').forEach(timer => {
+        const deadlineStr = timer.getAttribute('data-deadline');
+        const deadline = parseCustomDate(deadlineStr);
+        const span = timer.querySelector('span');
+        
+        if (!deadline) {
+            timer.style.display = 'none';
+            return;
+        }
+
+        const diff = deadline.getTime() - now.getTime();
+        
+        if (diff <= 0) { 
+            span.innerText = "Đã hết hạn"; 
+            timer.classList.add('timer-urgent'); 
+            return; 
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        let timeStr = "Còn ";
+        if (days > 0) timeStr += `${days} ngày `;
+        if (hours > 0 || days > 0) timeStr += `${hours}h `;
+        timeStr += `${mins}p ${secs}s`;
+        
+        span.innerText = timeStr;
+        if (diff < 1000 * 60 * 60 * 24) { 
+            timer.classList.add('timer-urgent'); 
+        } else {
+            timer.classList.remove('timer-urgent');
+        }
+    });
+}
+
+setInterval(() => { if (!document.hidden) fetchRealTasks(); }, 10000);
+setInterval(updateCountdowns, 1000);
+fetchRealTasks();
+</script>
+{% endblock %}

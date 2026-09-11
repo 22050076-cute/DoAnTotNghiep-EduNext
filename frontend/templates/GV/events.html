@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Sự kiện | EduNext Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .ai-gradient { background: linear-gradient(135deg, #4F46E5 0%, #E11D48 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Thanh Sidebar (Tương tự dashboard) -->
+    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex sticky top-0 h-screen">
+        <div class="p-8 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+                    <i class="ph-fill ph-circles-four text-2xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-2xl tracking-tighter uppercase leading-none">Edu<span class="text-rose-500">Next</span></span>
+                    <p class="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 px-6 py-8 space-y-2">
+            <a href="/dashboard_teacher" class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-all text-sm">
+                <i class="ph-bold ph-house-line text-xl"></i> Dashboard
+            </a>
+            <a href="/teacher/events" class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-100 font-bold text-sm transition-all">
+                <i class="ph-fill ph-calendar-star text-xl"></i> Quản lý sự kiện
+            </a>
+            <a href="/teacher/announcements" class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-all text-sm">
+                <i class="ph-bold ph-megaphone text-xl"></i> Thông báo lớp
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-10">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black text-slate-800 italic uppercase">Hệ thống Sự kiện</h1>
+                <p class="text-slate-400 font-medium text-sm">Quản lý các hoạt động ngoại khóa và đăng ký tham gia.</p>
+            </div>
+            <button onclick="openCreateModal()" class="px-6 py-3 ai-gradient text-white font-black rounded-2xl shadow-xl shadow-rose-100 uppercase tracking-widest text-xs flex items-center gap-2">
+                <i class="ph-bold ph-plus"></i> Tạo sự kiện mới
+            </button>
+        </header>
+
+        <!-- Danh sách sự kiện -->
+        <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="col-span-2 text-center py-20 text-slate-400 italic">Đang tải danh sách sự kiện...</div>
+        </div>
+
+        <!-- MODAL DANH SÁCH ĐĂNG KÝ (QUAN TRỌNG NHẤT) -->
+        <div id="reg-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRegModal()"></div>
+            <div class="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="p-8 ai-gradient text-white flex justify-between items-center">
+                    <div>
+                        <h3 id="reg-event-title" class="text-2xl font-black italic">Danh sách đăng ký</h3>
+                        <p id="reg-event-info" class="text-white/70 text-xs font-bold uppercase tracking-widest mt-1"></p>
+                    </div>
+                    <button onclick="closeRegModal()" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20"><i class="ph-bold ph-x"></i></button>
+                </div>
+                <div class="p-8 overflow-y-auto flex-1">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
+                            <tr>
+                                <th class="pb-4">Họ và Tên</th>
+                                <th class="pb-4">Vai trò</th>
+                                <th class="pb-4">Thông tin liên hệ</th>
+                                <th class="pb-4">Lớp/Địa điểm</th>
+                                <th class="pb-4">Ngày đăng ký</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reg-table-body" class="text-sm">
+                            <!-- Dữ liệu sẽ load vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function loadEvents() {
+            try {
+                const res = await fetch('/api/events/list');
+                const result = await res.json();
+                const container = document.getElementById('events-list');
+                
+                if (result.success && result.data.length > 0) {
+                    container.innerHTML = result.data.map(ev => `
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between hover:border-rose-500 transition-all group">
+                            <div>
+                                <div class="flex justify-between items-start mb-6">
+                                    <div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-3xl">
+                                        <i class="ph-fill ph-calendar-check"></i>
+                                    </div>
+                                    <span class="px-4 py-1.5 bg-slate-100 text-slate-500 text-[10px] font-black rounded-full uppercase tracking-widest">
+                                        ${ev.PhamVi == 0 ? 'Công khai' : 'Nội bộ'}
+                                    </span>
+                                </div>
+                                <h3 class="text-xl font-black text-slate-800 italic mb-2 group-hover:text-rose-500 transition-colors">${ev.TieuDe}</h3>
+                                <p class="text-slate-400 text-xs font-bold uppercase mb-6"><i class="ph-bold ph-map-pin"></i> ${ev.DiaDiem || 'Tại trường'}</p>
+                                <div class="space-y-3 mb-8">
+                                    <div class="flex items-center gap-3 text-sm font-semibold text-slate-600">
+                                        <i class="ph-bold ph-users text-rose-500"></i>
+                                        <span>${ev.RegCount} người đã đăng ký</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-sm font-semibold text-slate-600">
+                                        <i class="ph-bold ph-clock text-rose-500"></i>
+                                        <span>Bắt đầu: ${ev.ThoiGianBatDau || 'Chưa cập nhật'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="viewRegistrations(${ev.MaSuKien}, '${ev.TieuDe.replace(/'/g, "\\'")}')" class="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-500 transition-all">Xem danh sách</button>
+                                <button onclick="deleteEvent(${ev.MaSuKien})" class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><i class="ph-bold ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="col-span-2 py-20 text-center text-slate-300 font-bold italic border-4 border-dashed border-white rounded-[3rem]">Bạn chưa tạo sự kiện nào.</div>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function viewRegistrations(id, title) {
+            document.getElementById('reg-event-title').innerText = title;
+            document.getElementById('reg-modal').classList.remove('hidden');
+            const tbody = document.getElementById('reg-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-slate-400 italic">Đang tải danh sách...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/events/registrations/${id}`);
+                const result = await res.json();
+                if (result.success) {
+                    document.getElementById('reg-event-info').innerText = `Tổng cộng: ${result.data.length} người đăng ký`;
+                    if (result.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-slate-400 italic">Chưa có ai đăng ký tham gia.</td></tr>';
+                    } else {
+                        tbody.innerHTML = result.data.map(reg => `
+                            <tr class="border-b border-slate-50 group hover:bg-rose-50/30 transition-all">
+                                <td class="py-5 font-bold text-slate-800">${reg.HoTen}</td>
+                                <td class="py-5">
+                                    <span class="px-3 py-1 ${reg.VaiTro === 'Khách' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'} rounded-lg text-[10px] font-black uppercase">
+                                        ${reg.VaiTro}
+                                    </span>
+                                </td>
+                                <td class="py-5 text-slate-500 font-medium">${reg.SoDienThoai || '---'}</td>
+                                <td class="py-5 font-bold text-slate-400 italic">${reg.TenLop || '---'}</td>
+                                <td class="py-5 text-slate-400 text-xs">${reg.NgayDangKy}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-rose-500">Lỗi khi tải dữ liệu!</td></tr>'; }
+        }
+
+        function closeRegModal() { document.getElementById('reg-modal').classList.add('hidden'); }
+
+        async function deleteEvent(id) {
+            if (confirm("Bạn có chắc chắn muốn xóa sự kiện này?")) {
+                const res = await fetch(`/api/events/delete/${id}`, { method: 'POST' });
+                const result = await res.json();
+                if (result.success) loadEvents();
+                else alert(result.message);
+            }
+        }
+
+        window.onload = loadEvents;
+    </script>
+</body>
+</html>

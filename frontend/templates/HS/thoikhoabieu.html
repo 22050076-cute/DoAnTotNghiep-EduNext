@@ -1,0 +1,328 @@
+{% extends "HS/layout.html" %}
+
+{% set active_page = 'thoikhoabieu' %}
+
+{% block title %}Thời khóa biểu{% endblock %}
+
+{% block header_title %}Thời khóa biểu lớp học{% endblock %}
+
+{% block extra_css %}
+<style>
+    .schedule-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; }
+    .schedule-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05); border-color: #fee2e2; }
+    
+    .status-pending { animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex-1 overflow-auto space-y-6 p-2 animate-in fade-in duration-500">
+    <!-- BỘ LỌC HỌC KỲ & TUẦN HỌC -->
+    <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[250px]">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chọn Học kỳ / Năm học</label>
+                <select id="select-semester" onchange="onSemesterChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-red-100 outline-none transition-all text-sm cursor-pointer">
+                    <option value="1" selected>Học kỳ 1 - Năm học 2026 - 2027</option>
+                    <option value="2">Học kỳ 2 - Năm học 2026 - 2027</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 min-w-[300px]">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chọn Tuần học</label>
+                <select id="select-week" onchange="onWeekChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-red-100 outline-none transition-all text-sm cursor-pointer">
+                    <!-- Tự động sinh danh sách tuần -->
+                </select>
+            </div>
+
+            <div class="pt-5 flex gap-2">
+                <button onclick="window.print()" class="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all shadow-sm flex items-center justify-center" title="In thời khóa biểu">
+                    <i class="ph-bold ph-printer"></i>
+                </button>
+                <button onclick="changeWeek(-1)" class="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all shadow-sm flex items-center justify-center font-bold" title="Tuần trước">
+                    <i class="ph-bold ph-caret-left"></i>
+                </button>
+                <button onclick="changeWeek(1)" class="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all shadow-sm flex items-center justify-center font-bold" title="Tuần kế tiếp">
+                    <i class="ph-bold ph-caret-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC HIỂN THỊ MA TRẬN THỜI KHÓA BIỂU CẢ 2 BUỔI -->
+    <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm overflow-x-auto">
+        <div class="min-w-[1200px]">
+            <!-- DANH SÁCH TIÊU ĐỀ THỨ VÀ NGÀY THÁNG -->
+            <div class="grid grid-cols-8 gap-2 mb-4" id="calendar-header">
+                <div class="flex flex-col justify-center items-center py-4 bg-slate-900 text-white rounded-xl">
+                    <i class="ph-bold ph-calendar text-lg"></i>
+                    <span class="text-[9px] font-black uppercase mt-1 tracking-wider">Lịch học</span>
+                </div>
+            </div>
+            
+            <!-- THÂN MA TRẬN TIẾT HỌC (SÁNG VÀ CHIỀU) -->
+            <div id="schedule-body" class="space-y-6">
+                <!-- Render bằng JS -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let studentClassId = null;
+let currentWeekIndex = 0; 
+let weeksData = [];       
+
+const semesterConfigs = {
+    "1": { startDate: "2026-09-07", totalWeeks: 18 }, 
+    "2": { startDate: "2027-01-11", totalWeeks: 18 }  
+};
+
+// 1. Tự động sinh danh sách tuần học
+function generateWeeks(semesterId) {
+    const config = semesterConfigs[semesterId];
+    const selectWeek = document.getElementById('select-week');
+    selectWeek.innerHTML = '';
+    weeksData = [];
+    
+    let currentStart = new Date(config.startDate);
+    const today = new Date();
+    let defaultWeekIndex = 0;
+
+    for (let w = 1; w <= config.totalWeeks; w++) {
+        let monday = new Date(currentStart);
+        let sunday = new Date(currentStart);
+        sunday.setDate(currentStart.getDate() + 6);
+        
+        const pad = (n) => n < 10 ? '0' + n : n;
+        const label = `Tuần ${w} [Từ ${pad(monday.getDate())}/${pad(monday.getMonth()+1)} đến ${pad(sunday.getDate())}/${pad(sunday.getMonth()+1)}]`;
+        
+        weeksData.push({
+            weekNumber: w,
+            monday: monday,
+            sunday: sunday
+        });
+
+        let option = document.createElement('option');
+        option.value = w;
+        option.innerText = label;
+        selectWeek.appendChild(option);
+
+        if (today >= monday && today <= sunday) {
+            defaultWeekIndex = w - 1;
+        }
+
+        currentStart.setDate(currentStart.getDate() + 7);
+    }
+    
+    currentWeekIndex = defaultWeekIndex;
+    selectWeek.selectedIndex = currentWeekIndex;
+}
+
+// 2. Vẽ tiêu đề Thứ và Ngày dương lịch
+function renderCalendarHeader() {
+    const header = document.getElementById('calendar-header');
+    header.innerHTML = `
+        <div class="flex flex-col justify-center items-center py-4 bg-slate-900 text-white rounded-xl">
+            <i class="ph-bold ph-calendar text-lg"></i>
+            <span class="text-[9px] font-black uppercase mt-1 tracking-wider">Lịch học</span>
+        </div>`;
+    
+    const currentWeek = weeksData[currentWeekIndex];
+    const dayNames = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    const today = new Date();
+
+    for (let i = 0; i < 7; i++) {
+        let loopDate = new Date(currentWeek.monday);
+        loopDate.setDate(currentWeek.monday.getDate() + i);
+        
+        const isToday = loopDate.getDate() === today.getDate() && 
+                        loopDate.getMonth() === today.getMonth() && 
+                        loopDate.getFullYear() === today.getFullYear();
+        
+        const pad = (n) => n < 10 ? '0' + n : n;
+
+        header.innerHTML += `
+            <div class="text-center p-3 rounded-xl transition-all border ${isToday ? 'bg-red-50 border-edunext-primary ring-1 ring-edunext-primary/30' : 'bg-slate-50 border-slate-100'}">
+                <p class="text-[10px] font-black ${isToday ? 'text-edunext-primary' : 'text-slate-400'} uppercase tracking-wider">${dayNames[i]}</p>
+                <p class="text-base font-black ${isToday ? 'text-edunext-primary' : 'text-slate-700'} mt-0.5">${pad(loopDate.getDate())}/${pad(loopDate.getMonth()+1)}</p>
+            </div>`;
+    }
+}
+
+// 3. Gọi API lấy dữ liệu TKB theo Lớp và Tuần
+async function fetchScheduleByWeek() {
+    const container = document.getElementById('schedule-body');
+    const selectedWeekNum = weeksData[currentWeekIndex].weekNumber;
+    const selectedSemester = document.getElementById('select-semester').value;
+
+    container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+            <i class="ph ph-circle-notch animate-spin text-3xl mb-2"></i>
+            <p class="text-xs font-bold uppercase tracking-widest">Đang tải lịch học Tuần ${selectedWeekNum}...</p>
+        </div>`;
+
+    try {
+        const url = `/api/teacher/schedule?class_id=${studentClassId}&week=${selectedWeekNum}&semester=${selectedSemester}`;
+        const res = await fetch(url);
+        const result = await res.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+            renderWeeklySchedule(result.data);
+        } else {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200 text-center">
+                    <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-2xl mb-3">
+                        <i class="ph-bold ph-calendar-x"></i>
+                    </div>
+                    <p class="text-slate-700 font-black text-sm uppercase tracking-wide">Chưa có thời khóa biểu cho Tuần ${selectedWeekNum}</p>
+                    <p class="text-slate-400 text-xs font-bold mt-1">Giáo viên chủ nhiệm chưa xếp hoặc chưa công khai lịch học cho tuần này.</p>
+                </div>`;
+        }
+    } catch (err) {
+        console.error("Lỗi fetch lịch tuần:", err);
+        container.innerHTML = `<p class="text-center text-red-500 font-bold py-10 text-xs">Lỗi kết nối máy chủ dữ liệu!</p>`;
+    }
+}
+
+// 4. Render ma trận Tiết học cả 2 Buổi Sáng & Buổi Chiều
+function renderWeeklySchedule(scheduleData) {
+    const container = document.getElementById('schedule-body');
+    
+    const morningSlots = [
+        { id: 1, label: "Tiết 1", time: "07:30 - 08:15" },
+        { id: 2, label: "Tiết 2", time: "08:20 - 09:05" },
+        { id: 3, label: "Tiết 3", time: "09:20 - 10:05" },
+        { id: 4, label: "Tiết 4", time: "10:10 - 10:55" },
+        { id: 5, label: "Tiết 5", time: "11:00 - 11:45" }
+    ];
+
+    const afternoonSlots = [
+        { id: 6, label: "Tiết 6", time: "13:30 - 14:15" },
+        { id: 7, label: "Tiết 7", time: "14:20 - 15:05" },
+        { id: 8, label: "Tiết 8", time: "15:20 - 16:05" },
+        { id: 9, label: "Tiết 9", time: "16:10 - 16:55" },
+        { id: 10, label: "Tiết 10", time: "17:00 - 17:45" }
+    ];
+
+    let html = '';
+
+    // MA TRẬN BUỔI SÁNG
+    html += `<div class="space-y-2">
+        <div class="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl font-black text-xs uppercase tracking-widest inline-flex items-center gap-2">
+            <i class="ph-bold ph-sun"></i> Lịch Học Buổi Sáng (Tiết 1 - 5)
+        </div>`;
+    
+    morningSlots.forEach(slot => {
+        html += renderSlotRow(slot, scheduleData);
+    });
+    html += `</div>`;
+
+    // MA TRẬN BUỔI CHIỀU
+    html += `<div class="space-y-2 pt-4">
+        <div class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl font-black text-xs uppercase tracking-widest inline-flex items-center gap-2">
+            <i class="ph-bold ph-moon-stars"></i> Lịch Học Buổi Chiều (Tiết 6 - 10)
+        </div>`;
+    
+    afternoonSlots.forEach(slot => {
+        html += renderSlotRow(slot, scheduleData);
+    });
+    html += `</div>`;
+
+    container.innerHTML = html;
+}
+
+function renderSlotRow(slot, scheduleData) {
+    let rowHtml = `<div class="grid grid-cols-8 gap-2 items-stretch min-h-[90px]">
+        <div class="flex flex-col justify-center items-center bg-slate-100/70 rounded-xl border border-slate-200/50 p-2 text-center">
+            <span class="text-xs font-black text-slate-800 italic">${slot.label}</span>
+            <span class="text-[9px] font-black text-slate-400 mt-1">${slot.time}</span>
+        </div>`;
+
+    for (let day = 2; day <= 8; day++) {
+        const reg = scheduleData.find(r => {
+            const rThu = r.Thu !== undefined ? r.Thu : r.thu;
+            const rTiet = r.Tiet !== undefined ? r.Tiet : r.tiet;
+            return Number(rThu) === Number(day) && Number(rTiet) === Number(slot.id);
+        });
+        
+        if (reg && reg.TenMonHoc) {
+            const colors = ["blue", "rose", "amber", "emerald", "violet", "sky", "orange", "indigo"];
+            const charCodeSum = reg.TenMonHoc.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const color = colors[charCodeSum % colors.length] || "slate";
+            
+            const colorMap = { 
+                blue: "bg-blue-50/80 text-blue-700 border-blue-100 hover:bg-blue-100/50", 
+                rose: "bg-rose-50/80 text-rose-700 border-rose-100 hover:bg-rose-100/50", 
+                amber: "bg-amber-50/80 text-amber-700 border-amber-100 hover:bg-amber-100/50", 
+                emerald: "bg-emerald-50/80 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50", 
+                violet: "bg-violet-50/80 text-violet-700 border-violet-100 hover:bg-violet-100/50", 
+                sky: "bg-sky-50/80 text-sky-700 border-sky-100 hover:bg-sky-100/50", 
+                orange: "bg-orange-50/80 text-orange-700 border-orange-100 hover:bg-orange-100/50",
+                indigo: "bg-indigo-50/80 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50"
+            };
+            const theme = colorMap[color];
+            const tenGV = reg.TenGiaoVien || reg.GiaoVien || "GV Bộ môn";
+            const phongHoc = reg.PhongHoc ? `Phòng: ${reg.PhongHoc}` : '';
+            
+            rowHtml += `
+            <div class="schedule-card bg-white border ${theme} p-3 rounded-xl shadow-sm flex flex-col justify-between group cursor-pointer transition-all duration-200 hover:-translate-y-0.5">
+                <div class="text-center w-full">
+                    <span class="font-black text-xs block uppercase tracking-wide truncate">${reg.TenMonHoc}</span>
+                    <p class="font-bold text-slate-500 text-[10px] mt-1 truncate italic">${tenGV}</p>
+                </div>
+                ${phongHoc ? `<span class="text-[9px] font-black text-slate-400 text-center block mt-1 bg-white/60 rounded py-0.5">${phongHoc}</span>` : ''}
+            </div>`;
+        } else {
+            rowHtml += `<div class="bg-slate-50/30 border border-slate-100/80 rounded-xl transition-colors hover:bg-slate-50/60"></div>`;
+        }
+    }
+    rowHtml += `</div>`;
+    return rowHtml;
+}
+
+function onSemesterChange() {
+    const semId = document.getElementById('select-semester').value;
+    generateWeeks(semId);
+    renderCalendarHeader();
+    fetchScheduleByWeek();
+}
+
+function onWeekChange() {
+    currentWeekIndex = document.getElementById('select-week').selectedIndex;
+    renderCalendarHeader();
+    fetchScheduleByWeek();
+}
+
+function changeWeek(direction) {
+    const selectWeek = document.getElementById('select-week');
+    let newIndex = currentWeekIndex + direction;
+    
+    if (newIndex >= 0 && newIndex < selectWeek.options.length) {
+        currentWeekIndex = newIndex;
+        selectWeek.selectedIndex = currentWeekIndex;
+        renderCalendarHeader();
+        fetchScheduleByWeek();
+    }
+}
+
+async function init() {
+    try {
+        const pRes = await fetch('/api/user/profile');
+        const profile = await pRes.json();
+        studentClassId = (profile.success && profile.data) ? profile.data.class_id : 1;
+
+        generateWeeks("1");
+        renderCalendarHeader();
+        fetchScheduleByWeek();
+    } catch (err) { 
+        console.error("Lỗi khởi tạo TKB:", err); 
+    }
+}
+
+init();
+</script>
+{% endblock %}

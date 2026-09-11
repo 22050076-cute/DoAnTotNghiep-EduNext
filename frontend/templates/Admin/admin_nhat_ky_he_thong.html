@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật Ký Hoạt Động Hệ Thống - EduNext Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 500: '#f43f5e', 600: '#e11d48' },
+                        darkbg: '#0f172a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+        <div>
+            <div class="flex items-center gap-3 px-3 py-3 mb-6">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="text-xl font-bold text-white">Edu<span class="text-primary-500">Admin</span></span>
+            </div>
+            <nav class="space-y-4">
+                <a href="/admin/tong-quan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> <span>Tổng quan trường</span>
+                </a>
+                <a href="/admin/quan-ly-tai-khoan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 font-medium">
+                    <i class="fa-solid fa-user-gear w-5 text-center"></i> <span>Quản lý Tài khoản</span>
+                </a>
+                <a href="/admin/nhat-ky-he-thong" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary-600/15 text-primary-500 font-medium border-l-4 border-primary-500">
+                    <i class="fa-solid fa-receipt w-5 text-center"></i> <span>Nhật ký Hệ thống</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTAINER -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- HEADER -->
+        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
+            <h1 class="text-lg font-bold text-slate-800">Nhật Ký Hoạt Động Thời Gian Thực</h1>
+            <button onclick="loadLogs()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-rotate"></i> Làm mới
+            </button>
+        </header>
+
+        <!-- BODY -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6">
+            
+            <!-- BỘ LỌC (FILTERS) -->
+            <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Ô tìm kiếm -->
+                    <div class="relative w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="filter-search" onkeyup="loadLogs()" placeholder="Tìm tên, nội dung, chi tiết..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    </div>
+
+                    <!-- Lọc theo Vai trò (ĐÃ ĐẦY ĐỦ PHỤ HUYNH, HỌC SINH, GIÁO VIÊN, ADMIN) -->
+                    <select id="filter-role" onchange="loadLogs()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none">
+                        <option value="ALL">-- Tất cả Đối tượng --</option>
+                        <option value="Student">Học sinh</option>
+                        <option value="Teacher">Giáo viên</option>
+                        <option value="Parent">Phụ huynh</option>
+                        <option value="Admin">Quản trị viên (Admin)</option>
+                        <option value="System">Hệ thống Tự động</option>
+                    </select>
+
+                    <!-- Lọc theo Hành động -->
+                    <select id="filter-action" onchange="loadLogs()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none">
+                        <option value="ALL">-- Tất cả Hành động --</option>
+                        <option value="DOWNLOAD">Tải tài liệu</option>
+                        <option value="UPLOAD">Đăng tải tài liệu / Bài tập</option>
+                        <option value="LOGIN">Đăng nhập / Đăng xuất</option>
+                        <option value="EVENT">Sự kiện / Lịch học</option>
+                    </select>
+                </div>
+
+                <div class="text-xs text-slate-500 font-medium" id="log-count">
+                    Đang tải nhật ký...
+                </div>
+            </div>
+
+            <!-- BẢNG NHẬT KÝ -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <th class="py-3.5 px-4">Thời gian</th>
+                            <th class="py-3.5 px-4">Người thực hiện</th>
+                            <th class="py-3.5 px-4">Đối tượng</th>
+                            <th class="py-3.5 px-4">Hành động ghi nhận</th>
+                            <th class="py-3.5 px-4">Chi tiết nội dung</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body" class="divide-y divide-slate-100 text-xs">
+                        <!-- JS Render tự động -->
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SCRIPT XỬ LÝ LOGIC -->
+    <script>
+        let searchTimeout = null;
+
+        async function loadLogs() {
+            clearTimeout(searchTimeout);
+
+            // Delay 300ms khi gõ bàn phím để mượt mà không quá tải request
+            searchTimeout = setTimeout(async () => {
+                const role = document.getElementById('filter-role').value;
+                const action = document.getElementById('filter-action').value;
+                const q = document.getElementById('filter-search').value;
+
+                const tbody = document.getElementById('log-table-body');
+                const countContainer = document.getElementById('log-count');
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Đang truy xuất dữ liệu nhật ký...</td></tr>`;
+
+                try {
+                    const res = await fetch(`/api/admin/system-logs?role=${role}&action=${action}&q=${encodeURIComponent(q)}`);
+                    const result = await res.json();
+
+                    if (!result.success || result.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">Không tìm thấy kết quả nhật ký nào phù hợp</td></tr>`;
+                        countContainer.innerHTML = `Tổng số: <strong class="text-slate-800">0</strong> nhật ký`;
+                        return;
+                    }
+
+                    countContainer.innerHTML = `Tìm thấy: <strong class="text-primary-600">${result.data.length}</strong> nhật ký`;
+
+                    tbody.innerHTML = result.data.map(item => {
+                        // Phân loại Badge hiển thị người dùng
+                        let roleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Hệ thống</span>`;
+                        if (item.vai_tro === 'Student') {
+                            roleBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200">Học sinh</span>`;
+                        } else if (item.vai_tro === 'Teacher') {
+                            roleBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-200">Giáo viên</span>`;
+                        } else if (item.vai_tro === 'Parent') {
+                            roleBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">Phụ huynh</span>`;
+                        } else if (item.vai_tro === 'Admin') {
+                            roleBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">Admin</span>`;
+                        }
+
+                        // Icon loại hành động
+                        let actionIcon = `<i class="fa-solid fa-circle-info text-slate-400 mr-1.5"></i>`;
+                        if (item.loai_hanh_dong === 'DOWNLOAD') {
+                            actionIcon = `<i class="fa-solid fa-file-arrow-down text-emerald-500 mr-1.5"></i>`;
+                        } else if (item.loai_hanh_dong === 'UPLOAD') {
+                            actionIcon = `<i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-1.5"></i>`;
+                        } else if (item.loai_hanh_dong === 'LOGIN') {
+                            actionIcon = `<i class="fa-solid fa-right-to-bracket text-amber-500 mr-1.5"></i>`;
+                        } else if (item.loai_hanh_dong === 'EVENT') {
+                            actionIcon = `<i class="fa-solid fa-calendar-check text-rose-500 mr-1.5"></i>`;
+                        }
+
+                        return `
+                            <tr class="hover:bg-slate-50/80 transition-all">
+                                <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">${item.thoi_gian}</td>
+                                <td class="py-3 px-4 font-bold text-slate-800">${item.ho_ten}</td>
+                                <td class="py-3 px-4">${roleBadge}</td>
+                                <td class="py-3 px-4 font-medium text-slate-700">${actionIcon} ${item.hanh_dong}</td>
+                                <td class="py-3 px-4 text-slate-500">${item.chi_tiet || '-'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                } catch (err) {
+                    console.error("Lỗi khi tải log:", err);
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500">Lỗi kết nối máy chủ!</td></tr>`;
+                }
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadLogs);
+    </script>
+</body>
+</html>

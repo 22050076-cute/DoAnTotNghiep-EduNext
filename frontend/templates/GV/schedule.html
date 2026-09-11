@@ -1,0 +1,444 @@
+{% extends "GV/layout.html" %}
+
+{% set active_page = 'schedule' %}
+
+{% block title %}Quản lý Thời khóa biểu | EduNext Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .schedule-grid { display: grid; grid-template-columns: 90px repeat(6, 1fr); gap: 10px; min-width: 1000px; }
+    .grid-header { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #94a3b8; text-align: center; padding: 10px; letter-spacing: 0.1em; }
+    .grid-cell { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 8px; min-height: 105px; transition: all 0.2s; }
+    .grid-cell:hover { border-color: #E11D48; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.08); }
+    .grid-cell.disabled-cell { background: #f8fafc; opacity: 0.8; }
+    .period-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        border-right: 2px dashed #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block header_breadcrumb %}Học tập / <span class="text-brand-dark">Thời khóa biểu</span>{% endblock %}
+
+{% block content %}
+<div class="space-y-6 animate-in fade-in duration-500">
+    <!-- TIÊU ĐỀ TRANG VÀ NÚT LƯU -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight italic">Thời khóa biểu <span id="class-name-display" class="text-brand-primary">Đang tải...</span></h1>
+            <p id="week-status-badge" class="text-xs font-bold uppercase tracking-widest mt-1 text-slate-400">Lịch học Buổi sáng & Buổi chiều theo từng tuần riêng biệt</p>
+        </div>
+        <div class="flex items-center gap-3" id="action-buttons-container">
+            <button onclick="copyFromPreviousWeek()" id="btn-copy" class="px-5 py-3 bg-slate-100 text-slate-700 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-all flex items-center gap-1.5">
+                <i class="ph-bold ph-copy text-base"></i> Sao chép từ tuần trước
+            </button>
+            <button onclick="saveSchedule()" id="btn-save-schedule" class="px-8 py-3.5 ai-gradient text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                <i class="ph-fill ph-floppy-disk text-base"></i> Lưu Lịch Tuần Này
+            </button>
+        </div>
+    </div>
+
+    <!-- BỘ CHỌN HỌC KỲ & TUẦN HỌC -->
+    <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+        <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[250px]">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Học kỳ / Năm học</label>
+                <select id="select-semester" onchange="onSemesterChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-primary text-sm cursor-pointer">
+                    <option value="1" selected>Học kỳ 1 - Năm học 2026 - 2027</option>
+                    <option value="2">Học kỳ 2 - Năm học 2026 - 2027</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 min-w-[300px]">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tuần xếp lịch (Chọn tuần để cấu hình riêng)</label>
+                <select id="select-week" onchange="onWeekChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-primary text-sm cursor-pointer">
+                    <!-- Tự động sinh danh sách 18 tuần -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC GRID XẾP LỊCH CẢ 2 BUỔI -->
+    <div class="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden space-y-8">
+        <div class="overflow-x-auto custom-scrollbar">
+            <!-- HEADER THỨ -->
+            <div class="schedule-grid mb-4">
+                <div class="grid-header">Tiết</div>
+                <div class="grid-header">Thứ 2</div>
+                <div class="grid-header">Thứ 3</div>
+                <div class="grid-header">Thứ 4</div>
+                <div class="grid-header">Thứ 5</div>
+                <div class="grid-header">Thứ 6</div>
+                <div class="grid-header">Thứ 7</div>
+            </div>
+
+            <!-- BUỔI SÁNG -->
+            <div class="mb-4">
+                <div class="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl font-black text-[11px] uppercase tracking-widest inline-flex items-center gap-2 mb-3">
+                    <i class="ph-bold ph-sun"></i> Lịch Học Buổi Sáng (Tiết 1 - 5)
+                </div>
+                <div id="schedule-body-morning" class="space-y-[10px]"></div>
+            </div>
+
+            <!-- BUỔI CHIỀU -->
+            <div>
+                <div class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl font-black text-[11px] uppercase tracking-widest inline-flex items-center gap-2 mb-3">
+                    <i class="ph-bold ph-moon-stars"></i> Lịch Học Buổi Chiều (Tiết 6 - 10)
+                </div>
+                <div id="schedule-body-afternoon" class="space-y-[10px]"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let subjects = [];
+    let teacherClassId = null;
+    let gradeId = 8; 
+    let scheduleData = [];
+    let currentWeekNumber = 1;
+    let weeksData = [];
+    let isCurrentWeekLocked = false;
+
+    const default12Subjects = [
+        { MaMonHoc: 1, TenMonHoc: 'Toán học', GiaoVien: 'Thầy Nguyễn Văn A' },
+        { MaMonHoc: 2, TenMonHoc: 'Ngữ văn', GiaoVien: 'Cô Trần Thị B' },
+        { MaMonHoc: 3, TenMonHoc: 'Tiếng Anh', GiaoVien: 'Cô Lê Thị C' },
+        { MaMonHoc: 4, TenMonHoc: 'Khoa học tự nhiên', GiaoVien: 'Thầy Phạm Văn D' },
+        { MaMonHoc: 5, TenMonHoc: 'Lịch sử và Địa lí', GiaoVien: 'Cô Hoàng Thị E' },
+        { MaMonHoc: 6, TenMonHoc: 'Tin học', GiaoVien: 'Thầy Vũ Văn F' },
+        { MaMonHoc: 7, TenMonHoc: 'Công nghệ', GiaoVien: 'Cô Ngô Thị G' },
+        { MaMonHoc: 8, TenMonHoc: 'Giáo dục công dân', GiaoVien: 'Thầy Bùi Văn H' },
+        { MaMonHoc: 9, TenMonHoc: 'Nghệ thuật', GiaoVien: 'Cô Đặng Thị I' },
+        { MaMonHoc: 10, TenMonHoc: 'Giáo dục thể chất', GiaoVien: 'Thầy Đỗ Văn K' },
+        { MaMonHoc: 11, TenMonHoc: 'Hoạt động trải nghiệm', GiaoVien: 'Cô Hồ Thị L' },
+        { MaMonHoc: 12, TenMonHoc: 'Nội dung GD địa phương', GiaoVien: 'Thầy Lý Văn M' },
+        { MaMonHoc: 13, TenMonHoc: 'Hóa học', GiaoVien: 'Cô Dương Thị N' } 
+    ];
+
+    const semesterConfigs = {
+        "1": { startDate: "2026-09-07", totalWeeks: 18 },
+        "2": { startDate: "2027-01-11", totalWeeks: 18 }
+    };
+
+    function generateWeeks(semesterId) {
+        const config = semesterConfigs[semesterId];
+        const selectWeek = document.getElementById('select-week');
+        selectWeek.innerHTML = '';
+        weeksData = [];
+        
+        let currentStart = new Date(config.startDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let defaultWeekValue = 1;
+
+        for (let w = 1; w <= config.totalWeeks; w++) {
+            let monday = new Date(currentStart);
+            let sunday = new Date(currentStart);
+            sunday.setDate(currentStart.getDate() + 6);
+            sunday.setHours(23, 59, 59, 999);
+            
+            const pad = (n) => n < 10 ? '0' + n : n;
+            const label = `Tuần ${w} [Từ ${pad(monday.getDate())}/${pad(monday.getMonth()+1)} đến ${pad(sunday.getDate())}/${pad(sunday.getMonth()+1)}]`;
+            
+            weeksData.push({ weekNumber: w, monday, sunday });
+
+            let option = document.createElement('option');
+            option.value = w;
+            option.innerText = label;
+            selectWeek.appendChild(option);
+
+            if (today >= monday && today <= sunday) {
+                defaultWeekValue = w;
+            }
+            currentStart.setDate(currentStart.getDate() + 7);
+        }
+        
+        currentWeekNumber = defaultWeekValue;
+        selectWeek.value = currentWeekNumber;
+    }
+
+    async function loadSchedule() {
+        if (!teacherClassId) return;
+        
+        scheduleData = []; 
+
+        const morning = document.getElementById('schedule-body-morning');
+        const afternoon = document.getElementById('schedule-body-afternoon');
+        morning.innerHTML = '<div class="p-8 text-center text-xs font-bold text-slate-400"><i class="ph-bold ph-spinner animate-spin mr-2"></i>Đang nạp TKB Tuần ' + currentWeekNumber + '...</div>';
+        afternoon.innerHTML = '';
+
+        const selectedSemester = document.getElementById('select-semester').value;
+
+        const currentWeekObj = weeksData.find(w => w.weekNumber === currentWeekNumber);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (currentWeekObj && currentWeekObj.sunday < today) {
+            isCurrentWeekLocked = true;
+            document.getElementById('week-status-badge').innerHTML = '<span class="text-amber-600 font-black">🔒 Tuần này đã qua - Không thể chỉnh sửa</span>';
+            document.getElementById('action-buttons-container').style.display = 'none';
+        } else {
+            isCurrentWeekLocked = false;
+            document.getElementById('week-status-badge').innerHTML = 'Lịch học Buổi sáng & Buổi chiều theo từng tuần riêng biệt';
+            document.getElementById('action-buttons-container').style.display = 'flex';
+        }
+
+        try {
+            const res = await fetch(`/api/teacher/schedule?class_id=${teacherClassId}&week=${currentWeekNumber}&semester=${selectedSemester}`);
+            const result = await res.json();
+            
+            if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                scheduleData = result.data.map(item => ({
+                    Thu: Number(item.Thu),
+                    Tiet: Number(item.Tiet),
+                    MaMonHoc: item.MaMonHoc ? Number(item.MaMonHoc) : null,
+                    TenMonHoc: item.TenMonHoc || '',
+                    TenGiaoVien: item.TenGiaoVien || '',
+                    PhongHoc: item.PhongHoc || ''
+                }));
+            } else {
+                scheduleData = [];
+            }
+        } catch (err) { 
+            console.error("Lỗi khi nạp TKB:", err);
+            scheduleData = []; 
+        } finally {
+            renderSchedule(); 
+        }
+    }
+
+    function renderSchedule() {
+        const morningContainer = document.getElementById('schedule-body-morning');
+        const afternoonContainer = document.getElementById('schedule-body-afternoon');
+        
+        let morningHtml = '';
+        let afternoonHtml = '';
+        const listSubjects = (Array.isArray(subjects) && subjects.length > 0) ? subjects : default12Subjects;
+
+        for (let i = 1; i <= 5; i++) morningHtml += renderPeriodRow(i, listSubjects);
+        for (let i = 6; i <= 10; i++) afternoonHtml += renderPeriodRow(i, listSubjects);
+
+        morningContainer.innerHTML = morningHtml;
+        afternoonContainer.innerHTML = afternoonHtml;
+    }
+
+    function renderPeriodRow(i, listSubjects) {
+        const validSubjects = (Array.isArray(listSubjects) && listSubjects.length > 0) ? listSubjects : default12Subjects;
+
+        return `<div class="schedule-grid">
+            <div class="period-label">
+                <span>Tiết ${i}</span>
+            </div>
+            ${[2, 3, 4, 5, 6, 7].map(day => {
+                const item = scheduleData.find(s => Number(s.Thu) === day && Number(s.Tiet) === i) || {};
+                const teacherName = item.TenGiaoVien || '';
+
+                const disabledAttr = isCurrentWeekLocked ? 'disabled' : '';
+                const cellClass = isCurrentWeekLocked ? 'grid-cell disabled-cell flex flex-col justify-between gap-1.5' : 'grid-cell flex flex-col justify-between gap-1.5';
+
+                return `
+                    <div class="${cellClass}">
+                        <select onchange="updateCell(${day}, ${i}, 'TenMonHoc', this.value)" ${disabledAttr}
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[10px] font-black text-slate-800 outline-none focus:ring-1 focus:ring-brand-primary cursor-pointer">
+                            <option value="">--- Trống ---</option>
+                            ${validSubjects.map(s => {
+                                const subName = s.TenMonHoc || s.ten_mon_hoc || s.TenMon || '';
+                                const subId = s.MaMonHoc || s.ma_mon_hoc || s.id || '';
+                                const isSelected = (item.MaMonHoc == subId || item.TenMonHoc === subName || item.ten_mon_hoc === subName);
+                                return `<option value="${subName}" ${isSelected ? 'selected' : ''}>${subName}</option>`;
+                            }).join('')}
+                        </select>
+
+                        <div class="text-[9px] font-bold text-rose-600 italic truncate bg-rose-50 px-1.5 py-0.5 rounded-md min-h-[18px]">
+                            ${teacherName ? 'GV: ' + teacherName : ''}
+                        </div>
+
+                        <input type="text" value="${item.PhongHoc || ''}" placeholder="Phòng..." onchange="updateCell(${day}, ${i}, 'PhongHoc', this.value)" ${disabledAttr}
+                            class="w-full bg-white border border-slate-100 rounded-lg p-1 text-[9px] font-bold text-slate-500 outline-none focus:ring-1 focus:ring-brand-primary">
+                    </div>
+                `;
+            }).join('')}
+        </div>`;
+    }
+
+    function updateCell(day, period, field, value) {
+        if (isCurrentWeekLocked) return;
+
+        day = Number(day);
+        period = Number(period);
+
+        let itemIndex = scheduleData.findIndex(s => Number(s.Thu) === day && Number(s.Tiet) === period);
+
+        if (itemIndex === -1) {
+            if (!value) return; 
+            scheduleData.push({ Thu: day, Tiet: period, MaLop: teacherClassId, MaMonHoc: null, TenMonHoc: '', PhongHoc: '' });
+            itemIndex = scheduleData.length - 1;
+        }
+
+        if (field === 'TenMonHoc') {
+            scheduleData[itemIndex].TenMonHoc = value;
+            const listSubjects = (Array.isArray(subjects) && subjects.length > 0) ? subjects : default12Subjects;
+            const foundMon = listSubjects.find(s => (s.TenMonHoc || s.ten_mon_hoc || s.TenMon) === value);
+            if (foundMon) {
+                scheduleData[itemIndex].MaMonHoc = foundMon.MaMonHoc || foundMon.ma_mon_hoc || foundMon.id;
+                scheduleData[itemIndex].TenGiaoVien = foundMon.GiaoVien || '';
+            } else {
+                scheduleData[itemIndex].MaMonHoc = null;
+                scheduleData[itemIndex].TenGiaoVien = '';
+            }
+            renderSchedule(); 
+        } else if (field === 'PhongHoc') {
+            scheduleData[itemIndex].PhongHoc = value;
+        }
+    }
+
+    function onSemesterChange() {
+        const semId = document.getElementById('select-semester').value;
+        generateWeeks(semId);
+        loadSchedule();
+    }
+
+    function onWeekChange() {
+        currentWeekNumber = parseInt(document.getElementById('select-week').value);
+        loadSchedule();
+    }
+
+    async function copyFromPreviousWeek() {
+        if (isCurrentWeekLocked) return;
+        if (currentWeekNumber <= 1) {
+            alert("Đây là Tuần 1, không có tuần trước để sao chép!");
+            return;
+        }
+        const prevWeekNum = currentWeekNumber - 1;
+        const selectedSemester = document.getElementById('select-semester').value;
+
+        try {
+            const res = await fetch(`/api/teacher/schedule?class_id=${teacherClassId}&week=${prevWeekNum}&semester=${selectedSemester}`);
+            const result = await res.json();
+            if (result.success && result.data.length > 0) {
+                scheduleData = result.data.map(item => ({
+                    Thu: Number(item.Thu),
+                    Tiet: Number(item.Tiet),
+                    MaMonHoc: item.MaMonHoc,
+                    TenMonHoc: item.TenMonHoc,
+                    TenGiaoVien: item.TenGiaoVien,
+                    PhongHoc: item.PhongHoc || ''
+                }));
+                renderSchedule();
+                alert(`✨ Đã nạp mẫu lịch từ Tuần ${prevWeekNum}! Vui lòng bấm "Lưu Lịch Tuần Này" để xác nhận cho Tuần ${currentWeekNumber}.`);
+            } else {
+                alert(`Tuần ${prevWeekNum} chưa có dữ liệu thời khóa biểu để sao chép.`);
+            }
+        } catch (e) { alert("Lỗi sao chép lịch!"); }
+    }
+
+    async function saveSchedule() {
+        if (isCurrentWeekLocked || !teacherClassId) return;
+        
+        const selectedSemester = parseInt(document.getElementById('select-semester').value);
+
+        const validSchedule = scheduleData.filter(d => d.TenMonHoc || d.MaMonHoc).map(d => ({
+            thu: Number(d.Thu),
+            tiet: Number(d.Tiet),
+            mon_hoc_id: d.MaMonHoc,
+            ten_mon_hoc: d.TenMonHoc,
+            phong_hoc: d.PhongHoc || ''
+        }));
+
+        const btn = document.getElementById('btn-save-schedule');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> Đang lưu...';
+
+        try {
+            const payload = {
+                class_id: teacherClassId,
+                week: currentWeekNumber,
+                semester: selectedSemester,
+                schedule: validSchedule
+            };
+
+            const res = await fetch('/api/teacher/schedule/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await res.json();
+            if (result.success) {
+                alert(`✨ Đã lưu thành công Thời khóa biểu cho Tuần ${currentWeekNumber}!`);
+                await loadSchedule();
+            } else { 
+                alert("Lỗi: " + result.message); 
+            }
+        } catch (err) { 
+            alert("Lỗi kết nối máy chủ!"); 
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph-fill ph-floppy-disk mr-2"></i> Lưu Lịch Tuần Này';
+        }
+    }
+
+    async function init() {
+        try {
+            // Lấy thông tin profile giáo viên & lớp học trước
+            const pRes = await fetch('/api/user/profile');
+            const profile = await pRes.json();
+            if (profile.success && profile.data) {
+                teacherClassId = profile.data.class_id;
+                gradeId = profile.data.MaKhoi || 8; 
+                document.getElementById('class-name-display').innerText = `Lớp ${profile.data.class_name}`;
+            }
+
+            // Gọi API lấy danh sách môn học và map thẳng thành mảng các chuỗi tên môn học
+            try {
+                const sRes = await fetch('/api/subjects');
+                const sData = await sRes.json();
+                console.log("Dữ liệu API môn học:", sData);
+                
+                let rawList = [];
+                if (sData && sData.success && Array.isArray(sData.data)) {
+                    rawList = sData.data;
+                } else if (Array.isArray(sData)) {
+                    rawList = sData;
+                }
+
+                if (rawList.length > 0) {
+                    // Ép dữ liệu thành mảng các object có cấu trúc đồng nhất
+                    subjects = rawList.map(s => ({
+                        MaMonHoc: s.MaMonHoc || s.ma_mon_hoc || s.id,
+                        TenMonHoc: s.TenMonHoc || s.ten_mon_hoc || s.TenMon || s.name
+                    }));
+                } else {
+                    subjects = default12Subjects;
+                }
+            } catch (err) { 
+                console.warn("Lỗi fetch API môn học, dùng mặc định");
+                subjects = default12Subjects; 
+            }
+
+            // Lọc môn Hóa học nếu dưới khối 8
+            if (gradeId < 8) {
+                subjects = subjects.filter(s => Number(s.MaMonHoc) !== 13 && s.TenMonHoc !== 'Hóa học');
+            }
+
+            generateWeeks("1");
+            await loadSchedule();
+        } catch (err) { 
+            console.error("Lỗi khởi tạo:", err); 
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+{% endblock %}

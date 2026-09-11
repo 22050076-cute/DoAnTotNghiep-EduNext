@@ -1,0 +1,360 @@
+{% extends "HS/layout.html" %}
+
+{% set active_page = 'bangthanhtich' %}
+
+{% block title %}Bảng thành tích & Điểm số | EduNext Pro{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .card-shadow { box-shadow: 0 10px 30px -5px rgba(0,0,0,0.04); }
+</style>
+{% endblock %}
+
+{% block header_extra %}
+<div class="hidden sm:block">
+    <h3 class="text-3xl font-black mb-1 tracking-tight text-slate-800">Kết quả Học tập & Bảng Điểm</h3>
+    <p class="text-xs font-semibold text-slate-400 italic">Theo dõi điểm số 12 môn học, đánh giá năng lực và xét duyệt lên lớp</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+    
+    <!-- BANNER HERO & BỘ CHỌN HỌC KỲ -->
+    <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-rose-50 text-edunext-primary rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0">
+                <i class="ph-fill ph-certificate"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Sổ Điểm Điện Tử Cá Nhân</h1>
+                <p id="student-info-subtitle" class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Học sinh: Đang nạp dữ liệu... • Niên khóa 2025 - 2026</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <select id="select-semester" onchange="loadStudentGrades()" class="px-4 py-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-edunext-primary transition-all cursor-pointer">
+                <option value="1" selected>Học kỳ I</option>
+                <option value="2">Học kỳ II</option>
+            </select>
+            <button onclick="window.print()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-black uppercase transition-all flex items-center gap-2">
+                <i class="ph-bold ph-printer"></i> In bảng điểm
+            </button>
+        </div>
+    </div>
+
+    <!-- KHU VỰC THỐNG KÊ & BIỂU ĐỒ NĂNG LỰC -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ĐTB & DANH HIỆU -->
+        <div class="bg-gradient-to-br from-edunext-primary to-rose-600 rounded-[2.5rem] p-6 md:p-8 text-white relative overflow-hidden shadow-xl flex flex-col justify-between">
+            <div class="relative z-10 space-y-2">
+                <span class="px-3 py-1 bg-white/20 rounded-full text-[9px] font-black uppercase tracking-widest">Đánh giá chung</span>
+                <p class="text-xs font-medium text-white/80">Điểm trung bình hiện tại</p>
+                <h2 id="hero-gpa" class="text-5xl font-black tracking-tight">--</h2>
+            </div>
+            <div class="relative z-10 pt-6 border-t border-white/20 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-white/70 uppercase">Danh hiệu thi đua</p>
+                    <h4 id="hero-title-award" class="text-sm font-black uppercase">Đang trong kỳ học</h4>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl backdrop-blur-md">
+                    <i class="ph-fill ph-medal"></i>
+                </div>
+            </div>
+            <i class="ph-fill ph-trophy absolute -right-6 -bottom-6 text-[150px] text-white/10 rotate-12"></i>
+        </div>
+
+        <!-- BIỂU ĐỒ RADAR 4 TRỤ CỘT NĂNG LỰC -->
+        <div class="lg:col-span-2 bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 card-shadow flex flex-col justify-between">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h4 class="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
+                    <i class="ph-fill ph-chart-polar text-blue-500 text-base"></i> Phân Bố Năng Lực Học Tập
+                </h4>
+                <span class="text-[10px] font-bold text-slate-400">4 Nhóm môn học</span>
+            </div>
+            <div class="w-full h-[220px] flex items-center justify-center mt-2">
+                <canvas id="radarSkillChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- BẢNG ĐIỂM CHI TIẾT CÁC MÔN HỌC -->
+    <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 card-shadow space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <h3 class="text-lg font-black text-slate-800 flex items-center gap-2.5 uppercase italic">
+                <i class="ph-fill ph-table text-edunext-primary text-xl"></i> Bảng Điểm Chi Tiết Các Môn Học
+            </h3>
+            <span id="grade-count-badge" class="px-3 py-1 bg-rose-50 text-edunext-primary text-[10px] font-black rounded-full uppercase">Đang tải...</span>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left min-w-[950px]">
+                <thead class="bg-slate-50/80 border-b border-slate-100">
+                    <tr>
+                        <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-12">STT</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Môn Học</th>
+                        
+                        <th class="px-4 py-3 text-[10px] font-black text-rose-600 bg-rose-50/40 uppercase tracking-widest text-center border-x border-rose-100/50">
+                            Kiểm Tra Miệng (Hệ 1)
+                            <div class="flex gap-2 justify-center mt-1 text-[9px] font-bold text-slate-400">
+                                <span class="w-8">M1</span>
+                                <span class="w-8">M2</span>
+                                <span class="w-8">M3</span>
+                            </div>
+                        </th>
+
+                        <th class="px-4 py-3 text-[10px] font-black text-slate-600 bg-slate-50/80 uppercase tracking-widest text-center border-r border-slate-100">
+                            Thường Xuyên 15P (Hệ 1)
+                            <div class="flex gap-2 justify-center mt-1 text-[9px] font-bold text-slate-400">
+                                <span class="w-8">TX1</span>
+                                <span class="w-8">TX2</span>
+                            </div>
+                        </th>
+
+                        <th class="px-4 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Giữa Kỳ (x2)</th>
+                        <th class="px-4 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Cuối Kỳ (x3)</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-edunext-primary uppercase tracking-widest text-center w-28 bg-rose-50/30">ĐTB Môn</th>
+                    </tr>
+                </thead>
+                <tbody id="student-grade-body" class="divide-y divide-slate-50">
+                    <tr><td colspan="7" class="p-16 text-center text-slate-400 italic">Đang đồng bộ dữ liệu sổ điểm cá nhân...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CỤM TỔNG KẾT HỌC LỰC, HẠNH KIỂM & XÉT LÊN LỚP (THEO THÔNG TƯ 22) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
+            <div class="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">ĐTB Các Môn Đã Có</p>
+                <h4 id="summary-gpa" class="text-2xl font-black text-edunext-primary mt-1">--</h4>
+            </div>
+
+            <div class="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Kết quả Học tập (Học lực)</p>
+                <h4 id="summary-academic" class="text-sm font-bold text-amber-600 mt-1">Đang cập nhật</h4>
+            </div>
+
+            <div class="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Kết quả Rèn luyện</p>
+                <h4 id="summary-conduct" class="text-lg font-black text-emerald-600 mt-1">Tốt</h4>
+            </div>
+
+            <div id="summary-promotion-card" class="p-5 bg-slate-50 rounded-3xl border border-slate-200">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Kết quả Xét duyệt</p>
+                <h4 id="summary-promotion" class="text-sm font-bold text-slate-500 mt-1 flex items-center gap-1.5">
+                    <i class="ph-bold ph-hourglass-high text-lg text-amber-500"></i> Đang học (Chờ đủ điểm)
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let radarChartInstance = null;
+
+    // 1. Tự động hiển thị ngày tháng thực tế chính xác trên giao diện
+    function setRealTimeDate() {
+        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        const now = new Date();
+        const dayName = days[now.getDay()];
+        const dateStr = `${dayName}, ${now.getDate()} Tháng ${now.getMonth() + 1}, ${now.getFullYear()}`;
+        
+        // Quét cập nhật các vùng header hiển thị ngày tháng tĩnh
+        document.querySelectorAll('header p, header span, .header-date').forEach(el => {
+            if (el.innerText.includes('Thứ') && el.innerText.includes('Tháng')) {
+                el.innerText = dateStr;
+            }
+        });
+    }
+
+    function initRadarSkillChart(scores = [0, 0, 0, 0]) {
+        const ctx = document.getElementById('radarSkillChart').getContext('2d');
+        if (radarChartInstance) radarChartInstance.destroy();
+
+        radarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Toán & Tự nhiên', 'Ngữ văn & Xã hội', 'Tin học & Công nghệ', 'Ngoại ngữ'],
+                datasets: [{
+                    label: 'Điểm năng lực',
+                    data: scores,
+                    fill: true,
+                    backgroundColor: 'rgba(238, 0, 51, 0.15)',
+                    borderColor: '#EE0033',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#EE0033',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,
+                        ticks: { stepSize: 2, font: { size: 9 } }
+                    }
+                }
+            }
+        });
+    }
+
+    async function loadStudentGrades() {
+        const semesterId = document.getElementById('select-semester').value;
+        const body = document.getElementById('student-grade-body');
+
+        try {
+            const res = await fetch(`/api/student/grades?semester_id=${semesterId}`);
+            const result = await res.json();
+
+            if (result.success) {
+                if (result.student_name) {
+                    document.getElementById('student-info-subtitle').innerText = 
+                        `Học sinh: ${result.student_name} • Lớp: ${result.class_name || '8A1'} • Niên khóa 2025 - 2026`;
+                }
+
+                const grades = result.data || [];
+                document.getElementById('grade-count-badge').innerText = `${grades.length} Môn học`;
+
+                if (grades.length === 0) {
+                    body.innerHTML = '<tr><td colspan="7" class="p-16 text-center text-slate-400 italic">Chưa có dữ liệu điểm học tập.</td></tr>';
+                    return;
+                }
+
+                let sumAvg = 0;
+                let completedSubjects = 0;
+                let totalSubjects = grades.length;
+                let minGrade = 10;
+
+                // Thu thập điểm theo từng nhóm môn học thực tế
+                let toanKhtn = [];
+                let vanXh = [];
+                let tinCn = [];
+                let ngoaiNgu = [];
+
+                body.innerHTML = grades.map((g, idx) => {
+                    const tb = (g.TB !== null && g.TB !== undefined) ? parseFloat(g.TB) : null;
+                    if (tb !== null) {
+                        sumAvg += tb;
+                        completedSubjects++;
+                        if (tb < minGrade) minGrade = tb;
+
+                        const subName = (g.TenMonHoc || '').toLowerCase();
+                        if (subName.includes('toán') || subName.includes('khoa học tự nhiên') || subName.includes('hóa')) toanKhtn.push(tb);
+                        else if (subName.includes('văn') || subName.includes('lịch sử') || subName.includes('địa') || subName.includes('công dân')) vanXh.push(tb);
+                        else if (subName.includes('tin') || subName.includes('công nghệ')) tinCn.push(tb);
+                        else if (subName.includes('anh') || subName.includes('ngoại ngữ')) ngoaiNgu.push(tb);
+                    }
+
+                    return `
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="px-4 py-4 text-xs font-bold text-slate-400 text-center">${idx + 1}</td>
+                        <td class="px-6 py-4 font-bold text-slate-800 text-xs italic">${g.TenMonHoc}</td>
+                        <td class="px-3 py-4 bg-rose-50/20 text-center font-bold text-xs">
+                            <span class="inline-block w-6">${g.M1 ?? '-'}</span>
+                            <span class="inline-block w-6">${g.M2 ?? '-'}</span>
+                            <span class="inline-block w-6">${g.M3 ?? '-'}</span>
+                        </td>
+                        <td class="px-3 py-4 bg-slate-50/40 text-center font-bold text-xs">
+                            <span class="inline-block w-6">${g.TX1 ?? '-'}</span>
+                            <span class="inline-block w-6">${g.TX2 ?? '-'}</span>
+                        </td>
+                        <td class="px-4 py-4 text-center font-bold text-xs">${g.GK ?? '-'}</td>
+                        <td class="px-4 py-4 text-center font-bold text-xs">${g.CK ?? '-'}</td>
+                        <td class="px-6 py-4 text-center bg-rose-50/30 font-black text-edunext-primary text-xs">${g.TB ?? '-'}</td>
+                    </tr>
+                    `;
+                }).join('');
+
+                // 2. Tính điểm phân bổ biểu đồ Radar từ dữ liệu thật
+                const avgGroup = (arr) => arr.length > 0 ? (Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10) : 0;
+                const radarScores = [
+                    avgGroup(toanKhtn),
+                    avgGroup(vanXh),
+                    avgGroup(tinCn),
+                    avgGroup(ngoaiNgu)
+                ];
+                initRadarSkillChart(radarScores);
+
+                // 3. Xử lý phân loại: Đang trong kỳ học vs Đã đủ điểm kết luận
+                const heroGpaEl = document.getElementById('hero-gpa');
+                const summaryGpaEl = document.getElementById('summary-gpa');
+                const summaryAcademicEl = document.getElementById('summary-academic');
+                const heroAwardEl = document.getElementById('hero-title-award');
+                const promotionEl = document.getElementById('summary-promotion');
+                const promotionCard = document.getElementById('summary-promotion-card');
+
+                if (completedSubjects < totalSubjects) {
+                    // TRƯỜNG HỢP 1: CHƯA CÓ ĐỦ ĐIỂM TẤT CẢ CÁC MÔN
+                    const tempGPA = completedSubjects > 0 ? (sumAvg / completedSubjects).toFixed(1) : '--';
+                    heroGpaEl.innerText = tempGPA;
+                    summaryGpaEl.innerText = completedSubjects > 0 ? `${tempGPA} (${completedSubjects}/${totalSubjects} môn)` : '--';
+
+                    summaryAcademicEl.innerText = `Đang cập nhật (${completedSubjects}/${totalSubjects} môn)`;
+                    summaryAcademicEl.className = "text-sm font-bold text-amber-600 mt-1";
+
+                    heroAwardEl.innerText = "ĐANG TRONG KỲ HỌC";
+
+                    promotionCard.className = "p-5 bg-slate-50 rounded-3xl border border-slate-200";
+                    promotionEl.className = "text-sm font-bold text-slate-500 mt-1 flex items-center gap-1.5";
+                    promotionEl.innerHTML = '<i class="ph-bold ph-hourglass-high text-lg text-amber-500"></i> Đang học (Chờ đủ điểm)';
+                } else {
+                    // TRƯỜNG HỢP 2: ĐÃ ĐỦ ĐIỂM TẤT CẢ 12-13 MÔN -> XÉT DUYỆT CHÍNH THỨC
+                    const finalGPA = (sumAvg / totalSubjects).toFixed(1);
+                    heroGpaEl.innerText = finalGPA;
+                    summaryGpaEl.innerText = finalGPA;
+
+                    let academicTitle = "Chưa đạt";
+                    let awardTitle = "Chưa đủ điều kiện";
+                    let isPromoted = true;
+
+                    if (finalGPA >= 8.0 && minGrade >= 6.5) {
+                        academicTitle = "Học lực Tốt";
+                        awardTitle = "HỌC SINH GIỎI ⭐";
+                    } else if (finalGPA >= 6.5 && minGrade >= 5.0) {
+                        academicTitle = "Học lực Khá";
+                        awardTitle = "HỌC SINH KHÁ";
+                    } else if (finalGPA >= 5.0 && minGrade >= 3.5) {
+                        academicTitle = "Học lực Đạt";
+                        awardTitle = "HỌC SINH TIÊN TIẾN";
+                    } else {
+                        academicTitle = "Chưa Đạt";
+                        awardTitle = "RÈN LUYỆN TRONG HÈ";
+                        isPromoted = false;
+                    }
+
+                    summaryAcademicEl.innerText = academicTitle;
+                    summaryAcademicEl.className = "text-lg font-black text-slate-800 mt-1";
+                    heroAwardEl.innerText = awardTitle;
+
+                    if (isPromoted) {
+                        promotionCard.className = "p-5 bg-emerald-50 rounded-3xl border border-emerald-200";
+                        promotionEl.className = "text-lg font-black text-emerald-700 mt-1 flex items-center gap-1.5";
+                        promotionEl.innerHTML = '<i class="ph-bold ph-seal-check text-xl"></i> ĐƯỢC LÊN LỚP';
+                    } else {
+                        promotionCard.className = "p-5 bg-rose-50 rounded-3xl border border-rose-200";
+                        promotionEl.className = "text-lg font-black text-rose-600 mt-1 flex items-center gap-1.5";
+                        promotionEl.innerHTML = '<i class="ph-bold ph-warning-circle text-xl"></i> KIỂM TRA LẠI';
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Lỗi nạp điểm học sinh:", err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setRealTimeDate();
+        initRadarSkillChart();
+        loadStudentGrades();
+    });
+</script>
+{% endblock %}
