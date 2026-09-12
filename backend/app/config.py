@@ -27,5 +27,4 @@ SMTP_PASSWORD = "weybmhnnlcwplrlc"  # Mật khẩu ứng dụng của bạn
 
 # --- CẤU HÌNH AI (GEMINI) ---
 # Sử dụng Key từ dự án THCS đang chạy tốt
-GEMINI_API_KEY = "AQ.Ab8RN6Jb_qjKd6lXelTYARvC4U0w0ED6NOeTu7b-FoeuiAPyIg"
-
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY') or "AIzaSy_YOUR_API_KEY_PLACEHOLDER"

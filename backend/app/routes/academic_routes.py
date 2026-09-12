@@ -16,40 +16,8 @@ def get_subjects():
     finally:
         db.close()
 
-@academic_bp.route('/teacher/schedule', methods=['GET'])
-def get_teacher_schedule():
-    db = SessionLocal()
-    try:
-        class_id = request.args.get('class_id')
-        if not class_id:
-            user_id = session.get('user_id')
-            class_id = ClassService.get_teacher_class_id(db, user_id)
-            
-        if not class_id:
-            return jsonify({"success": False, "message": "Không tìm thấy thông tin lớp học"}), 404
-            
-        data = AcademicService.get_teacher_schedule(db, class_id)
-        return jsonify({"success": True, "data": data})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        db.close()
-
-@academic_bp.route('/teacher/schedule/update', methods=['POST'])
-def update_teacher_schedule():
-    db = SessionLocal()
-    try:
-        data = request.json
-        class_id = data.get('class_id')
-        schedule_data = data.get('schedule')
-        teacher_id = session.get('user_id')
-        AcademicService.update_schedule(db, class_id, schedule_data, teacher_id)
-        return jsonify({"success": True, "message": "Cập nhật thời khóa biểu thành công!"})
-    except Exception as e:
-        db.rollback()
-        return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        db.close()
+# Teacher schedule GET/POST routes are defined in main.py with week and
+# semester scoping. Do not register class-only handlers at the same URLs.
 
 @academic_bp.route('/teacher/grades', methods=['GET'])
 def get_teacher_gradebook():

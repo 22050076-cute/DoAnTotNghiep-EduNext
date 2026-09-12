@@ -1,0 +1,226 @@
+{% extends "PH/layout.html" %}
+
+{% set active_page = 'schedule' %}
+
+{% block title %}Thời khóa biểu của con | EduNext Parent Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .schedule-grid { display: grid; grid-template-columns: 90px repeat(6, 1fr); gap: 10px; min-width: 1000px; }
+    .grid-header { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #94a3b8; text-align: center; padding: 10px; letter-spacing: 0.1em; }
+    .grid-cell { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 10px; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; }
+    .grid-cell:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08); }
+    .period-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        border-right: 2px dashed #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block header_breadcrumb %}Học tập / <span class="text-brand-dark">Thời khóa biểu</span>{% endblock %}
+
+{% block content %}
+<div class="space-y-6 animate-in fade-in duration-500">
+    <!-- TIÊU ĐỀ TRANG -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight italic">Thời khóa biểu của học sinh</h1>
+            <p id="student-schedule-subtitle" class="text-xs font-bold uppercase tracking-widest mt-1 text-slate-400">Xem lịch học chi tiết theo từng tuần</p>
+        </div>
+    </div>
+
+    <!-- BỘ CHỌN HỌC KỲ & TUẦN HỌC -->
+    <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+        <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[250px]">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Học kỳ / Năm học</label>
+                <select id="select-semester" onchange="onSemesterChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 text-sm cursor-pointer">
+                    <option value="1" selected>Học kỳ 1 - Năm học 2026 - 2027</option>
+                    <option value="2">Học kỳ 2 - Năm học 2026 - 2027</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 min-w-[300px]">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tuần học</label>
+                <select id="select-week" onchange="onWeekChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 text-sm cursor-pointer">
+                    <!-- Tự động sinh danh sách tuần -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC GRID XẾP LỊCH -->
+    <div class="bg-white p-4 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden space-y-8">
+        <div class="overflow-x-auto custom-scrollbar">
+            <!-- HEADER THỨ -->
+            <div class="schedule-grid mb-4">
+                <div class="grid-header">Tiết</div>
+                <div class="grid-header">Thứ 2</div>
+                <div class="grid-header">Thứ 3</div>
+                <div class="grid-header">Thứ 4</div>
+                <div class="grid-header">Thứ 5</div>
+                <div class="grid-header">Thứ 6</div>
+                <div class="grid-header">Thứ 7</div>
+            </div>
+
+            <!-- BUỔI SÁNG -->
+            <div class="mb-4">
+                <div class="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl font-black text-[11px] uppercase tracking-widest inline-flex items-center gap-2 mb-3">
+                    <i class="ph-bold ph-sun"></i> Lịch Học Buổi Sáng (Tiết 1 - 5)
+                </div>
+                <div id="schedule-body-morning" class="space-y-[10px]"></div>
+            </div>
+
+            <!-- BUỔI CHIỀU -->
+            <div>
+                <div class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl font-black text-[11px] uppercase tracking-widest inline-flex items-center gap-2 mb-3">
+                    <i class="ph-bold ph-moon-stars"></i> Lịch Học Buổi Chiều (Tiết 6 - 10)
+                </div>
+                <div id="schedule-body-afternoon" class="space-y-[10px]"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let studentClassId = null;
+    let scheduleData = [];
+    let currentWeekNumber = 1;
+    let weeksData = [];
+
+    const semesterConfigs = {
+        "1": { startDate: "2026-09-07", totalWeeks: 18 },
+        "2": { startDate: "2027-01-11", totalWeeks: 18 }
+    };
+
+    function generateWeeks(semesterId) {
+        const config = semesterConfigs[semesterId];
+        const selectWeek = document.getElementById('select-week');
+        selectWeek.innerHTML = '';
+        weeksData = [];
+        
+        let currentStart = new Date(config.startDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let defaultWeekValue = 1;
+
+        for (let w = 1; w <= config.totalWeeks; w++) {
+            let monday = new Date(currentStart);
+            let sunday = new Date(currentStart);
+            sunday.setDate(currentStart.getDate() + 6);
+            
+            const pad = (n) => n < 10 ? '0' + n : n;
+            const label = `Tuần ${w} [Từ ${pad(monday.getDate())}/${pad(monday.getMonth()+1)} đến ${pad(sunday.getDate())}/${pad(sunday.getMonth()+1)}]`;
+            
+            weeksData.push({ weekNumber: w, monday, sunday });
+
+            let option = document.createElement('option');
+            option.value = w;
+            option.innerText = label;
+            selectWeek.appendChild(option);
+
+            if (today >= monday && today <= sunday) defaultWeekValue = w;
+            currentStart.setDate(currentStart.getDate() + 7);
+        }
+        
+        currentWeekNumber = defaultWeekValue;
+        selectWeek.value = currentWeekNumber;
+    }
+
+    async function loadStudentSchedule() {
+        if (!studentClassId) return;
+        const selectedSemester = document.getElementById('select-semester').value;
+
+        try {
+            const res = await fetch(`/api/teacher/schedule?class_id=${studentClassId}&week=${currentWeekNumber}&semester=${selectedSemester}`);
+            const result = await res.json();
+            
+            scheduleData = (result.success && Array.isArray(result.data)) ? result.data : [];
+            renderScheduleGrid();
+        } catch (err) {
+            console.error("Lỗi tải TKB của con:", err);
+            scheduleData = [];
+            renderScheduleGrid();
+        }
+    }
+
+    function renderScheduleGrid() {
+        const morningContainer = document.getElementById('schedule-body-morning');
+        const afternoonContainer = document.getElementById('schedule-body-afternoon');
+        
+        let morningHtml = '';
+        let afternoonHtml = '';
+
+        for (let i = 1; i <= 5; i++) morningHtml += renderPeriodRow(i);
+        for (let i = 6; i <= 10; i++) afternoonHtml += renderPeriodRow(i);
+
+        morningContainer.innerHTML = morningHtml;
+        afternoonContainer.innerHTML = afternoonHtml;
+    }
+
+    function renderPeriodRow(i) {
+        return `<div class="schedule-grid">
+            <div class="period-label"><span>Tiết ${i}</span></div>
+            ${[2, 3, 4, 5, 6, 7].map(day => {
+                const item = scheduleData.find(s => Number(s.Thu) === day && Number(s.Tiet) === i) || {};
+                return `
+                    <div class="grid-cell">
+                        <p class="text-xs font-black text-slate-800 truncate">${item.TenMonHoc || '<span class="text-slate-300 font-normal">Trống</span>'}</p>
+                        <p class="text-[9px] font-bold text-rose-500 italic truncate">${item.TenGiaoVien ? 'GV: ' + item.TenGiaoVien : ''}</p>
+                        <p class="text-[9px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded text-center truncate">${item.PhongHoc || 'Phòng bộ môn'}</p>
+                    </div>
+                `;
+            }).join('')}
+        </div>`;
+    }
+
+    function onSemesterChange() {
+        generateWeeks(document.getElementById('select-semester').value);
+        loadStudentSchedule();
+    }
+
+    function onWeekChange() {
+        currentWeekNumber = parseInt(document.getElementById('select-week').value);
+        loadStudentSchedule();
+    }
+
+    async function init() {
+        try {
+            // Lấy thông tin học sinh được liên kết với phụ huynh từ dashboard hoặc profile
+            const res = await fetch('/api/parent/dashboard?week=1&semester=1');
+            const result = await res.json();
+            
+            if (result.success && result.data) {
+                // Gán đúng mã lớp của con
+                studentClassId = result.data.class_id || 3;
+                const studentName = result.data.student_name || 'Học sinh';
+                const className = result.data.class_name || '8A1';
+                
+                document.getElementById('student-schedule-subtitle').innerText = `Lớp ${className} (Học sinh: ${studentName}) • Xem lịch học chi tiết theo tuần`;
+            } else {
+                studentClassId = 3; // Mặc định lớp 8A1 nếu chưa map
+            }
+
+            generateWeeks("1");
+            await loadStudentSchedule();
+        } catch (e) {
+            console.error("Lỗi khởi tạo TKB phụ huynh:", e);
+            studentClassId = 3;
+            generateWeeks("1");
+            await loadStudentSchedule();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+{% endblock %}

@@ -6,12 +6,17 @@
 
 {% block extra_css %}
 <style>
+    /* HIỆU ỨNG TRƯỢT MỞ RỘNG AI PANEL HIỆN ĐẠI */
     #ai-panel {
-        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        clip-path: circle(0% at 100% 0%);
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateX(100%);
+        opacity: 0;
+        visibility: hidden;
     }
     #ai-panel.open {
-        clip-path: circle(150% at 100% 0%);
+        transform: translateX(0);
+        opacity: 1;
+        visibility: visible;
     }
     .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
     .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
@@ -25,8 +30,8 @@
     <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
     <span class="text-[10px] font-black uppercase tracking-wider italic">Hệ thống AI Camera: Online</span>
 </div>
-<button onclick="toggleAI()" class="h-11 w-11 md:w-auto md:px-5 flex items-center justify-center gap-2 rounded-2xl ai-gradient text-white font-bold text-sm shadow-xl shadow-rose-200 hover:scale-105 transition-all">
-    <i class="ph-fill ph-sparkle text-lg"></i> <span class="hidden md:inline">Gemini Mentor</span>
+<button onclick="toggleAI()" class="h-11 px-5 flex items-center justify-center gap-2 rounded-2xl ai-gradient text-white font-bold text-sm shadow-xl shadow-rose-200 hover:scale-105 transition-all">
+    <i class="ph-fill ph-sparkle text-lg"></i> <span>Gemini Mentor</span>
 </button>
 <button onclick="window.location.href='/logout'" class="h-11 w-11 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 transition-all shadow-sm">
     <i class="ph-bold ph-sign-out text-xl"></i>
@@ -39,7 +44,7 @@
     <section class="w-full">
         <div class="ai-gradient rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl min-h-[180px] flex items-center">
             <div class="relative z-10 space-y-3">
-                <span class="px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Học kỳ II • Niên khóa 2025-2026</span>
+                <span class="px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Học kỳ II • Niên khóa 2026-2027</span>
                 <h1 id="welcome-message" class="text-3xl md:text-4xl font-black tracking-tighter italic">Chào buổi sáng!</h1>
                 <p class="text-white/70 text-sm font-medium italic">Chúc bạn có một ngày giảng dạy thật hiệu quả.</p>
             </div>
@@ -74,7 +79,6 @@
             <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-md font-black text-slate-800 uppercase italic">Giao bài tập mới</h3>
-                    <!-- LIÊN KẾT 1: Nút mở trang quản lý riêng -->
                     <a href="/teacher/assignments" class="text-[10px] font-black text-brand-primary hover:underline uppercase flex items-center gap-1 transition-all">
                         Trang quản lý <i class="ph-bold ph-arrow-square-out"></i>
                     </a>
@@ -96,7 +100,6 @@
             <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-md font-black text-slate-800 uppercase italic">Bài tập đã giao</h3>
-                    <!-- LIÊN KẾT 2: Nút xem tất cả danh sách bài tập -->
                     <a href="/teacher/assignments" class="text-[10px] font-black text-brand-primary hover:underline uppercase flex items-center gap-1 transition-all">
                         Xem tất cả <i class="ph-bold ph-arrow-right"></i>
                     </a>
@@ -109,34 +112,52 @@
     </div>
 </div>
 
-<!-- AI PANEL -->
-<div id="ai-panel" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-white/80 backdrop-blur-3xl rounded-[2.8rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] z-[110] border border-white/50 flex flex-col overflow-hidden max-h-[80vh] md:max-h-[90vh]">
-    <div class="p-6 ai-gradient text-white shadow-lg">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner">
-                    <i class="ph-fill ph-sparkle text-xl animate-pulse"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-black tracking-tight italic">Gemini Mentor</h3>
-                    <p class="text-[8px] font-bold text-white/60 uppercase tracking-[0.2em]">Trợ lý học đường</p>
-                </div>
+<!-- GEMINI MENTOR AI PANEL (THIẾT KẾ RỘNG RÃI & CHUYÊN NGHIỆP) -->
+<div id="ai-panel" class="fixed top-0 right-0 bottom-0 w-full md:w-[480px] bg-white/95 backdrop-blur-3xl shadow-[-20px_0_50px_rgba(0,0,0,0.15)] z-[120] border-l border-slate-200/80 flex flex-col overflow-hidden">
+    <!-- Header Panel -->
+    <div class="p-6 ai-gradient text-white shadow-lg flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner">
+                <i class="ph-fill ph-sparkle text-2xl animate-pulse"></i>
             </div>
-            <button onclick="toggleAI()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all">
-                <i class="ph-bold ph-x font-bold"></i>
-            </button>
+            <div>
+                <h3 class="text-xl font-black tracking-tight italic">Gemini 2.0 Flash Mentor</h3>
+                <p class="text-[9px] font-bold text-white/80 uppercase tracking-[0.2em]">Trợ lý phân tích & Cảnh báo học đường</p>
+            </div>
+        </div>
+        <button onclick="toggleAI()" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/10 hover:bg-white/20 transition-all text-lg">
+            <i class="ph-bold ph-x font-bold"></i>
+        </button>
+    </div>
+
+    <!-- Toolbar tính năng nhanh chuyên sâu -->
+    <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+        <button onclick="analyzeClassRisk()" class="px-3.5 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl font-black text-[10px] uppercase tracking-wider shrink-0 hover:bg-rose-100 transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="ph-bold ph-warning-circle text-sm"></i> Quét nguy cơ sa sút
+        </button>
+        <button onclick="suggestPedagogicalPlan()" class="px-3.5 py-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-wider shrink-0 hover:bg-indigo-100 transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="ph-bold ph-lightbulb text-sm"></i> Gợi ý can thiệp sư phạm
+        </button>
+    </div>
+
+    <!-- Chat Container -->
+    <div id="ai-chat-container" class="flex-1 p-6 overflow-y-auto space-y-6 custom-scrollbar bg-slate-50/50">
+        <div class="bg-rose-50/80 p-5 rounded-[2rem] border border-rose-100 shadow-sm space-y-2">
+            <div class="flex items-center gap-2 text-brand-primary">
+                <i class="ph-fill ph-shield-warning text-base"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">Hệ thống Trợ lý AI Thông minh</span>
+            </div>
+            <p class="text-xs text-slate-700 leading-relaxed font-semibold italic">
+                "Chào cô/thầy! Tôi là Gemini Mentor tích hợp mô hình 2.0 Flash. Tôi sẵn sàng hỗ trợ đọc dữ liệu định lượng chuyên cần, bài tập và điểm số để phát hiện sớm các trường hợp học sinh có nguy cơ sa sút theo quy tắc Rule Engine chuẩn hóa."
+            </p>
         </div>
     </div>
-    <div id="ai-chat-container" class="flex-1 p-6 overflow-y-auto space-y-6 custom-scrollbar bg-white/50">
-        <div class="bg-rose-50/50 p-4 rounded-[2rem] border border-rose-100/50">
-            <p class="text-[9px] font-black text-brand-primary uppercase mb-2 tracking-widest">Phân tích nề nếp</p>
-            <p class="text-xs text-slate-700 leading-relaxed font-semibold italic">"Chào cô! Tôi là Gemini Mentor. Cô cần giúp gì về giáo án hay tình hình lớp học không?"</p>
-        </div>
-    </div>
-    <div class="p-6 bg-white/50 border-t border-slate-100/50">
-        <div class="relative">
-            <input type="text" id="ai-input" placeholder="Hỏi AI..." class="w-full pl-6 pr-14 py-4 bg-white border border-slate-200/50 rounded-3xl shadow-sm outline-none text-xs font-bold">
-            <button onclick="askAI()" id="ai-send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 ai-gradient text-white rounded-2xl flex items-center justify-center shadow-lg transition-all hover:scale-105">
+
+    <!-- Input khu vực gửi tin nhắn -->
+    <div class="p-6 bg-white border-t border-slate-100 shadow-lg">
+        <div class="relative flex items-center">
+            <input type="text" id="ai-input" placeholder="Nhập câu hỏi hoặc yêu cầu phân tích lớp học..." onkeypress="if(event.key==='Enter') askAI()" class="w-full pl-5 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner outline-none text-xs font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-primary transition-all">
+            <button onclick="askAI()" id="ai-send-btn" class="absolute right-2 w-10 h-10 ai-gradient text-white rounded-xl flex items-center justify-center shadow-lg transition-all hover:scale-105">
                 <i class="ph-fill ph-paper-plane-right text-lg"></i>
             </button>
         </div>
@@ -146,10 +167,68 @@
 
 {% block extra_js %}
 <script>
-    let teacherId = null;
     let teacherClassId = null;
 
-    function toggleAI() { document.getElementById('ai-panel').classList.toggle('open'); }
+    function toggleAI() { 
+        const panel = document.getElementById('ai-panel');
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) {
+            loadChatHistory();
+        }
+    }
+
+    async function loadChatHistory() {
+        try {
+            const res = await fetch('/api/ai/history');
+            const result = await res.json();
+            if (result.success && result.data && result.data.length > 0) {
+                const container = document.getElementById('ai-chat-container');
+                // Giữ lại lời chào mẫu đầu tiên, nạp tiếp lịch sử phía dưới
+                const greetingHtml = container.firstElementChild.outerHTML;
+                container.innerHTML = greetingHtml;
+                
+                result.data.forEach(item => {
+                    if (item.user_message) renderAIMessage('user', item.user_message, false);
+                    if (item.ai_response) renderAIMessage('ai', item.ai_response, false);
+                });
+            }
+        } catch (e) { console.error("Không thể tải lịch sử chat:", e); }
+    }
+
+    async function analyzeClassRisk() {
+        renderAIMessage('user', "Quét tổng thể tình hình lớp học và cảnh báo học sinh có nguy cơ sa sút theo Rule Engine.");
+        renderAIMessage('ai', '<div class="flex items-center gap-2"><i class="ph ph-circle-notch animate-spin text-brand-primary"></i> Đang truy vấn CSDL SQL Server & chạy quy tắc ngưỡng sa sút (Δ Điểm, Chuyên cần, Bài tập)...</div>');
+
+        try {
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: "Hãy đóng vai cố vấn chủ nhiệm, thực hiện quét dữ liệu định lượng của lớp và liệt kê chi tiết các học sinh đang chạm ngưỡng nguy cơ sa sút (điểm giảm sâu, vắng không phép nhiều hoặc thiếu bài tập) kèm theo đề xuất can thiệp cụ thể.", 
+                    context: "Phân hệ quét nguy cơ sa sút học lực theo 4 tiêu chí định lượng chuẩn đồ án." 
+                })
+            });
+            const result = await response.json();
+            
+            const container = document.getElementById('ai-chat-container');
+            container.lastElementChild.remove();
+
+            if (result.success) {
+                renderAIMessage('ai', `🚨 **BÁO CÁO PHÂN TÍCH RÈN LUYỆN & CẢNH BÁO SA SÚT:**\n\n${result.reply}`);
+            } else {
+                renderAIMessage('ai', "⚠️ Phản hồi từ AI: " + result.message);
+            }
+        } catch (error) {
+            const container = document.getElementById('ai-chat-container');
+            container.lastElementChild.remove();
+            renderAIMessage('ai', "❌ Lỗi kết nối đến động cơ Gemini 2.0 Flash.");
+        }
+    }
+
+    async function suggestPedagogicalPlan() {
+        renderAIMessage('user', "Gợi ý biện pháp can thiệp sư phạm đối với học sinh gặp khó khăn trong học tập.");
+        renderAIMessage('ai', "💡 **GỢI Ý CAN THIỆP SƯ PHẠM TRỌNG TÂM:**\n1. **Phụ đạo kiến thức nền tảng:** Giao các bài tập bổ trợ ngắn qua hệ thống bài tập trực tuyến.\n2. **Phối hợp gia đình:** Kích hoạt cảnh báo tự động qua Email SMTP tới phụ huynh để cùng đôn đốc giờ giấc.\n3. **Động viên khích lệ:** Ghi nhận các tiến bộ nhỏ qua hệ thống điểm thưởng XP để tái tạo động lực học tập cho học sinh.");
+    }
 
     async function askAI() {
         const input = document.getElementById('ai-input');
@@ -166,7 +245,7 @@
             const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, context: `Lớp: ${document.getElementById('header-class-name')?.innerText || 'Chưa rõ'}` })
+                body: JSON.stringify({ message, context: `Lớp: ${document.getElementById('header-class-name')?.innerText || '8A1'}` })
             });
             const result = await response.json();
             if (result.success) renderAIMessage('ai', result.reply);
@@ -175,16 +254,18 @@
         finally { btn.disabled = false; btn.innerHTML = '<i class="ph-fill ph-paper-plane-right text-lg"></i>'; }
     }
 
-    function renderAIMessage(role, text) {
+    function renderAIMessage(role, text, scrollToBottom = true) {
         const container = document.getElementById('ai-chat-container');
         const isUser = role === 'user';
         const html = `<div class="flex flex-col ${isUser ? 'items-end' : 'items-start'} mb-4">
-            <div class="${isUser ? 'ai-gradient text-white' : 'bg-white text-slate-700 shadow-sm border border-slate-100'} p-4 rounded-[1.5rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} text-xs leading-relaxed font-bold">
+            <div class="${isUser ? 'ai-gradient text-white' : 'bg-white text-slate-700 shadow-md border border-slate-100'} p-4 rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} text-xs leading-relaxed font-semibold">
                 ${text.replace(/\n/g, '<br>')}
             </div>
         </div>`;
         container.insertAdjacentHTML('beforeend', html);
-        container.scrollTop = container.scrollHeight;
+        if (scrollToBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
     }
 
     async function loadUserProfile() {
@@ -203,7 +284,6 @@
                 if (document.getElementById('welcome-message')) document.getElementById('welcome-message').innerHTML = `${greeting},<br>${fname}!`;
                 if (document.getElementById('current-user-name')) document.getElementById('current-user-name').innerText = fname;
                 if (document.getElementById('header-class-name')) document.getElementById('header-class-name').innerText = cname;
-                document.querySelectorAll('.display-class-name').forEach(el => el.innerText = cname);
             }
         } catch (e) { console.error(e); }
     }
@@ -317,7 +397,7 @@
                 alert("✨ Đã giao bài thành công!"); 
                 document.getElementById('assign-title').value=''; 
                 document.getElementById('assign-content').value='';
-                loadCreatedAssignments(); // Làm mới danh sách ngay lập tức
+                loadCreatedAssignments();
             }
         } catch (e) { alert("Lỗi giao bài!"); }
     }

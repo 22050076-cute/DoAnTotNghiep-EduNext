@@ -1646,6 +1646,14 @@ def parent_wallet_view():
     # Trang Ví điện tử Edu-Wallet
     return render_template('PH/vi-dien-tu.html', active_page='vi-dien-tu')
 
+
+@app.route('/parent/schedule')
+def parent_schedule_page():
+    if session.get('role') != 'PH': # Hoặc điều kiện kiểm tra phân quyền PH của bạn
+        # Cho phép render template phụ huynh
+        pass
+    return render_template('PH/schedule.html')
+
 @app.route('/parent/messages')
 @app.route('/parent/chat')
 def parent_chat_view():
@@ -4607,6 +4615,37 @@ def ai_chat():
         return jsonify({"success": False, "message": "Thiếu thư viện mới: pip install google-genai"}), 500
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/ai/history', methods=['GET'])
+def get_ai_chat_history():
+    """API tải lịch sử trò chuyện của giáo viên."""
+    db = SessionLocal()
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
+
+        # Lấy lịch sử chat của user theo thứ tự mới nhất
+        history = db.execute(text("""
+            SELECT UserMessage, AIResponse, NgayTao 
+            FROM dbo.ChatHistory 
+            WHERE UserID = :uid 
+            ORDER BY NgayTao ASC
+        """), {"uid": user_id}).fetchall()
+
+        data = [{
+            "user_message": row.UserMessage,
+            "ai_response": row.AIResponse,
+            "time": row.NgayTao.strftime("%H:%M - %d/%m/%Y") if row.NgayTao else ""
+        } for row in history]
+
+        return jsonify({"success": True, "data": data})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        db.close()
+
 
 @app.route('/api/v2/resource/comment/<int:id>', methods=['POST'])
 def add_resource_comment_v2(id):
