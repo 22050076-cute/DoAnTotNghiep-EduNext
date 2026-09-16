@@ -81,19 +81,20 @@ pip install flask flask-cors sqlalchemy pyodbc werkzeug google-generativeai flas
 3. Khởi chạy ứng dụng
 
 python main.py
+
 Truy cập hệ thống trên trình duyệt tại địa chỉ: http://localhost:3000
 
-[cite: 3]
 
 ✍️ Tác giả và Giảng viên hướng dẫn
-Sinh viên thực hiện: Hạ Văn Minh[cite: 3]
 
-Mã số sinh viên: 22050076[cite: 3]
+Sinh viên thực hiện: Hạ Văn Minh
 
-Lớp: 25TH01[cite: 3]
+Mã số sinh viên: 22050076
 
-Giảng viên hướng dẫn: ThS. Dương Anh Tuấn[cite: 3]
+Lớp: 25TH01
 
-Đơn vị: Viện Trí tuệ Nhân tạo và Chuyển đổi số — Khoa Công nghệ Thông tin, Robot và Trí tuệ Nhân tạo, Trường Đại học Bình Dương[cite: 3].
+Giảng viên hướng dẫn: ThS. Dương Anh Tuấn
+
+Đơn vị: Viện Trí tuệ Nhân tạo và Chuyển đổi số — Khoa Công nghệ Thông tin, Robot và Trí tuệ Nhân tạo, Trường Đại học Bình Dương.
 
 © 2026 EduNext Platform - Đồ án tốt nghiệp cử nhân Công nghệ Thông tin.
