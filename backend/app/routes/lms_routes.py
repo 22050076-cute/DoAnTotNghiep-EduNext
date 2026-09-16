@@ -389,16 +389,15 @@ def submit_assignment_lms():
         if exists:
             db.execute(text("""
                 UPDATE BaiLam 
-                SET [BaiLam] = :c, 
-                    NoiDungBaiLam = :c, 
+                SET NoiDungBaiLam = :c, 
                     FileDinhKem = COALESCE(:fp, FileDinhKem), 
                     NgayNop = GETDATE() 
                 WHERE MaBaiTap = :aid AND MaHocSinh = :sid
             """), {"c": content, "fp": file_path, "aid": assignment_id, "sid": student_id})
         else:
             db.execute(text("""
-                INSERT INTO BaiLam (MaBaiTap, MaHocSinh, [BaiLam], NoiDungBaiLam, FileDinhKem, NgayNop) 
-                VALUES (:aid, :sid, :c, :c, :fp, GETDATE())
+                INSERT INTO BaiLam (MaBaiTap, MaHocSinh, NoiDungBaiLam, FileDinhKem, NgayNop) 
+                VALUES (:aid, :sid, :c, :fp, GETDATE())
             """), {"aid": assignment_id, "sid": student_id, "c": content, "fp": file_path})
         
         db.commit()

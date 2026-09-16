@@ -1545,6 +1545,74 @@ def get_teacher_class_summary():
         db.close()
 
 
+@app.route('/api/teacher/analyze-risk', methods=['POST'])
+def analyze_student_risk():
+    db = SessionLocal()
+    try:
+        data = request.json or {}
+        student_id = data.get('student_id')
+        class_id = data.get('class_id')
+        
+        # 1. Truy vấn các chỉ số định lượng từ SQL Server (Điểm số, chuyên cần, bài tập)
+        # Lấy học sinh cụ thể hoặc quét toàn lớp nếu không truyền student_id
+        student_filter = "AND nd.MaNguoiDung = :sid" if student_id else "AND nd.MaLop = :cid"
+        params = {"sid": student_id} if student_id else {"cid": class_id}
+        
+        query = text(f"""
+            SELECT 
+                nd.MaNguoiDung,
+                nd.HoTen,
+                (SELECT COUNT(*) FROM DiemDanh dd WHERE dd.MaHocSinh = nd.MaNguoiDung AND dd.TrangThai LIKE N'Vang%') AS SoBuoiVang,
+                (SELECT COUNT(*) FROM DiemDanh dd WHERE dd.MaHocSinh = nd.MaNguoiDung AND dd.TrangThai = N'VangKP') AS VangKhongPhep,
+                ISNULL((SELECT AVG(CAST(DiemSo AS FLOAT)) FROM BangDiem bd WHERE bd.MaHocSinh = nd.MaNguoiDung), 0.0) AS DTB,
+                ISNULL((SELECT SUM(DiemXP) FROM NhatKyReNep nk WHERE nk.MaHocSinh = nd.MaNguoiDung), 0) AS TongXP
+            FROM NguoiDung nd
+            WHERE nd.VaiTro = 'Student' {student_filter}
+        """)
+        
+        students = db.execute(query, params).fetchall()
+        risk_reports = []
+
+        for st in students:
+            # 2. Chạy Rule Engine kiểm tra ngưỡng sa sút
+            risk_reasons = []
+            is_risk = False
+            
+            dtb = float(st.DTB or 0.0)
+            vang_kp = int(st.VangKhongPhep or 0)
+            xp = int(st.TongXP or 0)
+
+            if dtb < 5.0 and dtb > 0:
+                is_risk = True
+                risk_reasons.append(f"Điểm trung bình thấp ({dtb:.1f} điểm)")
+            if vang_kp >= 3:
+                is_risk = True
+                risk_reasons.append(f"Vắng không phép nhiều ({vang_kp} buổi)")
+            if xp < -20:
+                is_risk = True
+                risk_reasons.append(f"Điểm nề nếp thi đua âm sâu ({xp} XP)")
+
+            if is_risk:
+                risk_reports.append({
+                    "student_id": st.MaNguoiDung,
+                    "ho_ten": st.HoTen,
+                    "dtb": dtb,
+                    "vang_kp": vang_kp,
+                    "xp": xp,
+                    "reasons": risk_reasons
+                })
+
+        return jsonify({
+            "success": True,
+            "has_risk": len(risk_reports) > 0,
+            "risk_students": risk_reports
+        })
+    except Exception as e:
+        print(f"[ERR ANALYZE RISK] {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        db.close()
+
 # --- HỌC SINH ---
 @app.route('/dashboard')
 def dashboard_page(): return render_template('HS/dashboard_student.html', active_page='dashboard')
