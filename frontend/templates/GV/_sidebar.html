@@ -1,0 +1,79 @@
+    <aside id="teacher-sidebar" aria-label="Điều hướng giáo viên" tabindex="-1" class="teacher-sidebar w-72 bg-white border-r border-slate-200 flex flex-col relative z-30 shadow-sm">
+        <button type="button" class="teacher-menu-close" aria-label="Đóng menu">✕</button>
+        <div class="p-8 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+                    <i class="ph-fill ph-circles-four text-2xl"></i>
+                </div>
+                <div>
+                    <span class="font-black text-2xl tracking-tighter text-brand-dark uppercase leading-none">Edu<span class="text-brand-primary">Next</span></span>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-6 space-y-8 overflow-y-auto py-8">
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hệ thống</p>
+                <div class="space-y-1">
+                    <a href="/dashboard_teacher" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm {{ 'active' if active_page == 'dashboard' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-house-line text-xl"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-brand-primary/60 uppercase tracking-widest">Nghiệp vụ Chủ nhiệm</p>
+                <div class="space-y-1">
+                    <a href="/teacher/attendance" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm {{ 'active' if active_page == 'attendance' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-calendar-check text-xl"></i> Điểm danh lớp
+                    </a>
+                    <a href="/teacher/leave-requests" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm relative group {{ 'active' if active_page == 'leave' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-envelope-open text-xl"></i> Duyệt đơn xin nghỉ
+                        <span id="badge-leave" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden">0</span>
+                    </a>
+                    <a href="/teacher/announcements" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm relative {{ 'active' if active_page == 'announcements' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-megaphone text-xl"></i> Thông báo lớp
+                    </a>
+                    <a href="/teacher/messages" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm relative {{ 'active' if active_page == 'messages' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-chats-teardrop text-xl"></i> Tin nhắn lớp
+                        <span id="badge-msg" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 text-white text-[8px] flex items-center justify-center rounded-full hidden">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học tập & Tài nguyên</p>
+                <div class="space-y-1">
+                    <!-- BỔ SUNG MỤC QUẢN LÝ BÀI TẬP VÀO ĐÂY -->
+                    <a href="/teacher/assignments" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm {{ 'active' if active_page == 'assignments' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-books text-xl"></i> Quản lý bài tập
+                    </a>
+                    <a href="/teacher/schedule" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm {{ 'active' if active_page == 'schedule' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-calendar text-xl"></i> Thời khóa biểu
+                    </a>
+                    <a href="/teacher/gradebook" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm {{ 'active' if active_page == 'gradebook' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-notebook text-xl"></i> Sổ điểm & Nề nếp
+                    </a>
+                    <a href="/teacher/resources" class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold transition-all text-sm {{ 'active' if active_page == 'resources' else 'text-slate-500 hover:text-brand-primary hover:bg-rose-50' }}">
+                        <i class="ph-bold ph-folder-notched-plus text-xl"></i> Kho học liệu
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-6 border-t border-slate-50 space-y-4">
+            <button onclick="window.location.href='/logout'" class="w-full flex items-center gap-3 p-3.5 text-slate-400 hover:text-brand-primary hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm">
+                <i class="ph-bold ph-sign-out text-xl"></i> Đăng xuất
+            </button>
+            <div class="p-4 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=teacher" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-800 truncate leading-tight">{{ session.get('ho_ten', 'Giáo viên') }}</p>
+                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mt-0.5">Giáo viên CN</p>
+                </div>
+            </div>
+        </div>
+    </aside>

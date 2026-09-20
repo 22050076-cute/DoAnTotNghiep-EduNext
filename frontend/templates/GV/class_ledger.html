@@ -19,17 +19,20 @@
             background: linear-gradient(135deg, #4F46E5, #E11D48);
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher-responsive.css') }}">
+    <script defer src="{{ url_for('static', filename='js/teacher-navigation.js') }}"></script>
 </head>
 
-<body class="flex h-screen">
+<body class="teacher-shell flex h-screen">
 
+    {% include 'GV/_sidebar.html' %}
     <!-- MAIN -->
     <main class="flex-1 p-8 overflow-auto">
 
         <h1 class="text-3xl font-bold mb-6">Nề nếp học sinh</h1>
 
-        <div class="bg-white rounded-xl shadow overflow-hidden">
-            <table class="w-full">
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+            <table class="w-full min-w-[600px]">
                 <thead class="bg-gray-100 text-sm">
                     <tr>
                         <th class="p-4 text-left">Học sinh</th>

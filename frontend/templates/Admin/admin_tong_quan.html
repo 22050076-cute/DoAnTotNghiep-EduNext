@@ -35,11 +35,14 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-responsive.css') }}">
+<script defer src="{{ url_for('static', filename='js/admin-navigation.js') }}"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+<body class="admin-shell bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
 
     <!-- 1. SIDEBAR (BÊN TRÁI) -->
-    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+    <aside id="admin-sidebar" aria-label="Điều hướng quản trị" class="admin-sidebar w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+<button type="button" class="admin-menu-close" aria-label="Đóng menu">✕</button>
         <div>
             <!-- Logo -->
             <div class="flex items-center gap-3 px-3 py-3 mb-6">
@@ -95,6 +98,7 @@
             </div>
             <p class="text-[11px] text-slate-500">Gemini 2.0 Flash Core: Active</p>
         </div>
+        <a href="/logout" class="admin-logout">↪ <span>Đăng xuất</span></a>
     </aside>
 
     <!-- MAIN CONTENT AREA -->

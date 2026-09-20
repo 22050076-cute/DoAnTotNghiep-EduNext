@@ -1,0 +1,87 @@
+
+.teacher-shell { height:100dvh; }
+.teacher-shell > main { min-width:0; min-height:0; }
+.teacher-sidebar { flex-shrink:0; height:100dvh; }
+.teacher-sidebar nav { min-height:0; overscroll-behavior:contain; }
+.teacher-menu-toggle,.teacher-menu-close,.teacher-menu-overlay { display:none; }
+.teacher-shell input,.teacher-shell textarea,.teacher-shell select { max-width:100%; }
+.teacher-shell main > header { flex-shrink:0; }
+.teacher-shell main > header > * { min-width:0; }
+.teacher-menu-toggle:focus-visible,.teacher-menu-close:focus-visible { outline:3px solid #e11d48; outline-offset:3px; }
+@media(max-width:1023px) {
+ .teacher-sidebar { display:flex!important; position:fixed!important; inset:0 auto 0 0; width:min(288px,85vw); z-index:150!important; transform:translateX(-100%); visibility:hidden; transition:transform .25s ease,visibility .25s; }
+ .teacher-sidebar.is-open { transform:translateX(0); visibility:visible; }
+ .teacher-menu-overlay:not([hidden]) { display:block; position:fixed; inset:0; z-index:140; background:rgb(15 23 42 / .45); backdrop-filter:blur(3px); }
+ .teacher-menu-toggle,.teacher-menu-close { display:flex; align-items:center; justify-content:center; width:44px; height:44px; flex-shrink:0; border-radius:12px; background:#f8fafc; color:#475569; font-size:24px; }
+ .teacher-menu-close { position:absolute; top:8px; right:8px; width:32px; height:32px; font-size:18px; }
+ .teacher-shell main > header { padding:12px 16px; gap:12px; height:auto; min-height:72px; }
+ .teacher-shell main > header h2 { font-size:11px; letter-spacing:.04em; overflow-wrap:anywhere; }
+ .teacher-shell main > header > div { gap:8px; }
+ .teacher-shell main > header > div:last-child { flex-shrink:0; }
+ .teacher-shell main > .p-10 { padding:20px; }
+ .teacher-shell main.p-10,.teacher-shell main.p-8 { padding:16px; overflow:auto; }
+}
+@media(max-width:639px) {
+ .teacher-shell main > .p-10 { padding:16px; }
+ .teacher-shell main > header { flex-wrap:wrap; gap:8px; }
+ .teacher-shell main > header h1 { font-size:20px; }
+ .teacher-shell main > header button[onclick="toggleAI()"] { padding:0 12px; font-size:11px; }
+ .teacher-shell .p-8 { padding:20px; }
+ .teacher-shell .gap-8 { gap:20px; }
+ .teacher-shell .space-y-10 > :not([hidden]) ~ :not([hidden]) { margin-top:24px; }
+ .teacher-shell .grid > * { min-width:0; }
+ .teacher-shell .col-span-2 { grid-column:span 1 / span 1; }
+ .teacher-shell #ai-panel > div { padding:16px; }
+ .teacher-shell #ai-panel h3 { font-size:18px; }
+ .teacher-shell #ai-panel input { min-width:0; }
+ .teacher-shell [id$="modal"] > div { max-width:100%; max-height:90dvh; overflow-y:auto; }
+ .teacher-shell #modal > div { width:100%; }
+ .teacher-messages { flex-direction:column; min-height:0; }
+ .teacher-contacts { width:100%; height:180px; flex-shrink:0; border-bottom:1px solid #e2e8f0; }
+ .teacher-contacts > .p-6 { padding:12px; }
+ .teacher-conversation { min-height:0; min-width:0; }
+ .teacher-conversation #chat-header { padding:8px 12px; flex-shrink:0; }
+ .teacher-conversation #message-container { padding:12px; }
+ .teacher-conversation > .p-6 { padding:12px; }
+ .teacher-conversation input { min-width:0; padding:12px; }
+ .teacher-conversation button { flex-shrink:0; }
+ .teacher-conversation .gap-4 { gap:8px; }
+}
+@media(prefers-reduced-motion:reduce) { .teacher-sidebar { transition:none; } }
+
+.teacher-sidebar .nav-item.active { background:#e11d48; color:white; box-shadow:0 6px 14px rgb(225 29 72 / .18); }
+.teacher-shell .overflow-x-auto { max-width:100%; }
+.teacher-shell main > .flex-1 { min-height:0; }
+@media(max-width:639px) {
+ .teacher-shell main > header > .flex:first-of-type { flex:1; }
+ .teacher-shell #ai-panel .flex.gap-2 { flex-wrap:wrap; }
+ .teacher-shell main table { white-space:normal; }
+}
+
+/* Mobile contact picker: keep the chosen conversation visible when collapsed. */
+.contact-picker-toggle { display:none; }
+.contact-picker-panel { display:flex; flex-direction:column; flex:1; min-height:0; }
+@media(max-width:1023px) {
+ .teacher-messages { flex-direction:column; min-height:0; }
+ .teacher-contacts { width:100%; height:auto; flex-shrink:0; min-height:0; border-right:0; border-bottom:1px solid #e2e8f0; }
+ .contact-picker-toggle { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; background:white; color:#334155; font-size:13px; font-weight:700; min-height:56px; }
+ .contact-picker-toggle:focus-visible { outline:2px solid #e11d48; outline-offset:-2px; }
+ .contact-picker-toggle i { flex-shrink:0; transform:rotate(180deg); }
+ .contacts-collapsed .contact-picker-toggle i { transform:rotate(0); }
+ .teacher-contacts .contact-picker-panel { flex:none; height:min(320px,45dvh); }
+ .teacher-contacts.contacts-collapsed .contact-picker-panel { display:none; }
+ .contact-picker-panel > .p-6 { padding:12px; flex-shrink:0; }
+ .teacher-conversation { min-height:0; min-width:0; }
+}
+
+/* Override utility sizes so the collapsed contact box takes no spare space. */
+@media(max-width:1023px) {
+ .teacher-shell .teacher-messages { display:flex; flex-direction:column; min-height:0; }
+ .teacher-shell .teacher-contacts { width:100%; height:auto; flex:0 0 auto; min-height:0; max-height:none; }
+ .teacher-shell .teacher-contacts.contacts-collapsed { height:56px; overflow:hidden; }
+ .teacher-shell .teacher-contacts.contacts-collapsed #contact-picker-panel { display:none; height:0; }
+ .teacher-shell .teacher-contacts .contact-picker-toggle { height:56px; min-height:56px; flex:0 0 56px; }
+ .teacher-shell .teacher-conversation { display:flex; flex:1 1 0%; min-height:0; width:100%; }
+ .teacher-shell .teacher-conversation #message-container { min-height:0; flex:1 1 0%; }
+ .teacher-shell .teacher-conversation > :last-child { flex-shrink:0; }
+}

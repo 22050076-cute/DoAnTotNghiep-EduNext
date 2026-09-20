@@ -11,7 +11,7 @@
     <script>
         tailwind.config = {
             theme: {
-                extend: { 
+                extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
                         edunext: {
@@ -34,11 +34,14 @@
         .admin-card:hover { border-color: #ee0033; transform: translateY(-2px); }
     </style>
     {% block extra_head %}{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-responsive.css') }}">
+<script defer src="{{ url_for('static', filename='js/admin-navigation.js') }}"></script>
 </head>
-<body class="bg-edunext-bg font-sans text-slate-800 flex h-screen overflow-hidden">
+<body class="admin-shell bg-edunext-bg font-sans text-slate-800 flex h-screen overflow-hidden">
 
     <!-- SIDEBAR -->
-    <aside class="w-72 bg-edunext-dark text-slate-400 flex flex-col hidden lg:flex z-20 relative">
+    <aside id="admin-sidebar" aria-label="Điều hướng quản trị" class="admin-sidebar w-72 bg-edunext-dark text-slate-400 flex flex-col hidden lg:flex z-20 relative">
+<button type="button" class="admin-menu-close" aria-label="Đóng menu">✕</button>
         <div class="p-8 flex items-center gap-3">
             <div class="w-10 h-10 bg-edunext-primary rounded-xl flex items-center justify-center text-white">
                 <i class="ph-fill ph-shield-checkered text-2xl"></i>
@@ -76,19 +79,20 @@
                     <p class="font-bold text-sm text-white truncate">Super Admin</p>
                     <p class="text-[10px] text-emerald-400 font-bold uppercase">Hệ thống Online</p>
                 </div>
-                <i class="ph-bold ph-power text-slate-500 hover:text-red-500 cursor-pointer"></i>
+
             </div>
         </div>
+        <a href="/logout" class="admin-logout">↪ <span>Đăng xuất</span></a>
     </aside>
 
     <!-- MAIN CONTENT AREA -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
             <div class="flex items-center gap-4">
-                <button class="lg:hidden text-2xl"><i class="ph-bold ph-list"></i></button>
+
                 <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">{% block header_title %}Hệ thống Quản trị Toàn trường{% endblock %}</h2>
             </div>
-            
+
             <div class="flex items-center gap-6">
                 <div class="hidden md:flex flex-col text-right">
                     <span class="text-xs font-bold text-slate-400">Trạng thái Server</span>

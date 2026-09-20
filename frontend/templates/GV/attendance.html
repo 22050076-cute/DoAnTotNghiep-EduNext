@@ -6,6 +6,15 @@
 
 {% block header_breadcrumb %}Nghiệp vụ / <span class="text-brand-dark">Điểm danh lớp</span>{% endblock %}
 
+{% block extra_css %}
+<style>
+    .attendance-status[data-status="HienDien"], .attendance-status option[value="HienDien"] { color: #15803d; }
+    .attendance-status[data-status="VangCP"], .attendance-status option[value="VangCP"] { color: #c2410c; }
+    .attendance-status[data-status="VangKP"], .attendance-status option[value="VangKP"] { color: #dc2626; }
+    .attendance-status[data-status="Muon"], .attendance-status option[value="Muon"] { color: #2563eb; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div id="section-attendance" class="space-y-10 animate-in fade-in duration-500">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -91,11 +100,11 @@
                 <td class="px-8 py-5 font-bold text-slate-700">${st.HoTen}</td>
                 <td class="px-8 py-5 font-black text-xs text-slate-400 uppercase">${st.MSSV || 'N/A'}</td>
                 <td class="px-8 py-5 text-center">
-                    <select onchange="updateStatus(${st.MaNguoiDung}, this.value)" class="px-4 py-2 rounded-xl text-xs font-black uppercase border-none bg-slate-100 focus:ring-2 focus:ring-brand-primary cursor-pointer">
-                        <option value="HienDien" ${st.TrangThai === 'HienDien' ? 'selected' : ''} class="text-emerald-600">Hiện diện</option>
-                        <option value="VangCP" ${st.TrangThai === 'VangCP' ? 'selected' : ''} class="text-amber-600">Vắng (P)</option>
-                        <option value="VangKP" ${st.TrangThai === 'VangKP' ? 'selected' : ''} class="text-rose-600">Vắng (K)</option>
-                        <option value="Muon" ${st.TrangThai === 'Muon' ? 'selected' : ''} class="text-blue-600">Đi muộn</option>
+                    <select data-status="${st.TrangThai || 'HienDien'}" onchange="this.dataset.status = this.value; updateStatus(${st.MaNguoiDung}, this.value)" class="attendance-status px-4 py-2 rounded-xl text-xs font-black uppercase border-none bg-slate-100 focus:ring-2 focus:ring-brand-primary cursor-pointer">
+                        <option value="HienDien" ${st.TrangThai === 'HienDien' ? 'selected' : ''}>Hiện diện</option>
+                        <option value="VangCP" ${st.TrangThai === 'VangCP' ? 'selected' : ''}>Vắng (P)</option>
+                        <option value="VangKP" ${st.TrangThai === 'VangKP' ? 'selected' : ''}>Vắng (K)</option>
+                        <option value="Muon" ${st.TrangThai === 'Muon' ? 'selected' : ''}>Đi muộn</option>
                     </select>
                 </td>
                 <td class="px-8 py-5 text-center">
@@ -135,6 +144,7 @@
             });
             const result = await res.json();
             if (result.success) {
+                await loadAttendanceData();
                 alert("✨ Đã lưu điểm danh thành công!");
             } else {
                 alert("Lỗi: " + result.message);
@@ -147,11 +157,7 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('attendance-date-picker').value = today;
         loadAttendanceData();
-        
-        // Polling AI Cam data (20s)
-        setInterval(() => {
-            if (!document.hidden) loadAttendanceData();
-        }, 20000);
+
     });
 </script>
 {% endblock %}

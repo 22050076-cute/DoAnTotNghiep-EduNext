@@ -1,0 +1,61 @@
+
+.student-shell { height:100dvh; }
+.student-shell > .student-main { min-width:0; min-height:0; height:100dvh; }
+.student-shell #sidebar { flex-shrink:0; }
+.student-shell .student-content { min-width:0; min-height:0; }
+.student-shell .grid > * { min-width:0; }
+.student-shell input,.student-shell textarea,.student-shell select { min-width:0; max-width:100%; }
+.student-shell .overflow-x-auto { max-width:100%; }
+.student-shell #taskList a,.student-shell #taskList p,.student-work-detail a { overflow-wrap:anywhere; max-width:100%; }
+.student-shell #taskList > div > .flex-1 { width:100%; }
+.student-shell #taskList a.inline-flex { display:inline-block; }
+.student-shell .student-main > header { flex-shrink:0; }
+.student-contact-toggle { display:none; }
+.student-contact-panel { display:flex; flex-direction:column; flex:1; min-height:0; }
+.student-contacts { flex-shrink:0; }
+.student-conversation { min-height:0; }
+.student-conversation > :first-child,.student-conversation > :last-child { flex-shrink:0; }
+.student-shell .msg-bubble { overflow-wrap:anywhere; }
+@media(max-width:1023px) {
+ .student-shell .student-messages { flex-direction:column; height:calc(100dvh - 160px); min-height:360px; }
+ .student-shell .student-contacts { width:100%; height:auto; flex:0 0 auto; min-height:0; border-right:0; border-bottom:1px solid #e2e8f0; }
+ .student-shell .student-contact-toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 16px; width:100%; height:56px; flex-shrink:0; font-weight:700; font-size:13px; background:white; }
+ .student-contact-toggle i { transform:rotate(180deg); }
+ .contacts-collapsed .student-contact-toggle i { transform:rotate(0); }
+ .student-contact-toggle:focus-visible { outline:2px solid #ee0033; outline-offset:-2px; }
+ .student-shell .student-contact-panel { flex:none; height:min(300px,40dvh); }
+ .student-shell .contacts-collapsed .student-contact-panel { display:none; }
+ .student-shell .contacts-collapsed { height:56px; overflow:hidden; }
+ .student-contact-panel > :first-child { padding:12px; flex-shrink:0; }
+ .student-contact-panel h3 { display:none; }
+ .student-shell .student-conversation { flex:1 1 0%; min-height:0; }
+ .student-shell #message-container { min-height:0; }
+}
+@media(max-width:639px) {
+ .student-shell .student-content { padding:16px; }
+ .student-shell .student-main > header { padding:12px; gap:8px; }
+ .student-shell .student-main > header > div:first-child { flex:1; min-width:0; gap:8px; }
+ .student-shell .student-main > header > div:last-child { flex-shrink:0; gap:8px; }
+ .student-shell .student-main > header button,.student-shell .student-main > header a { flex-shrink:0; }
+ .student-shell .student-main > header h2 { font-size:16px; line-height:1.35; overflow-wrap:anywhere; }
+ .student-shell #notif-dropdown-hs { position:fixed; top:76px; left:12px; right:12px; width:auto; }
+ .student-shell .student-content .p-8,.student-shell .student-content .p-10 { padding:20px; }
+ .student-shell .student-content .p-6 { padding:16px; }
+ .student-shell .student-content .gap-8 { gap:20px; }
+ .student-shell #class-tabs { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); width:100%; gap:2px; }
+ .student-shell #class-tabs button { padding:10px 2px; font-size:11px; }
+ .student-shell #taskList > div > .flex { max-width:100%; }
+ .student-shell .fixed.inset-0 > div { max-width:100%; max-height:90dvh; overflow-y:auto; }
+ .student-shell .student-conversation #chat-header { padding:10px 12px; height:auto; min-height:64px; }
+ .student-shell #chat-header > div { min-width:0; gap:10px; }
+ .student-shell #chat-header #chat-avatar { flex-shrink:0; }
+ .student-shell #chat-name { overflow-wrap:anywhere; }
+ .student-shell .student-conversation #message-container { padding:12px; }
+ .student-shell .student-conversation > :last-child { padding:10px; }
+ .student-shell .student-conversation #msg-input { padding:8px; width:0; }
+ .student-shell .student-conversation button { flex-shrink:0; }
+ .student-shell .student-conversation .gap-4 { gap:8px; }
+ .student-shell .student-messages .msg-bubble { max-width:90%; }
+ .student-work-detail main { padding:16px; }
+ .student-work-detail header { flex-wrap:wrap; padding:12px; gap:12px; }
+}

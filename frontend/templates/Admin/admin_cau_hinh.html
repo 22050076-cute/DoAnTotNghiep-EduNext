@@ -24,11 +24,14 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
     </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-responsive.css') }}">
+<script defer src="{{ url_for('static', filename='js/admin-navigation.js') }}"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+<body class="admin-shell bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
 
     <!-- 1. SIDEBAR -->
-    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+    <aside id="admin-sidebar" aria-label="Điều hướng quản trị" class="admin-sidebar w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+<button type="button" class="admin-menu-close" aria-label="Đóng menu">✕</button>
         <div>
             <div class="flex items-center gap-3 px-3 py-3 mb-6">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -54,6 +57,7 @@
                 </a>
             </nav>
         </div>
+        <a href="/logout" class="admin-logout">↪ <span>Đăng xuất</span></a>
     </aside>
 
     <!-- 2. MAIN CONTAINER -->

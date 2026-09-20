@@ -48,7 +48,7 @@
     <!-- BỘ CHỌN HỌC KỲ & TUẦN HỌC -->
     <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
         <div class="flex flex-wrap items-center gap-4">
-            <div class="flex-1 min-w-[250px]">
+            <div class="flex-1 min-w-0 sm:min-w-[250px]">
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Học kỳ / Năm học</label>
                 <select id="select-semester" onchange="onSemesterChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-primary text-sm cursor-pointer">
                     <option value="1" selected>Học kỳ 1 - Năm học 2026 - 2027</option>
@@ -56,7 +56,7 @@
                 </select>
             </div>
             
-            <div class="flex-1 min-w-[300px]">
+            <div class="flex-1 min-w-0 sm:min-w-[300px]">
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tuần xếp lịch (Chọn tuần để cấu hình riêng)</label>
                 <select id="select-week" onchange="onWeekChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-primary text-sm cursor-pointer">
                     <!-- Tự động sinh danh sách 18 tuần -->

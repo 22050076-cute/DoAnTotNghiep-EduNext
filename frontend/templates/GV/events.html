@@ -12,34 +12,13 @@
         .ai-gradient { background: linear-gradient(135deg, #4F46E5 0%, #E11D48 100%); }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher-responsive.css') }}">
+    <script defer src="{{ url_for('static', filename='js/teacher-navigation.js') }}"></script>
 </head>
-<body class="flex min-h-screen">
+<body class="teacher-shell flex min-h-screen">
 
     <!-- Thanh Sidebar (Tương tự dashboard) -->
-    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex sticky top-0 h-screen">
-        <div class="p-8 border-b border-slate-50">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
-                    <i class="ph-fill ph-circles-four text-2xl"></i>
-                </div>
-                <div>
-                    <span class="font-black text-2xl tracking-tighter uppercase leading-none">Edu<span class="text-rose-500">Next</span></span>
-                    <p class="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
-                </div>
-            </div>
-        </div>
-        <nav class="flex-1 px-6 py-8 space-y-2">
-            <a href="/dashboard_teacher" class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-all text-sm">
-                <i class="ph-bold ph-house-line text-xl"></i> Dashboard
-            </a>
-            <a href="/teacher/events" class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-100 font-bold text-sm transition-all">
-                <i class="ph-fill ph-calendar-star text-xl"></i> Quản lý sự kiện
-            </a>
-            <a href="/teacher/announcements" class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-all text-sm">
-                <i class="ph-bold ph-megaphone text-xl"></i> Thông báo lớp
-            </a>
-        </nav>
-    </aside>
+    {% include 'GV/_sidebar.html' %}
 
     <main class="flex-1 p-10">
         <header class="flex justify-between items-center mb-10">

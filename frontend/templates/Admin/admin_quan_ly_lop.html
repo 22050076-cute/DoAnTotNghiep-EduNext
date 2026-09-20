@@ -25,11 +25,14 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-responsive.css') }}">
+<script defer src="{{ url_for('static', filename='js/admin-navigation.js') }}"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
+<body class="admin-shell bg-slate-50 text-slate-800 antialiased flex h-screen overflow-hidden">
 
     <!-- 1. SIDEBAR -->
-    <aside class="w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+    <aside id="admin-sidebar" aria-label="Điều hướng quản trị" class="admin-sidebar w-64 bg-darkbg text-slate-300 flex flex-col justify-between p-4 flex-shrink-0">
+<button type="button" class="admin-menu-close" aria-label="Đóng menu">✕</button>
         <div>
             <div class="flex items-center gap-3 px-3 py-3 mb-6">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -56,6 +59,7 @@
             <p class="text-xs text-slate-400">EduNext Structure</p>
             <p class="text-[11px] text-emerald-400 font-medium mt-0.5"><i class="fa-solid fa-circle text-[7px] mr-1"></i>Hệ thống 4 Khối Chuẩn</p>
         </div>
+        <a href="/logout" class="admin-logout">↪ <span>Đăng xuất</span></a>
     </aside>
 
     <!-- 2. MAIN CONTAINER -->
@@ -74,7 +78,7 @@
             
             <!-- THANH TỔNG HỢP & BỘ LỌC KHỐI -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button onclick="filterGrade('all')" id="tab-grade-all" class="px-4 py-2 rounded-xl font-bold text-xs bg-primary-600 text-white transition-all shadow-sm">
                         Tất cả (<span id="count-all">0</span>)
                     </button>

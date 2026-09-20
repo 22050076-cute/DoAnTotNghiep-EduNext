@@ -43,103 +43,14 @@
             font-style: normal !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher-responsive.css', v='contacts-2') }}">
+    <script defer src="{{ url_for('static', filename='js/teacher-navigation.js') }}"></script>
 </head>
 
-<body class="flex h-screen overflow-hidden text-slate-900 bg-brand-surface">
+<body class="teacher-shell flex h-screen overflow-hidden text-slate-900 bg-brand-surface">
 
     <!-- SIDEBAR -->
-    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col hidden lg:flex relative z-30 shadow-sm">
-        <div class="p-8 border-b border-slate-50">
-            <div class="flex items-center gap-3">
-                <div
-                    class="w-11 h-11 ai-gradient rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
-                    <i class="ph-fill ph-circles-four text-2xl"></i>
-                </div>
-                <div>
-                    <span class="font-black text-2xl tracking-tighter text-brand-dark uppercase leading-none">Edu<span
-                            class="text-brand-primary">Next</span></span>
-                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1">Teacher Pro</p>
-                </div>
-            </div>
-        </div>
-
-        <nav class="flex-1 px-6 space-y-8 overflow-y-auto py-8">
-            <div>
-                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hệ thống</p>
-                <div class="space-y-1">
-                    <a href="/dashboard_teacher" id="nav-dashboard"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
-                        <i class="ph-bold ph-house-line text-xl"></i> Dashboard
-                    </a>
-                </div>
-            </div>
-
-            <div>
-                <p class="px-4 mb-4 text-[10px] font-black text-brand-primary/60 uppercase tracking-widest">Nghiệp vụ
-                    Chủ nhiệm</p>
-                <div class="space-y-1">
-                    <a href="/teacher/attendance" id="nav-attendance"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
-                        <i class="ph-bold ph-calendar-check text-xl"></i> Điểm danh lớp
-                    </a>
-                    <a href="/teacher/leave-requests" id="nav-leave"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative group">
-                        <i class="ph-bold ph-envelope-open text-xl"></i> Duyệt đơn xin nghỉ
-                        <span id="badge-leave"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full hidden">0</span>
-                    </a>
-                    <a href="/teacher/announcements" id="nav-announcements"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm relative">
-                        <i class="ph-bold ph-megaphone text-xl"></i> Thông báo lớp
-                        <span id="badge-announcements" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-400 text-white text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
-                    </a>
-                    <a href="/teacher/messages" id="nav-messages"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-brand-primary text-white shadow-lg shadow-rose-200 font-bold text-sm relative transition-all">
-                        <i class="ph-fill ph-chat-circle-dots text-xl"></i> Tin nhắn
-                        <span id="badge-messages" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-white text-brand-primary text-[8px] flex items-center justify-center rounded-full hidden font-black shadow-sm">0</span>
-                    </a>
-                </div>
-            </div>
-
-            <div>
-                <p class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Học tập & Tài
-                    nguyên</p>
-                <div class="space-y-1">
-                    <a href="/teacher/schedule" id="nav-schedule"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
-                        <i class="ph-bold ph-calendar-check text-xl"></i> Thời khóa biểu
-                    </a>
-                    <a href="/teacher/gradebook" id="nav-gradebook"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
-                        <i class="ph-bold ph-notebook text-xl"></i> Sổ điểm & Nề nếp
-                    </a>
-                    <a href="/teacher/resources" id="nav-resources"
-                        class="nav-item flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-semibold text-slate-500 hover:text-brand-primary hover:bg-rose-50 transition-all text-sm">
-                        <i class="ph-bold ph-folder-notched-plus text-xl"></i> Kho học liệu
-                    </a>
-                </div>
-            </div>
-        </nav>
-
-        <div class="p-6 border-t border-slate-50 space-y-4">
-            <button onclick="window.location.href='/logout'"
-                class="w-full flex items-center gap-3 p-3.5 text-slate-400 hover:text-brand-primary hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm">
-                <i class="ph-bold ph-sign-out text-xl"></i> Đăng xuất
-            </button>
-
-            <!-- PROFILE CARD -->
-            <div class="p-4 rounded-[1.8rem] bg-slate-50 border border-slate-100 flex items-center gap-3">
-                <div class="relative">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=teacher" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
-                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-xs font-black text-slate-800 truncate leading-tight">{{ session.get('ho_ten', 'Giáo viên') }}</p>
-                    <p class="text-[9px] font-black text-brand-primary uppercase tracking-widest mt-0.5">Giáo viên CN</p>
-                </div>
-            </div>
-        </div>
-    </aside>
+    {% include 'GV/_sidebar.html' %}
 
     <main class="flex-1 flex flex-col min-w-0 bg-brand-surface relative overflow-hidden">
         <header
@@ -148,9 +59,14 @@
                     id="chat-header-name" class="text-brand-dark">Tin nhắn</span></h2>
         </header>
 
-        <div class="flex-1 flex overflow-hidden">
+        <div class="teacher-messages flex-1 flex overflow-hidden">
             <!-- CONTACT LIST -->
-            <div class="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
+            <div class="teacher-contacts w-80 bg-white border-r border-slate-200 flex flex-col h-full">
+                <button id="contact-picker-toggle" type="button" class="contact-picker-toggle" aria-expanded="true" aria-controls="contact-picker-panel" onclick="toggleContactPicker()">
+                    <span class="min-w-0 text-left"><span class="block text-[10px] text-slate-400 uppercase">Liên hệ / Đổi cuộc trò chuyện</span><span id="contact-picker-label" class="block truncate">Chọn liên hệ</span></span>
+                    <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+                </button>
+                <div id="contact-picker-panel" class="contact-picker-panel">
                 <div class="p-6 border-b border-slate-50">
                     <div class="relative">
                         <i
@@ -162,10 +78,11 @@
                 <div id="contact-list" class="flex-1 overflow-y-auto custom-scrollbar">
                     <div class="p-8 text-center text-slate-400 text-xs italic">Đang tải danh sách...</div>
                 </div>
+                </div>
             </div>
 
             <!-- CHAT CONTENT -->
-            <div class="flex-1 flex flex-col bg-slate-50/50">
+            <div class="teacher-conversation flex-1 flex flex-col bg-slate-50/50">
                 <div id="chat-header"
                     class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -293,7 +210,23 @@
 
         let currentIsGroup = false;
 
+        function setContactPickerOpen(open) {
+            const panel = document.querySelector('.teacher-contacts');
+            panel.classList.toggle('contacts-collapsed', !open);
+            document.getElementById('contact-picker-toggle').setAttribute('aria-expanded', String(open));
+        }
+
+        function toggleContactPicker() {
+            const button = document.getElementById('contact-picker-toggle');
+            setContactPickerOpen(button.getAttribute('aria-expanded') !== 'true');
+        }
+
         async function selectUser(id, name, subLabel, isGroup = false) {
+            document.getElementById('contact-picker-label').textContent = name;
+            setContactPickerOpen(false);
+            if (window.matchMedia('(max-width: 1023px)').matches) {
+                document.getElementById('contact-picker-toggle').focus();
+            }
             currentReceiverId = id;
             currentIsGroup = isGroup;
             document.getElementById('chat-name').innerHTML = `${name} <span class="text-[10px] font-bold text-slate-400 ml-2">(${subLabel})</span>`;

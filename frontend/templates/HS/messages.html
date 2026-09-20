@@ -14,9 +14,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex h-[calc(100vh-12rem)] bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+<div class="student-messages flex h-[calc(100vh-12rem)] bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
     <!-- CONTACT LIST -->
-    <div class="w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
+    <div class="student-contacts w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
+        <button type="button" id="student-contact-toggle" class="student-contact-toggle" aria-expanded="true" aria-controls="student-contact-panel" onclick="toggleStudentContacts()">
+            <span class="min-w-0 text-left"><small class="block text-slate-400">Liên hệ / Đổi cuộc trò chuyện</small><span id="student-contact-label" class="block truncate">Chọn liên hệ</span></span>
+            <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+        </button>
+        <div id="student-contact-panel" class="student-contact-panel">
         <div class="p-6 border-b border-slate-100 bg-white">
             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Danh sách trò chuyện</h3>
             <div class="relative">
@@ -27,10 +32,11 @@
         <div id="contact-list" class="flex-1 overflow-y-auto p-3 space-y-2">
             <div class="p-8 text-center text-slate-400 text-xs italic">Đang tải...</div>
         </div>
+        </div>
     </div>
 
     <!-- CHAT AREA -->
-    <div class="flex-1 flex flex-col bg-white">
+    <div class="student-conversation flex-1 flex flex-col min-w-0 bg-white">
         <div id="chat-header" class="h-20 px-8 border-b border-slate-100 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div id="chat-avatar" class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
@@ -96,7 +102,16 @@
         } catch (err) { console.error(err); }
     }
 
+    function setStudentContactsOpen(open) {
+        document.querySelector('.student-contacts').classList.toggle('contacts-collapsed', !open);
+        document.getElementById('student-contact-toggle').setAttribute('aria-expanded', String(open));
+    }
+    function toggleStudentContacts() {
+        setStudentContactsOpen(document.getElementById('student-contact-toggle').getAttribute('aria-expanded') !== 'true');
+    }
     async function selectGroup(id, name, isGroup = true) {
+        document.getElementById('student-contact-label').textContent = name;
+        setStudentContactsOpen(false);
         currentReceiverId = id;
         document.getElementById('chat-name').innerText = name;
         document.getElementById('chat-status').innerText = isGroup ? "Trực tuyến • Nhóm thảo luận" : "Trực tuyến • Trò chuyện cá nhân";

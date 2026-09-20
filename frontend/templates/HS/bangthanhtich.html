@@ -23,7 +23,7 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
-    
+
     <!-- BANNER HERO & BỘ CHỌN HỌC KỲ -->
     <div class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="flex items-center gap-4">
@@ -35,7 +35,7 @@
                 <p id="student-info-subtitle" class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Học sinh: Đang nạp dữ liệu... • Niên khóa 2025 - 2026</p>
             </div>
         </div>
-        
+
         <div class="flex items-center gap-3">
             <select id="select-semester" onchange="loadStudentGrades()" class="px-4 py-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-edunext-primary transition-all cursor-pointer">
                 <option value="1" selected>Học kỳ I</option>
@@ -97,7 +97,7 @@
                     <tr>
                         <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-12">STT</th>
                         <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Môn Học</th>
-                        
+
                         <th class="px-4 py-3 text-[10px] font-black text-rose-600 bg-rose-50/40 uppercase tracking-widest text-center border-x border-rose-100/50">
                             Kiểm Tra Miệng (Hệ 1)
                             <div class="flex gap-2 justify-center mt-1 text-[9px] font-bold text-slate-400">
@@ -157,21 +157,6 @@
 {% block extra_js %}
 <script>
     let radarChartInstance = null;
-
-    // 1. Tự động hiển thị ngày tháng thực tế chính xác trên giao diện
-    function setRealTimeDate() {
-        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-        const now = new Date();
-        const dayName = days[now.getDay()];
-        const dateStr = `${dayName}, ${now.getDate()} Tháng ${now.getMonth() + 1}, ${now.getFullYear()}`;
-        
-        // Quét cập nhật các vùng header hiển thị ngày tháng tĩnh
-        document.querySelectorAll('header p, header span, .header-date').forEach(el => {
-            if (el.innerText.includes('Thứ') && el.innerText.includes('Tháng')) {
-                el.innerText = dateStr;
-            }
-        });
-    }
 
     function initRadarSkillChart(scores = [0, 0, 0, 0]) {
         const ctx = document.getElementById('radarSkillChart').getContext('2d');
@@ -352,7 +337,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        setRealTimeDate();
+
         initRadarSkillChart();
         loadStudentGrades();
     });

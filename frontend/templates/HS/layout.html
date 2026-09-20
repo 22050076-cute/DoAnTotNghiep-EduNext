@@ -72,9 +72,11 @@
 
     <!-- CSS riêng từng page -->
     {% block extra_css %}{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/student-responsive.css') }}">
+<script defer src="{{ url_for('static', filename='js/header-date.js') }}"></script>
 </head>
 
-<body class="bg-edunext-bg font-sans text-slate-800 flex h-screen overflow-hidden">
+<body class="student-shell bg-edunext-bg font-sans text-slate-800 flex h-screen overflow-hidden">
 
     <!-- SIDEBAR (Desktop & Mobile) -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col z-50 transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out">
@@ -181,7 +183,7 @@
     </aside>
 
     <!-- MAIN -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+    <main class="student-main flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
         <!-- HEADER -->
         <header class="bg-white border-b px-4 md:px-8 py-4 flex justify-between items-center relative z-30">
@@ -194,9 +196,7 @@
                     <h2 class="text-xl font-bold">
                         {% block header_title %}{% endblock %}
                     </h2>
-                    <p class="text-xs text-slate-500">
-                        Thứ Sáu, 17 Tháng 4, 2026
-                    </p>
+                    <time data-header-date class="text-xs text-slate-500"></time>
                 </div>
             </div>
             <div class="flex items-center gap-4">
@@ -254,7 +254,7 @@
         </header>
 
         <!-- CONTENT -->
-        <div class="flex-1 overflow-y-auto p-8 relative">
+        <div class="student-content flex-1 min-w-0 overflow-y-auto p-8 relative">
             {% block content %}{% endblock %}
 
             <!-- BONG BÓNG CHAT AI DÀNH CHO HỌC SINH -->
