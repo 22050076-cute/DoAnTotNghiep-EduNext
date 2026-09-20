@@ -2,13 +2,12 @@ import pyodbc
 import os
 
 USERNAME = 'sa'
-PASSWORD = '123'
-SERVER = '127.0.0.1'
-PORT = '1433' 
+PASSWORD = '12345678'
+SERVER = 'localhost'
 DATABASE = 'LopHocSo'
 DRIVER = 'ODBC Driver 17 for SQL Server'
 
-connection_string = f"DRIVER={{{DRIVER}}};SERVER={SERVER},{PORT};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Encrypt=yes;TrustServerCertificate=yes;"
+connection_string = f"DRIVER={{{DRIVER}}};SERVER={SERVER};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Encrypt=yes;TrustServerCertificate=yes;"
 
 def run_sql_script(script_path):
     try:

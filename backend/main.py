@@ -1547,69 +1547,19 @@ def get_teacher_class_summary():
 
 @app.route('/api/teacher/analyze-risk', methods=['POST'])
 def analyze_student_risk():
+    from app.services.risk_service import scan_class
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập lại.'}), 401
     db = SessionLocal()
     try:
-        data = request.json or {}
-        student_id = data.get('student_id')
-        class_id = data.get('class_id')
-        
-        # 1. Truy vấn các chỉ số định lượng từ SQL Server (Điểm số, chuyên cần, bài tập)
-        # Lấy học sinh cụ thể hoặc quét toàn lớp nếu không truyền student_id
-        student_filter = "AND nd.MaNguoiDung = :sid" if student_id else "AND nd.MaLop = :cid"
-        params = {"sid": student_id} if student_id else {"cid": class_id}
-        
-        query = text(f"""
-            SELECT 
-                nd.MaNguoiDung,
-                nd.HoTen,
-                (SELECT COUNT(*) FROM DiemDanh dd WHERE dd.MaHocSinh = nd.MaNguoiDung AND dd.TrangThai LIKE N'Vang%') AS SoBuoiVang,
-                (SELECT COUNT(*) FROM DiemDanh dd WHERE dd.MaHocSinh = nd.MaNguoiDung AND dd.TrangThai = N'VangKP') AS VangKhongPhep,
-                ISNULL((SELECT AVG(CAST(DiemSo AS FLOAT)) FROM BangDiem bd WHERE bd.MaHocSinh = nd.MaNguoiDung), 0.0) AS DTB,
-                ISNULL((SELECT SUM(DiemXP) FROM NhatKyReNep nk WHERE nk.MaHocSinh = nd.MaNguoiDung), 0) AS TongXP
-            FROM NguoiDung nd
-            WHERE nd.VaiTro = 'Student' {student_filter}
-        """)
-        
-        students = db.execute(query, params).fetchall()
-        risk_reports = []
-
-        for st in students:
-            # 2. Chạy Rule Engine kiểm tra ngưỡng sa sút
-            risk_reasons = []
-            is_risk = False
-            
-            dtb = float(st.DTB or 0.0)
-            vang_kp = int(st.VangKhongPhep or 0)
-            xp = int(st.TongXP or 0)
-
-            if dtb < 5.0 and dtb > 0:
-                is_risk = True
-                risk_reasons.append(f"Điểm trung bình thấp ({dtb:.1f} điểm)")
-            if vang_kp >= 3:
-                is_risk = True
-                risk_reasons.append(f"Vắng không phép nhiều ({vang_kp} buổi)")
-            if xp < -20:
-                is_risk = True
-                risk_reasons.append(f"Điểm nề nếp thi đua âm sâu ({xp} XP)")
-
-            if is_risk:
-                risk_reports.append({
-                    "student_id": st.MaNguoiDung,
-                    "ho_ten": st.HoTen,
-                    "dtb": dtb,
-                    "vang_kp": vang_kp,
-                    "xp": xp,
-                    "reasons": risk_reasons
-                })
-
-        return jsonify({
-            "success": True,
-            "has_risk": len(risk_reports) > 0,
-            "risk_students": risk_reports
-        })
-    except Exception as e:
-        print(f"[ERR ANALYZE RISK] {str(e)}")
-        return jsonify({"success": False, "message": str(e)}), 500
+        cls = db.execute(text('SELECT MaLop, TenLop, MaNamHoc FROM LopHoc WHERE MaGVCN=:uid'), {'uid': user_id}).fetchone()
+        if not cls:
+            return jsonify({'success': False, 'message': 'Tài khoản chưa có lớp chủ nhiệm.'}), 403
+        return jsonify(scan_class(db, cls))
+    except Exception:
+        logging.exception('Risk scan failed')
+        return jsonify({'success': False, 'message': 'Không đọc được dữ liệu quét. Kiểm tra cấu hình năm học và nhật ký máy chủ.'}), 500
     finally:
         db.close()
 
@@ -4578,7 +4528,13 @@ def ai_chat():
         if not GEMINI_API_KEY or GEMINI_API_KEY == "YOUR_GEMINI_API_KEY":
             return jsonify({"success": False, "message": "Chưa cấu hình Gemini API Key trong config.py"}), 400
             
-        client = genai.Client(api_key=GEMINI_API_KEY)
+        import ssl
+        import truststore
+        from google.genai import types
+        client = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(
+            timeout=30000,
+            client_args={'verify': truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)},
+        ))
         
         available_models = []
         try:
@@ -4676,11 +4632,21 @@ def ai_chat():
             )
             return jsonify({"success": True, "reply": response.text})
         except Exception as ai_err:
-            demo_reply = f"[AI MENTOR - DEMO MODE]\n\nChào bạn! AI đang bận kết nối. Hãy kiên nhẫn một chút nhé!"
-            return jsonify({"success": True, "reply": demo_reply})
+            error_code = getattr(ai_err, 'code', None)
+            logging.error('Gemini request failed (%s, code=%s)', type(ai_err).__name__, error_code)
+            message = 'Không kết nối được Gemini. Vui lòng thử lại sau.'
+            if error_code == 429:
+                message = 'Gemini đã hết hạn mức hoặc đang giới hạn yêu cầu. Kiểm tra quota của API key.'
+            elif error_code in (400, 401, 403):
+                message = 'Gemini từ chối yêu cầu. Kiểm tra API key và quyền truy cập mô hình.'
+            elif 'CERTIFICATE_VERIFY_FAILED' in str(ai_err):
+                message = 'Không xác minh được chứng chỉ kết nối Gemini trên máy chủ.'
+            return jsonify({'success': False, 'message': message}), 502
+        finally:
+            client.close()
         
     except ImportError:
-        return jsonify({"success": False, "message": "Thiếu thư viện mới: pip install google-genai"}), 500
+        return jsonify({"success": False, "message": "Thiếu thư viện: pip install google-genai truststore"}), 500
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

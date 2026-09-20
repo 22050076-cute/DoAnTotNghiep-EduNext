@@ -235,8 +235,18 @@
 {% block extra_js %}
 <script>
     let currentTab = 'academic';
+    let loadedGradeContext = null;
+    let gradeRequestId = 0;
+    let savingGrades = false;
+
+    function getGradeContext() {
+        return ['class-select', 'subject-select', 'semester-select']
+            .map(id => document.getElementById(id).value).join(':');
+    }
+
 
     function switchTab(tab) {
+        if (savingGrades) return;
         currentTab = tab;
         const academicTab = document.getElementById('tab-academic');
         const summaryTab = document.getElementById('tab-summary');
@@ -284,6 +294,7 @@
     }
 
     function loadData() {
+        if (savingGrades) return;
         if (currentTab === 'academic') loadGradebook();
         else if (currentTab === 'summary') loadClassSummary();
         else loadConduct();
@@ -311,6 +322,11 @@
 
     // 1. NẠP SỔ ĐIỂM BỘ MÔN
     async function loadGradebook() {
+        if (savingGrades) return;
+        const requestId = ++gradeRequestId;
+        const context = getGradeContext();
+        loadedGradeContext = null;
+        document.getElementById('btn-save-grades').disabled = true;
         const classId = document.getElementById('class-select').value;
         const subjectId = document.getElementById('subject-select').value;
         const semesterId = document.getElementById('semester-select').value;
@@ -321,6 +337,8 @@
         try {
             const res = await fetch(`/api/teacher/grades?class_id=${classId}&subject_id=${subjectId}&semester_id=${semesterId}`);
             const result = await res.json();
+            if (requestId !== gradeRequestId || context !== getGradeContext()) return;
+            if (!res.ok || !result.success) throw new Error(result.message || 'Không tải được sổ điểm.');
             
             if (result.success && result.data.length > 0) {
                 body.innerHTML = result.data.map((s, idx) => {
@@ -367,10 +385,13 @@
                         <td class="score-avg px-6 py-4 text-center font-black text-brand-primary text-sm bg-rose-50/20">${s.TB !== null && s.TB !== undefined ? s.TB : '-'}</td>
                     </tr>
                 `}).join('');
+                loadedGradeContext = context;
+                document.getElementById('btn-save-grades').disabled = false;
             } else {
                 body.innerHTML = '<tr><td colspan="7" class="p-20 text-center text-slate-400 italic">Không tìm thấy dữ liệu điểm của lớp học.</td></tr>';
             }
-        } catch (err) { 
+        } catch (err) {
+            if (requestId !== gradeRequestId || context !== getGradeContext()) return;
             console.error(err); 
             body.innerHTML = '<tr><td colspan="7" class="p-20 text-center text-rose-500 italic">Lỗi kết nối máy chủ sổ điểm.</td></tr>';
         }
@@ -476,49 +497,71 @@
 
     // 4. LƯU SỔ ĐIỂM
     async function saveAllGrades() {
+        if (savingGrades) return;
+        if (!loadedGradeContext || loadedGradeContext !== getGradeContext()) {
+            alert('Vui lòng tải đúng sổ điểm của lớp, môn học và học kỳ trước khi lưu.');
+            return;
+        }
+
         const btn = document.getElementById('btn-save-grades');
-        const subjectId = parseInt(document.getElementById('subject-select').value);
-        const semesterId = parseInt(document.getElementById('semester-select').value);
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ph ph-circle-notch animate-spin mr-1"></i> Đang lưu...';
-
+        const [, subjectId, semesterId] = loadedGradeContext.split(':').map(Number);
+        const filters = ['class-select', 'subject-select', 'semester-select']
+            .map(id => document.getElementById(id));
         const rows = document.querySelectorAll('#grade-body tr[id^="row-"]');
-        let updateCount = 0;
+        const cols = ['M1', 'M2', 'M3', 'TX1', 'TX2', 'GK', 'CK'];
+        const updates = [];
 
+        // Chụp dữ liệu cùng bộ lọc đã tải trước khi gửi bất kỳ yêu cầu nào.
         for (const row of rows) {
-            const studentId = parseInt(row.id.replace('row-', ''));
-            const cols = ['M1', 'M2', 'M3', 'TX1', 'TX2', 'GK', 'CK'];
-            const selectors = ['.score-m1', '.score-m2', '.score-m3', '.score-tx1', '.score-tx2', '.score-gk', '.score-ck'];
-
-            for (let idx = 0; idx < cols.length; idx++) {
-                const input = row.querySelector(selectors[idx]);
-                if (input && input.value.trim() !== "") {
-                    const val = parseFloat(input.value.trim());
-                    if (!isNaN(val) && val >= 0 && val <= 10) {
-                        try {
-                            await fetch('/api/teacher/update-grade', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    student_id: studentId,
-                                    subject_id: subjectId,
-                                    semester_id: semesterId,
-                                    column_type: cols[idx],
-                                    grade: val
-                                })
-                            });
-                            updateCount++;
-                        } catch (e) { console.error("Lỗi lưu điểm:", e); }
-                    }
+            const studentId = Number(row.id.replace('row-', ''));
+            for (const column of cols) {
+                const input = row.querySelector(`.score-${column.toLowerCase()}`);
+                if (!input || input.value.trim() === '') continue;
+                const grade = Number(input.value.trim());
+                if (!Number.isFinite(grade) || grade < 0 || grade > 10) {
+                    alert('Điểm số phải nằm trong thang điểm từ 0 đến 10.');
+                    input.focus();
+                    return;
                 }
+                updates.push({ student_id: studentId, subject_id: subjectId,
+                    semester_id: semesterId, column_type: column, grade });
             }
         }
 
-        btn.disabled = false;
-        btn.innerHTML = '<i class="ph-fill ph-floppy-disk mr-1"></i> Lưu Sổ Điểm';
-        alert(`✨ Đã lưu thành công ${updateCount} đầu điểm vào CSDL!`);
-        await loadGradebook();
+        savingGrades = true;
+        btn.disabled = true;
+        filters.forEach(select => select.disabled = true);
+        const inputs = document.querySelectorAll('#grade-body input');
+        inputs.forEach(input => input.disabled = true);
+        btn.innerHTML = '<i class="ph ph-circle-notch animate-spin mr-1"></i> Đang lưu...';
+        let updateCount = 0;
+        let succeeded = false;
+        try {
+            for (const update of updates) {
+                const res = await fetch('/api/teacher/update-grade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(update)
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) {
+                    throw new Error(result.message || 'Máy chủ từ chối lưu điểm.');
+                }
+                updateCount++;
+            }
+            succeeded = true;
+            alert(`Đã lưu thành công ${updateCount} đầu điểm vào CSDL!`);
+        } catch (err) {
+            console.error('Lỗi lưu điểm:', err);
+            alert(`Đã lưu ${updateCount}/${updates.length} đầu điểm. Lưu chưa hoàn tất: ${err.message}`);
+        } finally {
+            savingGrades = false;
+            filters.forEach(select => select.disabled = false);
+            inputs.forEach(input => input.disabled = false);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph-fill ph-floppy-disk mr-1"></i> Lưu Sổ Điểm';
+        }
+        if (succeeded) await loadGradebook();
     }
 
     // MODAL XP
@@ -586,6 +629,16 @@
         } catch (err) { console.error(err); }
     }
 
-    document.addEventListener('DOMContentLoaded', loadClasses);
+    document.addEventListener('DOMContentLoaded', () => {
+        ['class-select', 'subject-select', 'semester-select'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                loadedGradeContext = null;
+                gradeRequestId++;
+                document.getElementById('btn-save-grades').disabled = true;
+                loadData();
+            });
+        });
+        loadClasses();
+    });
 </script>
 {% endblock %}

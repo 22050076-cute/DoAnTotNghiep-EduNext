@@ -3,14 +3,13 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import urllib.parse
 
 USERNAME = 'sa'
-PASSWORD = '123456'
-SERVER = '127.0.0.1'
-PORT = '50667' 
+PASSWORD = '12345678'
+SERVER = 'localhost'
 DATABASE = 'LopHocSo'
 DRIVER = 'ODBC Driver 17 for SQL Server' 
 
 params = urllib.parse.quote_plus(
-    f"DRIVER={{{DRIVER}}};SERVER={SERVER},{PORT};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Encrypt=yes;TrustServerCertificate=yes;"
+    f"DRIVER={{{DRIVER}}};SERVER={SERVER};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Encrypt=yes;TrustServerCertificate=yes;"
 )
 
 SQLALCHEMY_DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={params}"

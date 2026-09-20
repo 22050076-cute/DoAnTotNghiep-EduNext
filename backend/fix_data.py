@@ -3,14 +3,13 @@ import urllib.parse
 
 # DB Config
 USERNAME = 'sa'
-PASSWORD = '123'
-SERVER = '127.0.0.1'
-PORT = '1433' 
+PASSWORD = '12345678'
+SERVER = 'localhost'
 DATABASE = 'LopHocSo'
 DRIVER = 'ODBC Driver 17 for SQL Server' 
 
 params = urllib.parse.quote_plus(
-    f"DRIVER={{{DRIVER}}};SERVER={SERVER},{PORT};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Encrypt=yes;TrustServerCertificate=yes;"
+    f"DRIVER={{{DRIVER}}};SERVER={SERVER};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};Encrypt=yes;TrustServerCertificate=yes;"
 )
 engine = create_engine(f"mssql+pyodbc:///?odbc_connect={params}")
 

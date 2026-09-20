@@ -1,0 +1,10 @@
+flask
+flask-cors
+sqlalchemy
+pyodbc
+werkzeug
+google-generativeai
+google-genai
+flask-socketio
+flask-mail
+truststore>=0.10.4,<1
